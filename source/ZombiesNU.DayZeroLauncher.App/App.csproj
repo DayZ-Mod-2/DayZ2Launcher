@@ -100,11 +100,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.Windows.Shell\Microsoft.Windows.Shell.dll</HintPath>
     </Reference>
-    <Reference Include="MonoTorrent">
-      <HintPath>..\..\..\monotorrent\src\MonoTorrent\obj\Release\MonoTorrent.dll</HintPath>
+    <Reference Include="MonoTorrent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MonoTorrent\MonoTorrent.dll</HintPath>
     </Reference>
-    <Reference Include="MonoTorrent.Dht">
-      <HintPath>..\..\..\monotorrent\src\MonoTorrent.Dht\obj\Release\MonoTorrent.Dht.dll</HintPath>
+    <Reference Include="MonoTorrent.Dht, Version=0.70.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\MonoTorrent\MonoTorrent.Dht.dll</HintPath>
     </Reference>
     <Reference Include="NLog">
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
