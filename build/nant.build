@@ -1,4 +1,4 @@
-<project name="DayZ Commander Build" default="fullRelease">
+<project name="DayZero Launcher Build" default="fullRelease">
     <property name="configuration" value="release" />
 	<property name="dir.source" value="..\source" />
 
@@ -33,22 +33,22 @@
 	
 	<target name="set.version" depends="setVersionString" description="generates the version number">
 		<echo message="Setting the build version to ${versionString}..." />
-		<attrib file="${dir.source}\Dotjosh.DayZCommander.App\Properties\AssemblyInfo.cs" readonly="false" />
-		<asminfo output="${dir.source}\Dotjosh.DayZCommander.App\Properties\AssemblyInfo.cs" language="CSharp">
+		<attrib file="${dir.source}\ZombiesNU.DayZeroLauncher.App\Properties\AssemblyInfo.cs" readonly="false" />
+		<asminfo output="${dir.source}\ZombiesNU.DayZeroLauncher.App\Properties\AssemblyInfo.cs" language="CSharp">
 			<imports>
 				<import namespace="System" />
 				<import namespace="System.Reflection" />
 			</imports>
 			<attributes>
-				<attribute type="AssemblyTitleAttribute" value="DayZ Commander" />
-				<attribute type="AssemblyCompanyAttribute" value="Dotjosh Open Source" />
-				<attribute type="AssemblyProductAttribute" value="DayZ Commander" />
+				<attribute type="AssemblyTitleAttribute" value="DayZero Launcher" />
+				<attribute type="AssemblyCompanyAttribute" value="ZombiesNU Open Source" />
+				<attribute type="AssemblyProductAttribute" value="DayZero Launcher" />
 				<attribute type="AssemblyCopyrightAttribute" value="Copyright 2012" />
 				<attribute type="AssemblyVersionAttribute" value="${versionString}" />
 				<attribute type="AssemblyFileVersionAttribute" value="${versionString}" />
 			</attributes>
 		</asminfo>
-		<attrib file="${dir.source}\Dotjosh.DayZCommander.App\Properties\AssemblyInfo.cs" readonly="true" />
+		<attrib file="${dir.source}\ZombiesNU.DayZeroLauncher.App\Properties\AssemblyInfo.cs" readonly="true" />
 	</target>	
 	
 	<target name="zipRelease">
@@ -57,7 +57,7 @@
 			file="versioninfo.txt"
 			tofile="releases/versioninfo.txt" />
 		<zip zipfile="releases/${versionString}.zip">
-			<fileset basedir="${dir.source}/Dotjosh.DayZCommander.App/bin/${configuration}" >
+			<fileset basedir="${dir.source}/ZombiesNU.DayZeroLauncher.App/bin/${configuration}" >
 				<include name="**/*" />
 				<exclude name="**/*.pdb" />
 				<exclude name="**/*.xml" />
@@ -66,9 +66,9 @@
 	</target>
 	
     <target name="build" description="Build all targets.">
-        <solution configuration="${configuration}" solutionfile="${dir.source}\Dotjosh.DayZCommander.sln">
+        <solution configuration="${configuration}" solutionfile="${dir.source}\ZombiesNU.DayZeroLauncher.sln">
         </solution>
-        <property name="expected.output" value="${dir.source}\Dotjosh.DayZCommander.App/bin/${configuration}/DayZCommander.exe"/>
+        <property name="expected.output" value="${dir.source}\ZombiesNU.DayZeroLauncher.App/bin/${configuration}/DayZeroLauncher.exe"/>
         <fail unless="${file::exists(expected.output)}">Output file doesn't exist in ${expected.output}</fail>
     </target>
     
