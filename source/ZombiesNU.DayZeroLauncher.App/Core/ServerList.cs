@@ -79,7 +79,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			                    }).Start();
 		}
 
-		private List<Server> GetAllSync()
+		public List<Server> GetAllSync()
 		{
             string list = "";
 
@@ -90,12 +90,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                     return new List<Server>(); // Empty list.. Too bad.
                 }
             }
-            return list
+
+            var fullList = list
                 .Split('\n')
                 .Select(line =>
                 {
                     var serverInfo = line.Split(';');
-                    var server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4]);
+                    Server server = server = new Server("", 0, "", "");
+                    if (serverInfo.Count() > 4)
+                    {
+                        server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4]);
+                    }
 
                     server.Settings = new SortedDictionary<string, string>
                     {
@@ -106,24 +111,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 }
                 )
                 .ToList();
-            //ExecuteGSList("-u");
-            //return ExecuteGSList("-n arma2oapc -f \"mod LIKE '%@dayzero%'\" -X \\hostname")
-            //    .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-            //    .Select(line =>
-            //    {
-            //        var indexOfFirstSpace = line.IndexOf(" ");
-            //        var fullIpAddressWithPort = line.Substring(0, indexOfFirstSpace).Split(':');
-            //        var server = new Server(fullIpAddressWithPort[0], fullIpAddressWithPort[1].TryInt(), "", "");
 
-            //        server.Settings = new SortedDictionary<string, string>
-            //        {
-            //            { "hostname", line.Substring(indexOfFirstSpace + 11) }
-            //        };
-
-            //        return server;
-            //    }
-            //    )
-            //    .ToList();
+            return fullList;
 		}
 
 		public void UpdateAll()

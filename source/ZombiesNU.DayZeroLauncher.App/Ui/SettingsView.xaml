@@ -28,10 +28,10 @@
 					  IsChecked="{Binding Settings.GameOptions.TwentyFourHourTimeFormat, Mode=TwoWay}"
 					  Foreground="#DDDDDD"
 					  Margin="0 8 0 0"/>
-                    <!--<CheckBox Content="Launch using Steam"
+                    <CheckBox Content="Launch using Steam"
 						  IsChecked="{Binding Settings.GameOptions.LaunchUsingSteam, Mode=TwoWay}"
 						  Foreground="#DDDDDD"
-                      Margin="0 8 0 0"/>-->
+                      Margin="0 8 0 0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
                     
@@ -128,6 +128,25 @@
 					ToolTipService.ToolTip="{Binding DayZDirectoryOverride}"
 					IsEnabled="{Binding DayZDirectoryOverride, Mode=TwoWay}"
 					Margin="0 3 0 0"/>
+            </StackPanel>
+            <TextBlock Text="SERVER FILTERS"
+					   FontWeight="Bold"
+					   Margin="0 10 0 3"
+					   Foreground="#FFFFFF"/>
+
+            <StackPanel Orientation="Horizontal">
+                <CheckBox Content="EU "
+					  IsChecked="{Binding Settings.IncludeEU, Mode=TwoWay}"
+					  Foreground="#DDDDDD"
+					  Margin="0 0 5 0"/>
+                <CheckBox Content="US"
+					  IsChecked="{Binding Settings.IncludeUS, Mode=TwoWay}"
+					  Foreground="#DDDDDD"
+					  Margin="0 0 5 0"/>
+                <CheckBox Content="AU"
+					  IsChecked="{Binding Settings.IncludeAU, Mode=TwoWay}"
+					  Foreground="#DDDDDD"
+					  Margin="0 0 5 0"/>
             </StackPanel>
             <Border Margin="0 10 0 0"
 					BorderBrush="#555555"

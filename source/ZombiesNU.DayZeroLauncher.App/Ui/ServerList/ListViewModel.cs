@@ -65,7 +65,19 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
 				return; 
 
 			_rawServers.Remove(message.Server);
-			_rawServers.Add(message.Server);
+            if (!IsFiltered(message.Server))
+                _rawServers.Add(message.Server);
 		}
+
+        bool IsFiltered(Server server)
+        {
+            if (server.Name.Contains("- AU") && !UserSettings.Current.IncludeAU)
+                return true;
+            if (server.Name.Contains("- US") && !UserSettings.Current.IncludeUS)
+                return true;
+            if ((server.Name.Contains("- SE") || server.Name.Contains("- DE")) && !UserSettings.Current.IncludeEU)
+                return true;
+            return false;
+        }
 	}
 }

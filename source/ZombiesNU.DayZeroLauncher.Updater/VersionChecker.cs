@@ -13,6 +13,7 @@ namespace zombiesnu.DayZeroLauncher.Updater
 		public VersionChecker()
 		{
 			_versionUri = new Uri("http://zombies.nu/launcherversion.txt");
+            //_versionUri = new Uri("http://roflkopter.dk/launcherversion.txt");
 			_thisVersion = Assembly.GetEntryAssembly().GetName().Version;
 		}
 
@@ -35,8 +36,8 @@ namespace zombiesnu.DayZeroLauncher.Updater
 			}
 			if(Version.TryParse(args.Result, out serverVersion))
 			{
-				//var isNew = serverVersion > _thisVersion;
-                var isNew = false;
+				var isNew = serverVersion > _thisVersion;
+                //var isNew = true;
 				OnComplete(serverVersion, isNew);
 				return;
 			}

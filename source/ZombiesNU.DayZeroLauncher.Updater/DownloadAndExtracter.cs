@@ -18,38 +18,31 @@ namespace zombiesnu.DayZeroLauncher.Updater
 
 		private readonly Version _serverVersion;
 		private readonly Uri _serverZipUri;
-		private readonly string _tempDownloadFileLocation;
-		private readonly string _tempExtractedLocation;
 		public static readonly string PENDING_UPDATE_DIRECTORYNAME = "_pendingupdate";
 		private readonly string _currentDirectory;
-		private readonly string _targetSwapDirectory;
 
 		public DownloadAndExtracter(Version serverVersion)
 		{
 			_serverVersion = serverVersion;
 			//_serverZipUri = new Uri(String.Format("http://www.roflkopter.dk/Debug.zip", _serverVersion));
-            _serverZipUri = new Uri("http://www.roflkopter.dk/Debug.zip");
-			var uniqueToken = Guid.NewGuid().ToString();
-			_tempDownloadFileLocation = DownloadAndExtracter.GetTempPath() + uniqueToken + ".zip";
-			_tempExtractedLocation = DownloadAndExtracter.GetTempPath() + uniqueToken;
+            _serverZipUri = new Uri("http://krasnostav.zombies.nu/archive/DayZeroLauncher.msi");
+			//var uniqueToken = Guid.NewGuid().ToString();
+            //_tempDownloadFileLocation = DownloadAndExtracter.GetTempPath() + uniqueToken + ".zip";
+            //_tempExtractedLocation = DownloadAndExtracter.GetTempPath() + uniqueToken;
 			_currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			_targetSwapDirectory = Path.Combine(_currentDirectory, PENDING_UPDATE_DIRECTORYNAME);
+			//_targetSwapDirectory = Path.Combine(_currentDirectory, PENDING_UPDATE_DIRECTORYNAME);
 		}
 
-		public static string GetTempPath()
-		{
-			var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			var currentInfo = new DirectoryInfo(current);
-			var tempPath = Path.Combine(currentInfo.Parent.FullName, @"Temp\");
-			if(!Directory.Exists(tempPath))
-				Directory.CreateDirectory(tempPath);
-			return tempPath;
-		}
+        //public static string GetTempPath()
+        //{
+        //    var current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        //    var currentInfo = new DirectoryInfo(current);
+        //    var tempPath = Path.Combine(currentInfo.Parent.FullName, @"Temp\");
+        //    if(!Directory.Exists(tempPath))
+        //        Directory.CreateDirectory(tempPath);
+        //    return tempPath;
+        //}
 
-		public string TempExtractedLocation
-		{
-			get { return _tempExtractedLocation; }
-		}
 
 		public event EventHandler<ExtractCompletedArgs> ExtractComplete;
 
@@ -58,22 +51,20 @@ namespace zombiesnu.DayZeroLauncher.Updater
 			var pendingUpdateVersion = GetPendingUpdateVersion();
 			if(pendingUpdateVersion != null && pendingUpdateVersion >= _serverVersion)
 			{
-				OnExtractComplete();
+                ExtractComplete(this, new ExtractCompletedArgs());
 				return;
 			}
 
 			var checkForUpdateClient = new WebClient();
 			checkForUpdateClient.DownloadFileCompleted += DownloadFileComplete;
-			checkForUpdateClient.DownloadFileAsync(_serverZipUri, _tempDownloadFileLocation);
+            if (!Directory.Exists(Path.Combine(_currentDirectory, PENDING_UPDATE_DIRECTORYNAME)))
+                Directory.CreateDirectory(Path.Combine(_currentDirectory, PENDING_UPDATE_DIRECTORYNAME));
+            checkForUpdateClient.DownloadFileAsync(_serverZipUri, Path.Combine(Path.Combine(_currentDirectory, PENDING_UPDATE_DIRECTORYNAME), "DayZeroLauncher.msi"));
 		}
 
 		private Version GetPendingUpdateVersion()
 		{
-			if(!Directory.Exists(_targetSwapDirectory))
-			{
-				return null;
-			}
-			var pendingUpdateDayZeroLauncherFile = new FileInfo(Path.Combine(_targetSwapDirectory, "DayZeroLauncher.exe"));
+            var pendingUpdateDayZeroLauncherFile = new FileInfo(Path.Combine(Path.Combine(_currentDirectory, PENDING_UPDATE_DIRECTORYNAME), "DayZeroLauncher.msi"));
 			if(!pendingUpdateDayZeroLauncherFile.Exists)
 				return null;
 
@@ -86,44 +77,7 @@ namespace zombiesnu.DayZeroLauncher.Updater
 			{
 				return;
 			}
-			Extract();
-		}
-
-		private void Extract()
-		{
-			//Take advantage of async IO for the download, but start a thread for the extract and file operations
-			new Thread(() =>
-			           	{
-							try
-							{
-								using (var zipFile = ZipFile.Read(_tempDownloadFileLocation))
-								{
-									zipFile.ExtractAll(_tempExtractedLocation, ExtractExistingFileAction.OverwriteSilently);
-								}
-
-								if (Directory.Exists(_targetSwapDirectory))
-									Directory.Delete(_targetSwapDirectory);
-
-								Directory.Move(_tempExtractedLocation, _targetSwapDirectory);
-
-								Action action = OnExtractComplete;
-								Application.Current.Dispatcher
-									.BeginInvoke(action, DispatcherPriority.Background);
-							}
-							catch(Exception ex)
-							{
-								_logger.Error(ex);
-							}
-			           	}).Start();
-
-		}
-
-		private void OnExtractComplete()
-		{
-			if(ExtractComplete != null)
-			{
-				ExtractComplete(this, new ExtractCompletedArgs());
-			}
+            ExtractComplete(this, new ExtractCompletedArgs());
 		}
 	}
 }

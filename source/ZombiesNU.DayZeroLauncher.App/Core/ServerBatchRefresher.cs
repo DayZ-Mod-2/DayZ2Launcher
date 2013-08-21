@@ -20,6 +20,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			InProgressText = inProgressText;
 		}
 
+        public ServerBatchRefresher() { }
+
 		public int UnprocessedServersCount
 		{
 			get { return _items.Count - ProcessedServersCount; }
@@ -44,15 +46,15 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			if(_isUpdating)
 				return;
-
+            
 			object incrementLock = new object();
 
 			_isUpdating = true;
 			ProcessedServersCount = 0;
-
 			_processed = 0;
-			var totalCount = _items.Count;
 
+            var items = new ServerList().GetAllSync(); // redownload list.
+            var totalCount = items.Count;
 			var t = new Thread(() =>
 			                   	{
 			                   		try
@@ -85,7 +87,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			t.IsBackground = true;
 			t.Start();
 
-			var serverUpdates = _items
+            var serverUpdates = items
 				.Select<Server, Action<Action>>(server => 
 				                                onComplete => 
 				                                server.BeginUpdate(doubleDispatchServer =>

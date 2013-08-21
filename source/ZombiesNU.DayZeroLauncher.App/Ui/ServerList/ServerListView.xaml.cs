@@ -16,5 +16,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
         {
 
         }
+
+        private void ServerListGrid_Loaded_1(object sender, System.Windows.RoutedEventArgs e)
+        {
+
+        }
 	}
 }

@@ -17,6 +17,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	public class UserSettings
 	{
 		private static UserSettings _current;
+        private static ServerBatchRefresher refresher = new ServerBatchRefresher();
 
 		[DataMember] private List<string> _friends = new List<string>();
 		[DataMember] private Filter _filter = new Filter();
@@ -25,6 +26,32 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		[DataMember] private AppOptions _appOptions = new AppOptions();
 		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
 		[DataMember] private List<RecentServer> _recentServers = new List<RecentServer>();
+        [DataMember] private bool _includeUS = true;
+        [DataMember] private bool _includeEU = true;
+        [DataMember] private bool _includeAU = true;
+
+        public bool IncludeUS
+        {
+            get { return _includeUS; }
+            set { refresher.RefreshAll(); 
+                _includeUS = value; }
+        }
+
+        public bool IncludeEU
+        {
+            get { return _includeEU; }
+            set
+            {
+                refresher.RefreshAll();
+                _includeEU = value; }
+        }
+
+        public bool IncludeAU
+        {
+            get { return _includeAU; }
+            set { refresher.RefreshAll(); 
+                _includeAU = value; }
+        }
 
 		public List<string> Friends
 		{

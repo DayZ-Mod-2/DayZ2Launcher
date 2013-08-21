@@ -40,6 +40,6 @@
 							 HorizontalAlignment="Stretch"
 							 VerticalAlignment="Stretch"
 							 Grid.Row="0"
-							 Grid.Column="1"/>
+							 Grid.Column="1" Loaded="ServerListGrid_Loaded_1" />
 	</Grid>
 </UserControl>

@@ -38,6 +38,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>commanderico.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ionic.Zip">
       <HintPath>..\packages\DotNetZip.1.9.1.8\lib\net20\Ionic.Zip.dll</HintPath>
@@ -109,13 +112,16 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <SplashScreen Include="splash.png" />
+    <CodeAnalysisDictionary Include="splash.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ZombiesNU.DayZeroLauncher.InstallUtilities\InstallUtilities.csproj">
       <Project>{74C869B4-E48B-4D3B-AA8A-4E35247F6DF7}</Project>
       <Name>InstallUtilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="commanderico.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -8,17 +8,30 @@ using System.Threading;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
+    public enum Mod {
+        DayZeroPodagorsk,
+        DayZeroChernarus
+    }
+
 	public static class GameLauncher
 	{
 		private static Logger _logger = LogManager.GetCurrentClassLogger();
 
-		public static void JoinServer(Server server)
+        public static void LaunchGame(Mod mod)
+        {
+            string modArg = String.Format(" \"-mod={0};Expansion;Expansion\\beta;Expansion\\beta\\Expansion;{1};{2}\"", CalculatedGameSettings.Current.Arma2Path, CalculatedGameSettings.Current.DayZPath, CalculatedGameSettings.Current.DayZPath.Substring(0, CalculatedGameSettings.Current.DayZPath.Length - "@DayZero".Length) + "@" + mod);
+            JoinServer(null, modArg);
+        }
+
+        public static void JoinServer(Server server)
+        {
+            string modArg = String.Format(" \"-mod={0};Expansion;Expansion\\beta;expansion\\beta\\Expansion;{1};{2}\"", CalculatedGameSettings.Current.Arma2Path, CalculatedGameSettings.Current.DayZPath, CalculatedGameSettings.Current.DayZPath.Substring(0, CalculatedGameSettings.Current.DayZPath.Length-"@DayZero".Length) + server.Mod);
+            JoinServer(server, modArg);
+        }
+
+		static void JoinServer(Server server, string modArg)
 		{
-            foreach (Process process in Process.GetProcessesByName("arma2oa"))
-            {
-                process.Kill();
-                process.WaitForExit();
-            }
+            CloseGame();
 			var arguments = new StringBuilder();
 
 			string exePath;
@@ -31,10 +44,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					MessageBox.Show("Could not find Steam, please adjust your options or check your Steam installation.");
 					return;
 				}
-				
-				 arguments.Append(" -applaunch 33930");
 
-                if(UserSettings.Current.GameOptions.Arma2OASteamUpdate){
+                arguments.Append(" -applaunch 33930");
+
                     string mainEXE = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, @"arma2oa.exe");
                     string betaEXE = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, @"Expansion\beta\arma2oa.exe");
 					if(File.Exists(mainEXE) && File.Exists(betaEXE))
@@ -48,7 +60,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							File.Copy(betaEXE, mainEXE, true);
 						}
 					}
-                }
 			}
 			else
 			{
@@ -71,10 +82,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 
 			arguments.Append(" -noSplash -noFilePatching");
-			arguments.Append(" -connect=" + server.IpAddress);
-			arguments.Append(" -port=" + server.Port);
-            arguments.Append(" -password=" + server.Password);
-            arguments.AppendFormat(" \"-mod={0};expansion;expansion\\beta;expansion\\beta\\expansion;{1};{2}\"", CalculatedGameSettings.Current.Arma2Path, CalculatedGameSettings.Current.DayZPath, CalculatedGameSettings.Current.DayZPath.Substring(0, CalculatedGameSettings.Current.DayZPath.Length-"@DayZero".Length) + server.Mod);
+            if (server != null)
+            {
+                arguments.Append(" -connect=" + server.IpAddress);
+                arguments.Append(" -port=" + server.Port);
+                arguments.Append(" -password=" + server.Password);
+            }
+            arguments.AppendFormat(modArg);
 
 			try
 			{
@@ -82,31 +96,37 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			        		{
 			        			StartInfo =
 			        				{
+                                        UseShellExecute = true,
+                                        Verb = "runas",
 			        					FileName = exePath,
 			        					Arguments = arguments.ToString(),
 			        					WorkingDirectory = CalculatedGameSettings.Current.Arma2OAPath,
-			        					UseShellExecute = true,
 			        				}
 			        		};
 				p.Start();
-
-				//UserSettings.Current.AddRecent(server);
 
                 if(UserSettings.Current.GameOptions.CloseDayZeroLauncher){
                     Thread.Sleep(1000);
                     Environment.Exit(0);
                 }
 			}
-			catch(Exception ex)
+			catch(Exception)
 			{
-				//var joinServerException = new JoinServerException(exePath, arguments.ToString(), CalculatedGameSettings.Current.Arma2OAPath, ex);
-				//_logger.Error(joinServerException);
 			}
 			finally
 			{
 				arguments.Clear();
 			}
 		}
+
+        public static void CloseGame()
+        {
+            foreach (Process process in Process.GetProcessesByName("arma2oa"))
+            {
+                process.Kill();
+                process.WaitForExit();
+            }
+        }
 	}
 
 	public class JoinServerException : Exception

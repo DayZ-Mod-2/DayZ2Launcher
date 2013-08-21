@@ -15,32 +15,8 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_03436517A1C723C5CBDA149097A313D2"
-        "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_03436517A1C723C5CBDA149097A313D2"
-        "OwnerKey" = "8:_3A7F065814588818EDA6E06C6186866C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_0524FAC1EC61469CB8780320CF3EF82C"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_129BEC5BAB77D2B68BA3B163331D9CB1"
-        "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_13F14D41B6A5166A0B0838D50A5038BA"
-        "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -57,12 +33,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_3A7F065814588818EDA6E06C6186866C"
-        "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_5754AB57A42542088DB3084F5C7697BE"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
@@ -75,14 +45,20 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_78FDB695A07D08D14F7C532868BE98D3"
-        "OwnerKey" = "8:_13F14D41B6A5166A0B0838D50A5038BA"
+        "MsmKey" = "8:_904392F949AAC23A29AB03438C378A58"
+        "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_78FDB695A07D08D14F7C532868BE98D3"
+        "MsmKey" = "8:_9E5599454B210E48EF18CCC9DEFC146A"
         "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9E5599454B210E48EF18CCC9DEFC146A"
+        "OwnerKey" = "8:_904392F949AAC23A29AB03438C378A58"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -99,37 +75,37 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_C6DD1997AA55211048631D1243B355A2"
+        "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_DE933C56B6C240548390881D77800FD0"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_F59705738FB5F2F19021ED3CC8E08E82"
-        "OwnerKey" = "8:_3A7F065814588818EDA6E06C6186866C"
+        "MsmKey" = "8:_DEA55E3B6FEE3A0069FB4C4C2CEFC43C"
+        "OwnerKey" = "8:_EC9E8FD56BD08C126D39D0C7CA89D847"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_F59705738FB5F2F19021ED3CC8E08E82"
+        "MsmKey" = "8:_DEA55E3B6FEE3A0069FB4C4C2CEFC43C"
         "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_F80176D4ACF834244798B02ED113EA99"
+        "MsmKey" = "8:_EC9699F5DE4A669E48A51F36654175D1"
         "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_F80176D4ACF834244798B02ED113EA99"
-        "OwnerKey" = "8:_3A7F065814588818EDA6E06C6186866C"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_F869A7978EDAC01B55E0C6320AB44739"
+        "MsmKey" = "8:_EC9E8FD56BD08C126D39D0C7CA89D847"
         "OwnerKey" = "8:_6E861326B1D44ABFB80860A470762A48"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -148,49 +124,37 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_13F14D41B6A5166A0B0838D50A5038BA"
+        "OwnerKey" = "8:_904392F949AAC23A29AB03438C378A58"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_78FDB695A07D08D14F7C532868BE98D3"
+        "OwnerKey" = "8:_C6DD1997AA55211048631D1243B355A2"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_3A7F065814588818EDA6E06C6186866C"
+        "OwnerKey" = "8:_9E5599454B210E48EF18CCC9DEFC146A"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F59705738FB5F2F19021ED3CC8E08E82"
+        "OwnerKey" = "8:_EC9E8FD56BD08C126D39D0C7CA89D847"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_03436517A1C723C5CBDA149097A313D2"
+        "OwnerKey" = "8:_DEA55E3B6FEE3A0069FB4C4C2CEFC43C"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F869A7978EDAC01B55E0C6320AB44739"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_F80176D4ACF834244798B02ED113EA99"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_129BEC5BAB77D2B68BA3B163331D9CB1"
+        "OwnerKey" = "8:_EC9699F5DE4A669E48A51F36654175D1"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -238,7 +202,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:..\\..\\build\\releases\\ZombiesNU.DayZeroLauncher.Installer.msi"
+        "OutputFilename" = "8:..\\..\\build\\releases\\DayZeroLauncher.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -298,37 +262,6 @@
         }
         "File"
         {
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_03436517A1C723C5CBDA149097A313D2"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:DayZeroLauncherInstallUtilities, Version=0.9.0.23, Culture=neutral, processorArchitecture=x86"
-                "ScatterAssemblies"
-                {
-                    "_03436517A1C723C5CBDA149097A313D2"
-                    {
-                    "Name" = "8:DayZeroLauncherInstallUtilities.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:DayZeroLauncherInstallUtilities.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:TRUE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_0524FAC1EC61469CB8780320CF3EF82C"
             {
             "AssemblyRegister" = "3:1"
@@ -358,68 +291,6 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_129BEC5BAB77D2B68BA3B163331D9CB1"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Microsoft.Windows.Shell, Version=3.5.41019.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_129BEC5BAB77D2B68BA3B163331D9CB1"
-                    {
-                    "Name" = "8:Microsoft.Windows.Shell.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:Microsoft.Windows.Shell.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_13F14D41B6A5166A0B0838D50A5038BA"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:MonoTorrent.Dht, Version=0.70.0.0, Culture=neutral, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_13F14D41B6A5166A0B0838D50A5038BA"
-                    {
-                    "Name" = "8:MonoTorrent.Dht.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:MonoTorrent.Dht.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_14FEF13D5B5F4E3BB1B305DD94FFEFE9"
@@ -462,14 +333,34 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_3A7F065814588818EDA6E06C6186866C"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5754AB57A42542088DB3084F5C7697BE"
+            {
+            "SourcePath" = "8:..\\ZombiesNU.DayZeroLauncher.App\\GSList\\gslist"
+            "TargetName" = "8:gslist"
+            "Tag" = "8:"
+            "Folder" = "8:_BC18FD86EC9D4353AD31952EF6383433"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_904392F949AAC23A29AB03438C378A58"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
             "AssemblyAsmDisplayName" = "8:DayZeroLauncherUpdater, Version=0.9.0.23, Culture=neutral, processorArchitecture=x86"
                 "ScatterAssemblies"
                 {
-                    "_3A7F065814588818EDA6E06C6186866C"
+                    "_904392F949AAC23A29AB03438C378A58"
                     {
                     "Name" = "8:DayZeroLauncherUpdater.exe"
                     "Attributes" = "3:512"
@@ -493,40 +384,20 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_5754AB57A42542088DB3084F5C7697BE"
-            {
-            "SourcePath" = "8:..\\ZombiesNU.DayZeroLauncher.App\\GSList\\gslist"
-            "TargetName" = "8:gslist"
-            "Tag" = "8:"
-            "Folder" = "8:_BC18FD86EC9D4353AD31952EF6383433"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_78FDB695A07D08D14F7C532868BE98D3"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9E5599454B210E48EF18CCC9DEFC146A"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:MonoTorrent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_78FDB695A07D08D14F7C532868BE98D3"
+                    "_9E5599454B210E48EF18CCC9DEFC146A"
                     {
-                    "Name" = "8:MonoTorrent.dll"
+                    "Name" = "8:NLog.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:MonoTorrent.dll"
+            "SourcePath" = "8:NLog.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
@@ -584,6 +455,37 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C6DD1997AA55211048631D1243B355A2"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:SharpCompress, Version=0.8.1.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_C6DD1997AA55211048631D1243B355A2"
+                    {
+                    "Name" = "8:SharpCompress.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:SharpCompress.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DE933C56B6C240548390881D77800FD0"
             {
             "SourcePath" = "8:..\\ZombiesNU.DayZeroLauncher.App\\GSList\\gslist.exe"
@@ -604,20 +506,20 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F59705738FB5F2F19021ED3CC8E08E82"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_DEA55E3B6FEE3A0069FB4C4C2CEFC43C"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:Ionic.Zip, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:MonoTorrent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F59705738FB5F2F19021ED3CC8E08E82"
+                    "_DEA55E3B6FEE3A0069FB4C4C2CEFC43C"
                     {
-                    "Name" = "8:Ionic.Zip.dll"
+                    "Name" = "8:MonoTorrent.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:Ionic.Zip.dll"
+            "SourcePath" = "8:MonoTorrent.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
@@ -635,20 +537,20 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F80176D4ACF834244798B02ED113EA99"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_EC9699F5DE4A669E48A51F36654175D1"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:Microsoft.Windows.Shell, Version=3.5.41019.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F80176D4ACF834244798B02ED113EA99"
+                    "_EC9699F5DE4A669E48A51F36654175D1"
                     {
-                    "Name" = "8:NLog.dll"
+                    "Name" = "8:Microsoft.Windows.Shell.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:NLog.dll"
+            "SourcePath" = "8:Microsoft.Windows.Shell.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
@@ -666,20 +568,20 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F869A7978EDAC01B55E0C6320AB44739"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_EC9E8FD56BD08C126D39D0C7CA89D847"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:SharpCompress, Version=0.8.1.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:MonoTorrent.Dht, Version=0.70.0.0, Culture=neutral, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_F869A7978EDAC01B55E0C6320AB44739"
+                    "_EC9E8FD56BD08C126D39D0C7CA89D847"
                     {
-                    "Name" = "8:SharpCompress.dll"
+                    "Name" = "8:MonoTorrent.Dht.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:SharpCompress.dll"
+            "SourcePath" = "8:MonoTorrent.Dht.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_D1DFAB9D1F2644A9BAC642F5FEECC4A3"
@@ -786,15 +688,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DayZero Launcher"
-        "ProductCode" = "8:{A8062342-572F-415E-8F52-D035CC936F26}"
-        "PackageCode" = "8:{EB55FC58-E518-4D48-A705-0BBFB4E19FD3}"
+        "ProductCode" = "8:{6BF38067-775C-4486-8504-986716D960D8}"
+        "PackageCode" = "8:{334E6C86-A2AF-4F71-A603-740A605AE96A}"
         "UpgradeCode" = "8:{B8963678-B011-446A-9A1F-B2D468FB2A45}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:FALSE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:01.00.001"
+        "ProductVersion" = "8:01.00.003"
         "Manufacturer" = "8:ZOMBIES.NU"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.zombies.nu"

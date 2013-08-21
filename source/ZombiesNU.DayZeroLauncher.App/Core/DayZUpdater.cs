@@ -47,7 +47,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                         Status = "Zombies.nu not responding";
                         return;
                     }
-                    TorrentUpdater seeder = new TorrentUpdater(responseBody, torrentUrl); // Sets up launcher to start seeding current build.
+                    TorrentUpdater seeder = new TorrentUpdater(torrentUrl); // Sets up launcher to start seeding current build.
                     seeder.StartTorrents(1);
                 }
             }

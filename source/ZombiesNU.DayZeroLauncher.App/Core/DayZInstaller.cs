@@ -40,8 +40,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
         private void GetDayZFiles(DayZUpdater updater)
         {
-            TorrentUpdater tu = new TorrentUpdater(_latestDownloadUrl, this, "0.9.9.5", updater);
-            tu.StartTorrents(0);
+            TorrentUpdater tu = new TorrentUpdater(_latestDownloadUrl, this, updater);
+            tu.StartTorrents(1000);
         }
 
 #region OLD DOWNLOADER

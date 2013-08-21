@@ -37,18 +37,15 @@ namespace zombiesnu.DayZeroLauncher.App
 			var pendingUpdateDirectory = Path.Combine(thisLocation, DownloadAndExtracter.PENDING_UPDATE_DIRECTORYNAME);
 			if(Directory.Exists(pendingUpdateDirectory))
 			{
-				var tempDir = DownloadAndExtracter.GetTempPath() + Guid.NewGuid();
-				Directory.CreateDirectory(tempDir);
-				CopyAllFiles(pendingUpdateDirectory, tempDir);
 				var p = new Process()
 				            {
 				                StartInfo = new ProcessStartInfo()
 				                   		        {
-				                   		        	CreateNoWindow = false,
-				                   		        	UseShellExecute = true,
-				                   		        	Arguments = "\"" + thisLocation + "\"",
-													WorkingDirectory = tempDir,
-				                   		        	FileName = Path.Combine(tempDir, "DayZeroLauncherUpdater.exe")
+                                                    CreateNoWindow = false,
+                                                    UseShellExecute = true,
+                                                    Arguments = "\"YEPYEPYEP\"",
+                                                    WorkingDirectory = thisLocation,
+                                                    FileName = Path.Combine(thisLocation, "DayZeroLauncherUpdater.exe")
 				                   		        }
 				            };
 				p.Start();

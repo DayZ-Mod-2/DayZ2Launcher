@@ -88,8 +88,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			ViewModel.ServerList.UpdateAll();
 		}
 
-
-
 		private void TabHeader_Click(object sender, RoutedEventArgs e)
 		{
 			ViewModel.CurrentTab = (ViewModelBase) ((Control) sender).DataContext;
@@ -119,5 +117,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		{
 			ViewModel.ShowUpdates();
 		}
+
+        private void LaunchPodagorskButton_Click(object sender, RoutedEventArgs e)
+        {
+            GameLauncher.LaunchGame(Mod.DayZeroPodagorsk);
+        }
+
+        private void LaunchChernarusButton_Click(object sender, RoutedEventArgs e)
+        {
+            GameLauncher.LaunchGame(Mod.DayZeroChernarus);
+        }
 	}
 }

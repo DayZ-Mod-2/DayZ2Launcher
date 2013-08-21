@@ -23,6 +23,50 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
+        public bool IncludeUS
+        {
+            get { return Settings.IncludeUS; }
+            set
+            {
+                Settings.IncludeUS = value;
+                PropertyHasChanged("IncludeUS");
+            }
+        }
+
+        public bool IncludeEU
+        {
+            get { return Settings.IncludeEU; }
+            set
+            {
+                Settings.IncludeEU = value;
+                PropertyHasChanged("IncludeEU");
+            }
+        }
+
+        public bool IncludeAU
+        {
+            get { return Settings.IncludeAU; }
+            set
+            {
+                Settings.IncludeAU = value;
+                PropertyHasChanged("IncludeAU");
+            }
+        }
+
+        public bool Arma2DirectoryOverride
+        {
+            get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride); }
+            set
+            {
+                if (value)
+                    Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
+                else
+                    Settings.GameOptions.Arma2DirectoryOverride = null;
+                PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
+            }
+        }
+
+
 		public string Arma2Directory
 		{
 			get
@@ -37,19 +81,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			{
 				Settings.GameOptions.Arma2DirectoryOverride = value;
 				PropertyHasChanged("Arma2Directory");
-			}
-		}
-
-		public bool Arma2DirectoryOverride
-		{
-			get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride); }
-			set
-			{
-				if(value)
-					Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
-				else
-					Settings.GameOptions.Arma2DirectoryOverride = null;
-				PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
 			}
 		}
 

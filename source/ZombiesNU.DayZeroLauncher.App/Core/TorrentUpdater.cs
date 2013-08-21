@@ -27,7 +27,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
         static string torrentsPath;
         static ClientEngine engine;				// The engine used for downloading
         static List<TorrentManager> torrents;	// The list where all the torrentManagers will be stored that the engine gives us
-        static Version currentDayZeroVersion;
         DayZInstaller installer;
         DayZUpdater updater;
 
@@ -52,7 +51,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             {
                 totalDownloadSpeed += tm.Monitor.DownloadSpeed;
             }
-            return totalDownloadSpeed;
+            return totalDownloadSpeed / 1024;
         }
 
         public static double GetCurrentProgress()
@@ -75,11 +74,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             fastResumeFile = Path.Combine(torrentsPath, "fastresume.data");
         }
 
-        public TorrentUpdater(string torrentLink, DayZInstaller installer, string version, DayZUpdater updater)
+        public TorrentUpdater(string torrentLink, DayZInstaller installer, DayZUpdater updater)
         {
             this.installer = installer;
             this.updater = updater;
-            Version.TryParse(version, out currentDayZeroVersion);
             torrents = new List<TorrentManager>();							// This is where we will store the torrentmanagers
 
             if (!Directory.Exists(torrentsPath))
@@ -97,7 +95,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 int i = 1;
                 foreach (string torrent in torrentLinks)
                 {
-                    wc.DownloadFile(torrent, Path.Combine(torrentsPath, "DayZero-" + version + "-" + i + ".torrent"));
+                    wc.DownloadFile(torrent, Path.Combine(torrentsPath, "DayZero-" + updater.LatestVersion + "-" + i + ".torrent"));
                     i++;
                 }
             }
@@ -142,10 +140,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             }
         }
 
-        public TorrentUpdater(string currentVersion, string torrentLink)
+        public TorrentUpdater(string torrentLink)
         {
             torrents = new List<TorrentManager>();							// This is where we will store the torrentmanagers
-            Version.TryParse(currentVersion, out currentDayZeroVersion);
             // If the torrentsPath does not exist, we want to create it
             if (!Directory.Exists(torrentsPath))
                 Directory.CreateDirectory(torrentsPath);
@@ -162,7 +159,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 int i = 1;
                 foreach (string torrent in torrentLinks)
                 {
-                    wc.DownloadFile(torrent, Path.Combine(torrentsPath, "DayZero-" + currentVersion + "-" + i + ".torrent"));
+                    wc.DownloadFile(torrent, Path.Combine(torrentsPath, "DayZero-" + updater.LatestVersion + "-" + i + ".torrent"));
                     i++;
                 }
             }
