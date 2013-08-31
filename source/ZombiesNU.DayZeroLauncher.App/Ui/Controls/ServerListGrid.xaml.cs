@@ -44,10 +44,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
             }
             else
             {
-                InfoPopup popup = new InfoPopup();
+                FileVerifierPopup popup = new FileVerifierPopup();
                 popup.Owner = MainWindow.GetWindow(this.Parent);
                 popup.Headline.Content = "Please Wait";
-
+                popup.Title = "Please Wait";
                 popup.Show();
             }
 		}

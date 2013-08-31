@@ -112,7 +112,7 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <CodeAnalysisDictionary Include="splash.png" />
+    <SplashScreen Include="splash.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ZombiesNU.DayZeroLauncher.InstallUtilities\InstallUtilities.csproj">

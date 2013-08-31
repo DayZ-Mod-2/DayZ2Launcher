@@ -6,6 +6,9 @@ using zombiesnu.DayZeroLauncher.App.Core;
 using Application = System.Windows.Application;
 using Control = System.Windows.Controls.Control;
 
+using System.Windows.Media.Animation;
+using System.Windows.Controls;
+
 namespace zombiesnu.DayZeroLauncher.App.Ui
 {
 	/// <summary>
@@ -33,7 +36,37 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				UserSettings.Current.WindowSettings = WindowSettings.Create(this);
 				UserSettings.Current.Save();
 			};
+
+
+            this.Loaded += new RoutedEventHandler(Window_Loaded);
+            this.SizeChanged += new SizeChangedEventHandler(WindowSize_Changed);
+
+            string responseBody = "";
+            if (GameUpdater.HttpGet("http://www.zombies.nu/motd.txt", out responseBody))
+            {
+                AnnouncementMessage.Text = responseBody;
+            }
 		}
+
+        private void WindowSize_Changed(object sender, SizeChangedEventArgs e)
+        {
+            DoubleAnimation doubleAnimation = new DoubleAnimation();
+            doubleAnimation.From = -AnnouncementMessage.ActualWidth;
+            doubleAnimation.To = Marquee.ActualWidth;
+            doubleAnimation.RepeatBehavior = RepeatBehavior.Forever;
+            doubleAnimation.Duration = new Duration(TimeSpan.Parse("0:0:10"));
+            AnnouncementMessage.BeginAnimation(Canvas.LeftProperty, doubleAnimation);
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            DoubleAnimation doubleAnimation = new DoubleAnimation();
+            doubleAnimation.From = -AnnouncementMessage.ActualWidth;
+            doubleAnimation.To = Marquee.ActualWidth;
+            doubleAnimation.RepeatBehavior = RepeatBehavior.Forever;
+            doubleAnimation.Duration = new Duration(TimeSpan.Parse("0:0:10"));
+            AnnouncementMessage.BeginAnimation(Canvas.LeftProperty, doubleAnimation);
+        }
 
 		private void OnKeyUp(object sender, KeyEventArgs keyEventArgs)
 		{
@@ -126,6 +159,21 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
         private void LaunchChernarusButton_Click(object sender, RoutedEventArgs e)
         {
             GameLauncher.LaunchGame(Mod.DayZeroChernarus);
+        }
+
+        private void BMRFImage_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("http://www.bmrf.me");
+        }
+
+        private void ZombiesNUImage_Click(object sender, RoutedEventArgs e)
+        {
+            Process.Start("http://www.zombies.nu");
+        }
+
+        private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+
         }
 	}
 }

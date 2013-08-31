@@ -1,4 +1,4 @@
-﻿<Window x:Class="zombiesnu.DayZeroLauncher.App.Ui.Controls.InfoPopup"
+﻿<Window x:Class="zombiesnu.DayZeroLauncher.App.Ui.Controls.FileVerifierPopup"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Please wait .." Height="130" Width="300"

@@ -14,11 +14,7 @@
 							Margin="0 0 0 0"
 						   FontSize="24"/>
 
-			
-
-			
-
-			
+		
 			<Grid Margin="0 5 0 0">
 
 				
@@ -50,16 +46,15 @@
                             <TextBlock Text="{Binding DayZeroLauncherUpdater.LatestVersion}"
 							   Foreground="#FFFFFF"/>
                         </StackPanel>
-                        <Button Content="apply now" 
+                        <Button Content="Apply now" 
 						Foreground="LightGreen"
 						Visibility="{Binding DayZeroLauncherUpdater.UpdatePending, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 						Margin="0 8 0 0"
 						Background="#444444"
-                                HorizontalAlignment="Left"
+                        HorizontalAlignment="Left"
 						Click="ApplyDayZeroLauncherUpdateNow_Click"
 						Style="{StaticResource MetroButtonStyle}"/>
-
-                        <TextBlock Text="{Binding Arma2Updater.Installer.Status}"
+                        <TextBlock Text=""
 								   Foreground="#FFFFFF"
 								   Margin="0 4 0 0"
 								   FontWeight="Bold"/>
@@ -99,7 +94,7 @@
 								   Foreground="#FFFFFF"/>
 
                         </StackPanel>
-                        <Button Content="install latest revision" 
+                        <Button Content="Install latest revision" 
 								Background="#444444"
 								Foreground="LightGreen"
 								HorizontalAlignment="Left"
@@ -115,11 +110,7 @@
 								   FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
-
-
-               
 			</Grid>
-		
             <Grid>
                 <StackPanel Grid.Column="1">
                     <StackPanel>
@@ -151,8 +142,8 @@
                             <TextBlock Text="{Binding DayZUpdater.LatestVersion}"
 								   Foreground="#FFFFFF"/>
                         </StackPanel>
-
-                        <Button Content="install latest version" 
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Install latest version" 
 								Background="#444444"
 								Foreground="LightGreen"
 								HorizontalAlignment="Left"
@@ -161,7 +152,16 @@
 								Visibility="{Binding DayZUpdater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 								Click="DownloadDayZ_Click"/>
 
+                        <Button Content="Verify files" 
+								Background="#444444"
+								Foreground="LightGreen"
+								HorizontalAlignment="Left"
+                                Visibility="{Binding DayZUpdater.VerifyButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+								Margin="0 8"
+								Style="{StaticResource MetroButtonStyle}"
+								Click="Verify_Click"/>
 
+                        </StackPanel>
                         <TextBlock Text="{Binding DayZUpdater.Installer.Status}"
 								   Foreground="#FFFFFF"
 								   Margin="0 4 0 0"

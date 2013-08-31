@@ -26,31 +26,34 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		[DataMember] private AppOptions _appOptions = new AppOptions();
 		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
 		[DataMember] private List<RecentServer> _recentServers = new List<RecentServer>();
-        [DataMember] private bool _includeUS = true;
-        [DataMember] private bool _includeEU = true;
-        [DataMember] private bool _includeAU = true;
+        [DataMember] private bool _hideUS = false; 
+        [DataMember] private bool _hideEU = false;
+        [DataMember] private bool _hideAU = false;
 
         public bool IncludeUS
         {
-            get { return _includeUS; }
-            set { refresher.RefreshAll(); 
-                _includeUS = value; }
+            get { return !_hideUS; }
+            set { refresher.RefreshAll();
+            _hideUS = !value;
+            }
         }
 
         public bool IncludeEU
         {
-            get { return _includeEU; }
+            get { return !_hideEU; }
             set
             {
                 refresher.RefreshAll();
-                _includeEU = value; }
+                _hideEU = !value;
+            }
         }
 
         public bool IncludeAU
         {
-            get { return _includeAU; }
-            set { refresher.RefreshAll(); 
-                _includeAU = value; }
+            get { return !_hideAU; }
+            set { refresher.RefreshAll();
+            _hideAU = !value;
+            }
         }
 
 		public List<string> Friends

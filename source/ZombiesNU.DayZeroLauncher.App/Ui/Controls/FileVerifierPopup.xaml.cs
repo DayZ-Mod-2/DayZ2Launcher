@@ -18,13 +18,27 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
     /// <summary>
     /// Interaction logic for InfoPopup.xaml
     /// </summary>
-    public partial class InfoPopup : Window
+    public partial class FileVerifierPopup : Window
     {
         bool running = true;
         bool doneRunning = false;
-        public InfoPopup()
+        public FileVerifierPopup()
         {
             InitializeComponent();
+            System.Threading.Tasks.Task.Factory.StartNew(() => UpdateMessage());
+        }
+
+        public void UpdateMessage()
+        {
+            while (running)
+            {
+                Dispatcher.Invoke(new Action<string>(SetMessage), (TorrentUpdater.CurrentState() == TorrentState.Downloading ? "Launcher is downloading missing/broken files .. \nCurrent Speed: " + TorrentUpdater.GetCurrentSpeed() + " kB/s " : "Launcher is checking your files ..\n")
+                  + String.Format("Progress: {0:00}%", TorrentUpdater.GetCurrentProgress())
+                  + "\nClick OK and try again.");
+                System.Threading.Thread.Sleep(1000);
+                
+            }
+            doneRunning = true;
         }
 
         public void SetMessage(string message)

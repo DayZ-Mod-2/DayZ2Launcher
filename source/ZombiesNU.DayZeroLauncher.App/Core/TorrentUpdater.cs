@@ -159,7 +159,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 int i = 1;
                 foreach (string torrent in torrentLinks)
                 {
-                    wc.DownloadFile(torrent, Path.Combine(torrentsPath, "DayZero-" + updater.LatestVersion + "-" + i + ".torrent"));
+                    wc.DownloadFile(torrent, Path.Combine(torrentsPath, "DayZero-" + i + ".torrent"));
                     i++;
                 }
             }
@@ -182,6 +182,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             System.Threading.Tasks.Task.Factory.StartNew(() => StartEngine(maxUpload));
         }
 
+
         private void StartEngine(int maxUpload)
         {
             int port = 54321;
@@ -191,8 +192,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             // downloadsPath - this is the path where we will save all the files to
             // port - this is the port we listen for connections on
             EngineSettings engineSettings = new EngineSettings(downloadsPath, port);
-            engineSettings.PreferEncryption = false;
-            engineSettings.AllowedEncryption = EncryptionTypes.All;
+            engineSettings.PreferEncryption = true;
+            engineSettings.AllowedEncryption = EncryptionTypes.RC4Full | EncryptionTypes.RC4Header;
 
             // Create the default settings which a torrent will have.
             // 4 Upload slots - a good ratio is one slot per 5kB of upload speed
@@ -428,7 +429,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
                 foreach (string f in Directory.GetFiles(Path.Combine(downloadsPath, e.TorrentManager.Torrent.Name), "*.*", SearchOption.AllDirectories))
                 {
-                    if (e.TorrentManager.Torrent.Files.None(t => t.FullPath == f))
+                    if (e.TorrentManager.Torrent.Files.None(t => t.FullPath.ToLower() == f.ToLower()))
                     {
                         File.Delete(f);
                     }
@@ -440,6 +441,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                         installer.Status = "Ready to Play";
                     }
                     StopTorrents();
+
                     CalculatedGameSettings.Current.Update();
                 }
             }

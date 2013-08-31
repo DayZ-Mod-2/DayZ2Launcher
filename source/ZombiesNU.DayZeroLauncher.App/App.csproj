@@ -150,11 +150,14 @@
     <Compile Include="Core\GameVersions.cs" />
     <Compile Include="Core\RecentServer.cs" />
     <Compile Include="Core\TorrentUpdater.cs" />
+    <Compile Include="Ui\Controls\InfoPopup.xaml.cs">
+      <DependentUpon>InfoPopup.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Ui\Controls\FavoriteControl.xaml.cs">
       <DependentUpon>FavoriteControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Ui\Controls\InfoPopup.xaml.cs">
-      <DependentUpon>InfoPopup.xaml</DependentUpon>
+    <Compile Include="Ui\Controls\FileVerifierPopup.xaml.cs">
+      <DependentUpon>FileVerifierPopup.xaml</DependentUpon>
     </Compile>
     <Compile Include="Ui\Controls\NotesControl.xaml.cs">
       <DependentUpon>NotesControl.xaml</DependentUpon>
@@ -287,11 +290,15 @@
     <Compile Include="Core\SuperQueue.cs" />
     <Compile Include="Core\UserSettings.cs" />
     <Compile Include="Core\WindowSettings.cs" />
+    <Page Include="Ui\Controls\InfoPopup.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Ui\Controls\FavoriteControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Ui\Controls\InfoPopup.xaml">
+    <Page Include="Ui\Controls\FileVerifierPopup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -406,10 +413,12 @@
     <Resource Include="GSList\gpl.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <SplashScreen Include="Assets\Images\splash.png" />
     <Resource Include="Assets\Images\logo.png" />
     <Resource Include="Assets\Images\background.jpg" />
     <Resource Include="Assets\Images\dayzero_logo.png" />
+    <Resource Include="Assets\Images\bmrf_logo.png" />
+    <Resource Include="Assets\Images\zombiesnu_logo.png" />
+    <SplashScreen Include="Assets\Images\dayzero_splash.png" />
     <Content Include="GSList\gslist.exe">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

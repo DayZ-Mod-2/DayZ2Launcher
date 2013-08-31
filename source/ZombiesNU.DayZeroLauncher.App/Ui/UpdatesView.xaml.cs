@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using zombiesnu.DayZeroLauncher.App.Core;
+using zombiesnu.DayZeroLauncher.App.Ui.Controls;
+using MonoTorrent.Common;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui
 {
@@ -50,5 +52,35 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		{
 			App.ApplyUpdateIfNeccessary();
 		}
+
+        private void Verify_Click(object sender, RoutedEventArgs e)
+        {
+            string torrentUrl;
+            if (!GameUpdater.HttpGet("http://www.zombies.nu/dayzerotorrent.txt", out torrentUrl))
+            {
+                InfoPopup popup = new InfoPopup();
+                popup.Headline.Content = "An Error occured.";
+                popup.Message.Content = "Could not contact Zombies.nu.\nPlease try again.";
+                popup.Owner = popup.Owner = MainWindow.GetWindow(this.Parent);
+                popup.Title = "Error";
+                popup.Show();
+                return;
+            }
+            else
+            {
+                TorrentState state = TorrentUpdater.CurrentState();
+                if (state == TorrentState.Stopped)
+                {
+                    TorrentUpdater verifier = new TorrentUpdater(torrentUrl); // Sets up launcher to start checking files.
+                    verifier.StartTorrents(1);
+                }
+                FileVerifierPopup popup = new FileVerifierPopup();
+                popup.Owner = MainWindow.GetWindow(this.Parent);
+                popup.Headline.Content = "Please Wait";
+                popup.Title = "Please Wait";
+
+                popup.Show();
+            }
+        }
 	}
 }

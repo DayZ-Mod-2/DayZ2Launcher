@@ -28,30 +28,37 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static Version ExtractDayZVersion(string dayZPath)
 		{
-			var dayz_code_file = Path.Combine(dayZPath + "Chernarus", @"addons\dayz_code.pbo"); // TODO: Something that's not so hardcoded? (Chernarus..)
-			if(!File.Exists(dayz_code_file))
-			{
-				return null;
-			}
-			var dayz_code_file_lines = File.ReadAllLines(dayz_code_file);
-			foreach(var changeLogLine in dayz_code_file_lines)
-			{
-				var match = Regex.Match(changeLogLine, @"\x01\x00version\x00(?<Version>\d(?:\.\d){1,3})", RegexOptions.IgnoreCase);
-				if(!match.Success)
-				{
-					continue;
-				}
-				Version version;
-				var versionMatch = match.Groups["Version"];
-				if(!versionMatch.Success)
-					continue;
+            try
+            {
+                var dayz_code_file = Path.Combine(dayZPath + "Chernarus", @"addons\zero_code.pbo"); // TODO: Something that's not so hardcoded? (Chernarus..)
+                if (!File.Exists(dayz_code_file))
+                {
+                    return null;
+                }
+                var dayz_code_file_lines = File.ReadAllLines(dayz_code_file);
+                foreach (var changeLogLine in dayz_code_file_lines)
+                {
+                    var match = Regex.Match(changeLogLine, @"\x01\x00version\x00(?<Version>\d(?:\.\d){1,3})", RegexOptions.IgnoreCase);
+                    if (!match.Success)
+                    {
+                        continue;
+                    }
+                    Version version;
+                    var versionMatch = match.Groups["Version"];
+                    if (!versionMatch.Success)
+                        continue;
 
-				if(Version.TryParse(versionMatch.Value, out version))
-				{
-					return version;
-				}
-			}
-			return null;
+                    if (Version.TryParse(versionMatch.Value, out version))
+                    {
+                        return version;
+                    }
+                }
+
+            }
+            catch
+            {
+            }
+            return null;
 		}
 	}
 }

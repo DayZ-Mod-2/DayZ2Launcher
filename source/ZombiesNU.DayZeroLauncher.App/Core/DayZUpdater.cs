@@ -128,7 +128,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			set
 			{
 				_latestVersion = value;
-				Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible"));			
+                Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));			
 			}
 		}
 
@@ -138,7 +138,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			set
 			{
 				_status = value;
-				Execute.OnUiThread(() => PropertyHasChanged("Status", "VersionMismatch", "InstallButtonVisible"));
+				Execute.OnUiThread(() => PropertyHasChanged("Status", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));
 			}
 		}
 
@@ -146,6 +146,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get { return VersionMismatch && !_isChecking && !Installer.IsRunning; }
 		}
+
+        public bool VerifyButtonVisible
+        {
+            get { return !VersionMismatch; }
+        } 
 
 		public void InstallLatestVersion()
 		{
