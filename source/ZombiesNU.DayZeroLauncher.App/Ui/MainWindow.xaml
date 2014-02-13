@@ -347,11 +347,13 @@
 
                         <Button Margin="0" Click="LaunchPodagorskButton_Click" Style="{StaticResource MetroButtonStyle}" Height="23" Background="#444444" Foreground="LightGreen" DockPanel.Dock="Right" Cursor="Hand">Launch Podagorsk</Button>
                         <Button Margin="0" Click="LaunchChernarusButton_Click" Style="{StaticResource MetroButtonStyle}" Height="23" Background="#444444" Foreground="LightGreen" DockPanel.Dock="Right" Cursor="Hand">Launch Chernarus</Button>
-                        <Canvas Background="#44444444" DockPanel.Dock="Left" Height="30" Name="Marquee">
+                        <Border BorderBrush="Red" BorderThickness="1"  Margin="-10 5 5 0" ClipToBounds="True" CornerRadius="7" Name="AnnouncementBorder" Height="30">
+                            <Canvas Background="#44444444" DockPanel.Dock="Left" Height="30" Name="Marquee" Margin="-10 0 0 0">
                             <Canvas Margin="0 5" ClipToBounds="True" Name="canMain" Width="{Binding Path=ActualWidth, ElementName=Marquee}" Height="23">
-                                <TextBlock Name="AnnouncementMessage" FontSize="15" Text="" VerticalAlignment="Center" Foreground="Red"></TextBlock>
+                                <TextBlock Name="AnnouncementMessage" FontSize="15" Text="" VerticalAlignment="Center" Foreground="WHITE"></TextBlock>
                             </Canvas>
                         </Canvas>
+                        </Border>
                     </DockPanel>
                 </Grid>
             </Grid>

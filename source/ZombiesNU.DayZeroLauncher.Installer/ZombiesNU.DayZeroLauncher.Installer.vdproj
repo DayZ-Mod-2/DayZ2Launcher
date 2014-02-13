@@ -226,6 +226,11 @@
                     "Name" = "8:Microsoft .NET Framework 4 Client Profile (x86 and x64)"
                     "ProductCode" = "8:.NETFramework,Version=v4.0,Profile=Client"
                     }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Visual.C++.10.0.x86"
+                    {
+                    "Name" = "8:Visual C++ 2010 Runtime Libraries (x86)"
+                    "ProductCode" = "8:Microsoft.Visual.C++.10.0.x86"
+                    }
                     "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
                     {
                     "Name" = "8:Windows Installer 3.1"
@@ -688,15 +693,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:DayZero Launcher"
-        "ProductCode" = "8:{203FDA5F-8DB4-47C8-8D3D-F4A6620DB103}"
-        "PackageCode" = "8:{5B13708F-E278-433A-A578-AA9DB449CAD7}"
+        "ProductCode" = "8:{1052BB6F-6CC4-41A2-A9C8-AEDB7B1CDC32}"
+        "PackageCode" = "8:{D674E0E3-20B1-4994-87B2-45D0071C485C}"
         "UpgradeCode" = "8:{B8963678-B011-446A-9A1F-B2D468FB2A45}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:01.00.003"
+        "ProductVersion" = "8:01.00.006"
         "Manufacturer" = "8:ZOMBIES.NU"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:http://www.zombies.nu"

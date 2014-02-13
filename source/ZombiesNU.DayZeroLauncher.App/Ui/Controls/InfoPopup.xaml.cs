@@ -32,10 +32,28 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
             Message.Content = message;
         }
 
+        public void SetWidth(int width)
+        {
+            ContentGrid.Width = width;
+            InfoWindow.Width = width;
+        }
+
         public void OK_Click(object sender, EventArgs e)
         {
             running = false;
             this.Close();
+        }
+
+        public void SetLink(string url)
+        {
+            LinkBlock.Visibility = Visibility.Visible;
+            URLText.Text = url;
+            URL.NavigateUri = new Uri(url);
+        }
+
+        private void URL_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(URL.NavigateUri.ToString());
         }
     }
 }

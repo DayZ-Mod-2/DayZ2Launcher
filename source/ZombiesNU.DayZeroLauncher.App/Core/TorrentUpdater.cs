@@ -187,7 +187,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
         {
             int port = 54321;
             Torrent torrent = null;
-
             // Create the settings which the engine will use
             // downloadsPath - this is the path where we will save all the files to
             // port - this is the port we listen for connections on
@@ -431,7 +430,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 {
                     if (e.TorrentManager.Torrent.Files.None(t => t.FullPath.ToLower() == f.ToLower()))
                     {
-                        File.Delete(f);
+                        if (!f.Contains("ra_chat_off.pbo"))
+                            File.Delete(f);
                     }
                 }
                 if (lastFile)

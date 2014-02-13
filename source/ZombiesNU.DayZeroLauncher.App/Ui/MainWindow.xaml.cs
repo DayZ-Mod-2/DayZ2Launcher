@@ -46,25 +46,31 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
             {
                 AnnouncementMessage.Text = responseBody;
             }
+            if (!String.IsNullOrEmpty(responseBody))
+                AnnouncementBorder.BorderBrush = System.Windows.Media.Brushes.Red;
+            else
+                AnnouncementBorder.BorderBrush = System.Windows.Media.Brushes.Transparent;
 		}
 
         private void WindowSize_Changed(object sender, SizeChangedEventArgs e)
         {
             DoubleAnimation doubleAnimation = new DoubleAnimation();
-            doubleAnimation.From = -AnnouncementMessage.ActualWidth;
-            doubleAnimation.To = Marquee.ActualWidth;
+            doubleAnimation.From = Marquee.ActualWidth;
+            doubleAnimation.To = -AnnouncementMessage.ActualWidth;
             doubleAnimation.RepeatBehavior = RepeatBehavior.Forever;
-            doubleAnimation.Duration = new Duration(TimeSpan.Parse("0:0:10"));
+            doubleAnimation.Duration = new Duration(TimeSpan.Parse("0:0:20"));
             AnnouncementMessage.BeginAnimation(Canvas.LeftProperty, doubleAnimation);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             DoubleAnimation doubleAnimation = new DoubleAnimation();
-            doubleAnimation.From = -AnnouncementMessage.ActualWidth;
-            doubleAnimation.To = Marquee.ActualWidth;
+            //doubleAnimation.From = -AnnouncementMessage.ActualWidth;
+            doubleAnimation.From = Marquee.ActualWidth;
+            //doubleAnimation.To = Marquee.ActualWidth;
+            doubleAnimation.To = -AnnouncementMessage.ActualWidth;
             doubleAnimation.RepeatBehavior = RepeatBehavior.Forever;
-            doubleAnimation.Duration = new Duration(TimeSpan.Parse("0:0:10"));
+            doubleAnimation.Duration = new Duration(TimeSpan.Parse("0:0:20"));
             AnnouncementMessage.BeginAnimation(Canvas.LeftProperty, doubleAnimation);
         }
 
