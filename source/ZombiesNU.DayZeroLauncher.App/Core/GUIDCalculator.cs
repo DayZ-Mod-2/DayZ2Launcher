@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using Microsoft.Win32;
+using System.Security.AccessControl;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -58,7 +59,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
         {
             try
             {
-                byte[] keyHex = (byte[])Registry.LocalMachine.OpenSubKey("SOFTWARE\\Wow6432Node\\Bohemia Interactive Studio\\ArmA 2 OA").GetValue("key");
+                const string regKeyName = "SOFTWARE\\Bohemia Interactive Studio\\ArmA 2 OA";
+                RegistryKey baseKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine,RegistryView.Registry32);
+                byte[] keyHex = (byte[])baseKey.OpenSubKey(regKeyName, RegistryKeyPermissionCheck.Default,RegistryRights.QueryValues).GetValue("KEY");
                 string text = keyHexToKey(keyHex);
                 string password = string.Concat(new string[]
             {

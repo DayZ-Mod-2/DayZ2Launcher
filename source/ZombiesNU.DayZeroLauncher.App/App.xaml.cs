@@ -23,18 +23,6 @@ namespace zombiesnu.DayZeroLauncher.App
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
-            var cplusplusinstalled = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x64\\");
-            if (cplusplusinstalled == null)
-                cplusplusinstalled = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\VisualStudio\\10.0\\VC\\VCRedist\\x86\\");
-            if ((cplusplusinstalled == null) || (cplusplusinstalled != null && (int)cplusplusinstalled.GetValue("Installed") != 1)) // If not installed or not existing
-            {
-                InfoPopup infoPopup = new InfoPopup();
-                infoPopup.Message.Content = "You need C++ 2010 installed to play DayZero. Download here:";
-                infoPopup.Headline.Content = "C++ 2010 Redistributable not installed.";
-                infoPopup.SetLink("http://www.microsoft.com/en-us/download/details.aspx?id=8328");
-                infoPopup.SetWidth(500);
-                infoPopup.Show();
-            }
 			AppDomain.CurrentDomain.UnhandledException += UncaughtThreadException;
 			DispatcherUnhandledException += UncaughtUiThreadException;
 
