@@ -85,9 +85,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                             popup.SetMessage(       "According to Steam,\n" + 
                                                     gameName + " is not installed.\n" +
                                                     "Please install it from the Library tab.\n" +
-                                                    "If it does not appear in your Library,\n" +
-                                                    "you can acquire it by going here:");
-                            popup.SetLink("http://store.steampowered.com/app/" + appId.ToString() + "/");
+                                                    "Or by clicking on the following link:");
+                            popup.SetLink("steam://install/" + appId.ToString() + "/","Install " + gameName);
                             popup.Show();
                             return;
                         }
@@ -96,7 +95,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 }
                 if (pathInfo == null)
                 {
-                    MessageBox.Show("Steam launch impossible '" + gameName + "' isn't located inside a SteamLibrary folder.",
+                    MessageBox.Show("Steam launch impossible, '" + gameName + "' isn't located inside a SteamLibrary folder.",
                         "Game launch error",MessageBoxButton.OK,MessageBoxImage.Exclamation);
                     return;
                 }

@@ -44,10 +44,14 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
             this.Close();
         }
 
-        public void SetLink(string url)
+        public void SetLink(string url, string text=null)
         {
             LinkBlock.Visibility = Visibility.Visible;
-            URLText.Text = url;
+            if (text == null)
+                URLText.Text = url;
+            else
+                URLText.Text = text;
+
             URL.NavigateUri = new Uri(url);
         }
 
