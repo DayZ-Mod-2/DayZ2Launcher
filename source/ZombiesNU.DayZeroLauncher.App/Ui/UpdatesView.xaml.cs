@@ -60,7 +60,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
             {
                 InfoPopup popup = new InfoPopup();
                 popup.Headline.Content = "An Error occured.";
-                popup.Message.Content = "Could not contact Zombies.nu.\nPlease try again.";
+                popup.SetMessage("Could not contact Zombies.nu.\nPlease try again.");
                 popup.Owner = popup.Owner = MainWindow.GetWindow(this.Parent);
                 popup.Title = "Error";
                 popup.Show();

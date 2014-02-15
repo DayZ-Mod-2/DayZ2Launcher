@@ -29,7 +29,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
         public void SetMessage(string message)
         {
-            Message.Content = message;
+            Message.Text = message;
         }
 
         public void SetWidth(int width)

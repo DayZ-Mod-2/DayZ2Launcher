@@ -9,7 +9,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	{
 		public static string BuildArma2OAExePath(string arma2OAPath)
 		{
-			return Path.Combine(arma2OAPath, @"arma2oa.exe");
+			return Path.Combine(arma2OAPath, "arma2oa.exe");
 		}
 
 		public static Version ExtractArma2OABetaVersion(string arma2OAExePath)

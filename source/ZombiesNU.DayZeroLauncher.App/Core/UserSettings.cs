@@ -214,6 +214,25 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+        private static string _localDataPath;
+        private static string LocalDataPath
+        {
+            get
+            {
+                if (_localDataPath == null)
+                {
+                    var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                    var zeroAppDataDir = new DirectoryInfo(Path.Combine(appDataFolder, "DayZeroLauncher"));
+                    if (!zeroAppDataDir.Exists)
+                        zeroAppDataDir.Create();
+
+                    _localDataPath = zeroAppDataDir.FullName;
+                }
+
+                return _localDataPath;
+            }
+        }
+
 		private static string _settingsPath;
 		private static string SettingsPath
 		{
@@ -221,12 +240,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				if(_settingsPath == null)
 				{
-
-					var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-					var DayZeroLauncherAppDataDirectory = new DirectoryInfo(Path.Combine(appDataFolder, "DayZeroLauncher"));
-					if (!DayZeroLauncherAppDataDirectory.Exists)
-						DayZeroLauncherAppDataDirectory.Create();
-					var newFileLocation = Path.Combine(DayZeroLauncherAppDataDirectory.FullName, "settings.xml");
+                    var newFileLocation = Path.Combine(LocalDataPath, "settings.xml");
 
 					//Migrate old settings location
 					try
@@ -248,6 +262,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return _settingsPath;
 			}
 		}
+
+        public static string ContentPath
+        {
+            get
+            {
+                var contentPathLocation = Path.Combine(LocalDataPath, "content");
+                var dirInfo = new DirectoryInfo(contentPathLocation);
+                if (!dirInfo.Exists)
+                    dirInfo.Create();
+
+                return dirInfo.FullName;
+            }
+        }
 
 		private static UserSettings LoadFromXml(XDocument xDocument)
 		{

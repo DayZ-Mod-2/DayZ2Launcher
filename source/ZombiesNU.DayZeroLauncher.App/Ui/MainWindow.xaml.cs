@@ -159,12 +159,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
         private void LaunchPodagorskButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLauncher.LaunchGame(Mod.DayZeroPodagorsk);
+            GameLauncher.LaunchGame(this,Mod.DayZeroPodagorsk);
         }
 
         private void LaunchChernarusButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLauncher.LaunchGame(Mod.DayZeroChernarus);
+            GameLauncher.LaunchGame(this,Mod.DayZeroChernarus);
         }
 
         private void BMRFImage_Click(object sender, RoutedEventArgs e)

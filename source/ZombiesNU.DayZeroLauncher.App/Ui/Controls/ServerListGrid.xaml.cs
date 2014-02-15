@@ -40,7 +40,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
             TorrentState state = TorrentUpdater.CurrentState();
             if (state == TorrentState.Stopped)
             {
-                GameLauncher.JoinServer(server);
+                GameLauncher.JoinServer(MainWindow.GetWindow(this.Parent),server);
             }
             else
             {
@@ -61,7 +61,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
         void RowKeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Return)
-                GameLauncher.JoinServer((Server)((Control)sender).DataContext);
+                GameLauncher.JoinServer(MainWindow.GetWindow(this.Parent),(Server)((Control)sender).DataContext);
         }
 
 		private void RowLeftButtonDown(object sender, MouseButtonEventArgs e)
