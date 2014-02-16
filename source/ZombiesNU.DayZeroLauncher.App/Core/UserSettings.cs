@@ -265,15 +265,53 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+		private static string _notesPath;
+		private static string NotesPath
+		{
+			get
+			{
+				if (_notesPath == null)
+				{ 
+					const string notesFolderName = "notes";
+					var newNotesLocation = Path.Combine(RoamingDataPath, notesFolderName);
+					if (!Directory.Exists(newNotesLocation))
+					{
+						var newFolder = Directory.CreateDirectory(newNotesLocation);
+						//migrate old notes
+						try
+						{
+							var oldFolder = new DirectoryInfo(LocalDataPath);
+							if (oldFolder.Exists)
+							{
+								FileInfo[] noteFiles = oldFolder.GetFiles("Notes_*.txt");
+								foreach (var noteFile in noteFiles)
+								{
+									try
+									{
+										var newName = Path.Combine(newFolder.FullName, noteFile.Name.Replace("Notes_", ""));
+										File.Move(noteFile.FullName, newName);
+									}
+									catch (Exception) {}
+								}
+							}
+						}
+						catch (Exception) {}
+					}
+					_notesPath = newNotesLocation;
+				}
+				return _notesPath;
+			}
+		}
+
 		private static string _settingsPath;
 		private static string SettingsPath
 		{
 			get
 			{
-				if(_settingsPath == null)
+				if (_settingsPath == null)
 				{
 					const string settingsFileName = "settings.xml";
-					string newFileLocation = Path.Combine(RoamingDataPath, settingsFileName);
+					var newFileLocation = Path.Combine(RoamingDataPath, settingsFileName);
 
 					//Migrate old settings location
 					try
@@ -357,7 +395,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static string GetNoteFileName(Server server)
 		{
-			return Path.Combine(new FileInfo(SettingsPath).Directory.FullName, string.Format("Notes_{0}_{1}.txt", server.IpAddress.Replace(".", "_"), server.Port));
+			return Path.Combine(NotesPath, string.Format("{0}_{1}.txt", server.IpAddress.Replace(".", "_"), server.Port));
 		}
 
 		public bool HasNotes(Server server)
