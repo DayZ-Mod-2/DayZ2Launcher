@@ -16,53 +16,87 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		private string _status;
 		private bool _isRunning;
 
+		private void BeginDownload(WebClient wc, Uri downloadUrl)
+		{
+			wc.DownloadProgressChanged += (sender, args) =>
+			{
+				Status = string.Format("Downloading... {0}%", args.ProgressPercentage);
+			};
+			wc.DownloadFileCompleted += (sender, args) =>
+			{
+				if (args.Error != null)
+				{
+					Status = "Error downloading";
+					IsRunning = false;
+					return;
+				}
+				ExtractFile();
+			};
+
+			wc.DownloadFileAsync(downloadUrl,_downloadedFileLocation);
+		}
+
 		public void DownloadAndInstall(string latestDownloadUrl)
 		{
 			_latestDownloadUrl = latestDownloadUrl;
 
-			if(string.IsNullOrEmpty(CalculatedGameSettings.Current.Arma2OAPath)
-			   || string.IsNullOrEmpty(_latestDownloadUrl))
-			{
+			if(string.IsNullOrEmpty(_latestDownloadUrl))
 				return;
-			}
+
 			var latestArma2OABetaFile = Path.GetFileName(_latestDownloadUrl);
 			if(string.IsNullOrEmpty(latestArma2OABetaFile))
-			{
 				return;
-			}
 
 			IsRunning = true;
-			Status = "Downloading... 0%";
+			Status = "Getting file info...";
 
-			_downloadedFileLocation = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, latestArma2OABetaFile);;
 			var extension = Path.GetExtension(latestArma2OABetaFile);
-			_extractedLocation = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, latestArma2OABetaFile.Replace(extension, "") + ".unpacked");
-
-//			if(File.Exists(_downloadedFileLocation))
-//			{
-//				Status = "Downloading... 100%";
-//				ExtractFile();
-//				IsRunning = false;
-//				return;
-//			}
+			_downloadedFileLocation = Path.Combine(UserSettings.PatchesPath,latestArma2OABetaFile);;
+			_extractedLocation = Path.Combine(UserSettings.PatchesPath,latestArma2OABetaFile.Replace(extension, ""));
 
 			using(var webClient = new WebClient())
 			{
-				webClient.DownloadProgressChanged += (sender, args) =>
-				                                     	{
-				                                     		Status = string.Format("Downloading... {0}%", args.ProgressPercentage);
-				                                     	};
-				webClient.DownloadFileCompleted += (sender, args) =>
-				                                   	{
-				                                   		if(args.Error != null)
-				                                   		{
-				                                   			Status = "Error downloading";
-				                                   			IsRunning = false;
-				                                   			return;
-				                                   		}
-				                                   		ExtractFile();
-				                                   	};
-				webClient.DownloadFileAsync(new Uri(_latestDownloadUrl), _downloadedFileLocation);
+				var uri = new Uri(latestDownloadUrl);
+				if (File.Exists(_downloadedFileLocation))
+				{
+					var fi = new FileInfo(_downloadedFileLocation);
+
+					webClient.OpenReadCompleted += (sender, args) =>
+					{
+						WebClient wc = (WebClient)sender;
+						Stream webStream = args.Result;
+						if (webStream != null)
+						{
+							webStream.Close(); webStream.Dispose();
+							webStream = null;
+						}
+
+						if (args.Cancelled || args.Error != null)
+						{
+							Status = "GET cancelled";
+							if (args.Error != null)
+								Status = "Error: " + args.Error.ToString();
+
+							IsRunning = false;
+							return;
+						}
+
+						long newFileLen = Convert.ToInt64(wc.ResponseHeaders["Content-Length"]);
+						if (newFileLen == fi.Length)
+						{
+							Status = "Using local file";
+							ExtractFile();
+						}
+						else
+						{
+							wc.CancelAsync();
+							BeginDownload(wc, uri);
+						}
+					};
+					webClient.OpenReadAsync(uri);
+				}
+				else
+					BeginDownload(webClient, uri);
 			}
 		}
 
@@ -133,21 +167,15 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			           			Status = "Install complete";
 			           		}
-			           		catch(Exception ex)
+			           		catch (Exception)
 			           		{
-			           			Status = "Coult not complete";
+			           			Status = "Could not complete";
 			           			IsRunning = false;
 			           		}
 
-			           		try
-			           		{
-			           			File.Delete(_downloadedFileLocation);
-                                Directory.Delete(_extractedLocation, true);
-			           		}
-			           		catch(Exception ex)
-			           		{
-								
-			           		}
+			           		try { Directory.Delete(_extractedLocation, true); }
+			           		catch (Exception) {}
+
 			           		IsRunning = false;
 			           	}).Start();
 

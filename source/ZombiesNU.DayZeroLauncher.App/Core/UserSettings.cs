@@ -276,6 +276,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             }
         }
 
+		public static string PatchesPath
+		{
+			get
+			{
+				var patchesPathLocation = Path.Combine(LocalDataPath, "patches");
+				var dirInfo = new DirectoryInfo(patchesPathLocation);
+				if (!dirInfo.Exists)
+					dirInfo.Create();
+
+				return dirInfo.FullName;
+			}
+		}
+
 		private static UserSettings LoadFromXml(XDocument xDocument)
 		{
 			var serializer = new DataContractSerializer(typeof(UserSettings));
