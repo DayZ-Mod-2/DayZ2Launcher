@@ -154,10 +154,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					}
 				}
 			}
-			catch(Exception)
-			{
-				
-			}
+			catch(Exception) {}
 		}
 
 		private static UserSettings Load()
@@ -170,13 +167,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					{
 						var rawXml = reader.ReadToEnd();
 						if(string.IsNullOrWhiteSpace(rawXml))
-						{
 							return new UserSettings();
-						}
 						else
-						{
 							return LoadFromXml(XDocument.Parse(rawXml));
-						}
 					}
 				}
 			}
@@ -200,14 +193,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					if (_current == null)
 					{
-						try
-						{
-							_current = Load();
-						}
-						catch (Exception ex)
-						{
-							_current = new UserSettings();
-						}
+						try { _current = Load(); }
+						catch (Exception) { _current = new UserSettings(); }
 					}
 				}
 				return _current;
@@ -233,48 +220,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             }
         }
 
-		private static string _settingsPath;
-		private static string SettingsPath
+		public static string ContentPath
 		{
 			get
 			{
-				if(_settingsPath == null)
-				{
-                    var newFileLocation = Path.Combine(LocalDataPath, "settings.xml");
+				var contentPathLocation = Path.Combine(LocalDataPath, "content");
+				var dirInfo = new DirectoryInfo(contentPathLocation);
+				if (!dirInfo.Exists)
+					dirInfo.Create();
 
-					//Migrate old settings location
-					try
-					{
-						var oldAppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-						var oldFileLocation = Path.Combine(oldAppDataFolder, "DayZeroLauncher", "settings.xml");
-						;
-						if (File.Exists(oldFileLocation) && !File.Exists(newFileLocation))
-						{
-							File.Move(oldFileLocation, newFileLocation);
-							Directory.Delete(new FileInfo(oldFileLocation).Directory.FullName);
-						}
-					}
-					catch (Exception ex)
-					{
-					}
-					_settingsPath = newFileLocation;
-				}
-				return _settingsPath;
+				return dirInfo.FullName;
 			}
 		}
-
-        public static string ContentPath
-        {
-            get
-            {
-                var contentPathLocation = Path.Combine(LocalDataPath, "content");
-                var dirInfo = new DirectoryInfo(contentPathLocation);
-                if (!dirInfo.Exists)
-                    dirInfo.Create();
-
-                return dirInfo.FullName;
-            }
-        }
 
 		public static string PatchesPath
 		{
@@ -286,6 +243,49 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					dirInfo.Create();
 
 				return dirInfo.FullName;
+			}
+		}
+
+		private static string _roamingDataPath;
+		private static string RoamingDataPath
+		{
+			get
+			{
+				if (_roamingDataPath == null)
+				{
+					var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+					var zeroAppDataDir = new DirectoryInfo(Path.Combine(appDataFolder, "DayZeroLauncher"));
+					if (!zeroAppDataDir.Exists)
+						zeroAppDataDir.Create();
+
+					_roamingDataPath = zeroAppDataDir.FullName;
+				}
+
+				return _roamingDataPath;
+			}
+		}
+
+		private static string _settingsPath;
+		private static string SettingsPath
+		{
+			get
+			{
+				if(_settingsPath == null)
+				{
+					const string settingsFileName = "settings.xml";
+					string newFileLocation = Path.Combine(RoamingDataPath, settingsFileName);
+
+					//Migrate old settings location
+					try
+					{
+						string oldFileLocation = Path.Combine(LocalDataPath, settingsFileName);
+						if (File.Exists(oldFileLocation) && !File.Exists(newFileLocation))
+							File.Move(oldFileLocation, newFileLocation);
+					}
+					catch (Exception) {}
+					_settingsPath = newFileLocation;
+				}
+				return _settingsPath;
 			}
 		}
 

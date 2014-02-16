@@ -169,12 +169,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
         private void BMRFImage_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("http://www.bmrf.me");
+            Process.Start("http://bmrf.me");
         }
 
         private void ZombiesNUImage_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("http://www.zombies.nu");
+            Process.Start("http://zombies.nu");
         }
 
         private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)
