@@ -86,6 +86,7 @@ namespace zombiesnu.DayZeroLauncher.App
 		{
 			if(_isUncaughtUiThreadException)
 				return;
+
 			var exception = e.ExceptionObject as Exception;
 			_logger.Fatal(exception);
 		}

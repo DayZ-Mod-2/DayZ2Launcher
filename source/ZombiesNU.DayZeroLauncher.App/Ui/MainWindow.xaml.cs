@@ -42,10 +42,9 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
             this.SizeChanged += new SizeChangedEventHandler(WindowSize_Changed);
 
             string responseBody = "";
-            if (GameUpdater.HttpGet("http://www.zombies.nu/motd.txt", out responseBody))
-            {
+            if (HttpGetter.HttpGet("https://update.zombies.nu/motd.txt", out responseBody))
                 AnnouncementMessage.Text = responseBody;
-            }
+
             if (!String.IsNullOrEmpty(responseBody))
                 AnnouncementBorder.BorderBrush = System.Windows.Media.Brushes.Red;
             else
@@ -157,14 +156,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			ViewModel.ShowUpdates();
 		}
 
-        private void LaunchPodagorskButton_Click(object sender, RoutedEventArgs e)
+        private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
         {
-            GameLauncher.LaunchGame(this,Mod.DayZeroPodagorsk);
-        }
+			var buttonObj = (FrameworkElement)sender;
+			var buttonContext = (GameLauncher.ButtonInfo)buttonObj.DataContext;
 
-        private void LaunchChernarusButton_Click(object sender, RoutedEventArgs e)
-        {
-            GameLauncher.LaunchGame(this,Mod.DayZeroChernarus);
+			ViewModel.Launcher.LaunchGame(this, buttonContext.Argument);
         }
 
         private void BMRFImage_Click(object sender, RoutedEventArgs e)

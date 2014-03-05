@@ -31,7 +31,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Friends
 			if(recentServer == null)
 				return;
 
-			GameLauncher.JoinServer(MainWindow.GetWindow(this.Parent),recentServer.Server);
+			//GameLauncher.JoinServer(MainWindow.GetWindow(this.Parent),recentServer.Server);
 		}
 	}
 }

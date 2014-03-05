@@ -12,10 +12,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 	public class MainWindowViewModel : ViewModelBase, 
 		IHandle<RepublishFriendsRequest>
 	{
-		private Core.ServerList _serverList;
-		private ViewModelBase _currentTab;
-		private ObservableCollection<ViewModelBase> _tabs;
-
 		public MainWindowViewModel()
 		{
 			Tabs = new ObservableCollection<ViewModelBase>(new ViewModelBase[]
@@ -25,19 +21,17 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			CurrentTab = Tabs.First();
 
 			ServerList = new Core.ServerList();
-
 			ServerList.GetAndUpdateAll();
 
+			Launcher = new GameLauncher();
+
 			SettingsViewModel = new	SettingsViewModel();
-			UpdatesViewModel = new UpdatesViewModel();
+			UpdatesViewModel = new UpdatesViewModel(Launcher);
+
+			ServerListViewModel.Launcher = Launcher;
 		}
 
-		public DayZeroLauncherUpdater Updater { get; private set; }
-		public ServerListViewModel ServerListViewModel { get; set; }
-		public SettingsViewModel SettingsViewModel { get; set; }
-		public UpdatesViewModel UpdatesViewModel { get; set; }
-
-
+		private Core.ServerList _serverList;
 		public Core.ServerList ServerList
 		{
 			get { return _serverList; }
@@ -48,12 +42,23 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-		public bool IsServerListSelected
+		private GameLauncher _launcher = null;
+		public GameLauncher Launcher
 		{
-			get { return CurrentTab == ServerListViewModel; }
+			get { return _launcher; }
+			set
+			{
+				_launcher = value;
+				PropertyHasChanged("Launcher");
+			}
 		}
 
-	
+		public ServerListViewModel ServerListViewModel { get; set; }
+		public SettingsViewModel SettingsViewModel { get; set; }
+		public UpdatesViewModel UpdatesViewModel { get; set; }
+
+
+		private ViewModelBase _currentTab;	
 		public ViewModelBase CurrentTab
 		{
 			get { return _currentTab; }
@@ -67,7 +72,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				PropertyHasChanged("CurrentTab", "IsServerListSelected");
 			}
 		}
+		public bool IsServerListSelected
+		{
+			get { return CurrentTab == ServerListViewModel; }
+		}
 
+		private ObservableCollection<ViewModelBase> _tabs;
 		public ObservableCollection<ViewModelBase> Tabs
 		{
 			get { return _tabs; }

@@ -12,6 +12,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
 			InitializeComponent();
 		}
 
+		public ServerListViewModel ViewModel() { return (ServerListViewModel)DataContext; }
+
         private void ServerListGrid_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
 

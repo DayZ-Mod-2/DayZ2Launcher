@@ -62,10 +62,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
                     Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
                 else
                     Settings.GameOptions.Arma2DirectoryOverride = null;
+
                 PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
             }
         }
-
 
 		public string Arma2Directory
 		{
@@ -80,6 +80,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			set
 			{
 				Settings.GameOptions.Arma2DirectoryOverride = value;
+
 				PropertyHasChanged("Arma2Directory");
 			}
 		}
@@ -97,6 +98,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			set
 			{
 				Settings.GameOptions.Arma2OADirectoryOverride = value;
+
 				PropertyHasChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
 			}
 		}
@@ -110,39 +112,67 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 					Settings.GameOptions.Arma2OADirectoryOverride = LocalMachineInfo.Current.Arma2OAPath ?? "Replace with full Arma2 OA Path";
 				else
 					Settings.GameOptions.Arma2OADirectoryOverride = null;
+
 				PropertyHasChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
 			}
 		}
 
-        public string DayZDirectory
+        public string AddonsDirectory
         {
             get
             {
-                if (!string.IsNullOrWhiteSpace(Settings.GameOptions.DayZDirectoryOverride))
+                if (!string.IsNullOrWhiteSpace(Settings.GameOptions.AddonsDirectoryOverride))
                 {
-                    return Settings.GameOptions.DayZDirectoryOverride;
+                    return Settings.GameOptions.AddonsDirectoryOverride;
                 }
-                return LocalMachineInfo.Current.DayZPath;
+                return LocalMachineInfo.Current.Arma2OAPath;
             }
             set
             {
-                Settings.GameOptions.DayZDirectoryOverride = value;
-                PropertyHasChanged("DayZDirectory", "DayZDirectoryOverride");
+                Settings.GameOptions.AddonsDirectoryOverride = value;
+				PropertyHasChanged("AddonsDirectory", "AddonsDirectoryOverride");
             }
         }
 
-        public bool DayZDirectoryOverride
+        public bool AddonsDirectoryOverride
         {
-            get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.DayZDirectoryOverride); }
+            get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.AddonsDirectoryOverride); }
             set
             {
                 if (value)
-                    Settings.GameOptions.DayZDirectoryOverride = LocalMachineInfo.Current.DayZPath ?? "Replace with full DayZ Path";
+					Settings.GameOptions.AddonsDirectoryOverride = Settings.GameOptions.AddonsDirectoryOverride ?? Arma2OADirectory;
                 else
-                    Settings.GameOptions.DayZDirectoryOverride = null;
-                PropertyHasChanged("DayZDirectory", "DayZDirectoryOverride");
+                    Settings.GameOptions.AddonsDirectoryOverride = null;
+
+				PropertyHasChanged("AddonsDirectory", "AddonsDirectoryOverride");
             }
         }
+
+		public string DisplayDirectoryPrompt(System.Windows.Window parentWindow, bool allowNewFolder, string previousPath, string description)
+		{
+			var folderDlg = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+
+			if (allowNewFolder)
+				folderDlg.ShowNewFolderButton = true;
+			else
+				folderDlg.ShowNewFolderButton = false;
+
+			folderDlg.RootFolder = System.Environment.SpecialFolder.ProgramFilesX86;
+			if (previousPath != null)
+				folderDlg.SelectedPath = previousPath;
+
+			if (description != null)
+			{
+				folderDlg.Description = description;
+				folderDlg.UseDescriptionForTitle = true;
+			}
+
+			bool dialogAccepted = folderDlg.ShowDialog(parentWindow) ?? false;
+			if (!dialogAccepted)
+				return null;
+
+			return folderDlg.SelectedPath;
+		}
 
 		public void Done()
 		{

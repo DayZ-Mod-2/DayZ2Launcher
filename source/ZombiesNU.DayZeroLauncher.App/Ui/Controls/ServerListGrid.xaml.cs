@@ -9,6 +9,7 @@ using System.Windows.Input;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
 using MonoTorrent.Common;
+using zombiesnu.DayZeroLauncher.App.Ui.ServerList;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 {
@@ -25,6 +26,24 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			App.Events.Subscribe(this);
 		}
 
+		protected void JoinServer(Server server)
+		{
+			ServerListView listView = null;
+			FrameworkElement parent = (FrameworkElement)this.Parent;
+			do
+			{
+				if (parent is ServerListView)
+				{
+					listView = (ServerListView)parent;
+					break;
+				}
+				else
+					parent = (FrameworkElement)parent.Parent;
+			} while (parent != null);
+
+			listView.ViewModel().Launcher.JoinServer(MainWindow.GetWindow(this.Parent), server);
+		}
+
 		private void RowDoubleClick(object sender, MouseButtonEventArgs e)
 		{
 			var control = e.OriginalSource as FrameworkElement;
@@ -37,19 +56,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 				}
 			}
 			var server = (Server) ((Control) sender).DataContext;
-            TorrentState state = TorrentUpdater.CurrentState();
-            if (state == TorrentState.Stopped)
-            {
-                GameLauncher.JoinServer(MainWindow.GetWindow(this.Parent),server);
-            }
-            else
-            {
-                FileVerifierPopup popup = new FileVerifierPopup();
-                popup.Owner = MainWindow.GetWindow(this.Parent);
-                popup.Headline.Content = "Please Wait";
-                popup.Title = "Please Wait";
-                popup.Show();
-            }
+           JoinServer(server);
 		}
 
         void RowKeyDown(object sender, KeyEventArgs e)
@@ -60,8 +67,11 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
         void RowKeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Return)
-                GameLauncher.JoinServer(MainWindow.GetWindow(this.Parent),(Server)((Control)sender).DataContext);
+			if (e.Key == Key.Return)
+			{
+				var server = (Server)((Control)sender).DataContext;
+				JoinServer(server);
+			}
         }
 
 		private void RowLeftButtonDown(object sender, MouseButtonEventArgs e)

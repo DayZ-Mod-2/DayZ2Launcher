@@ -20,8 +20,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
     /// </summary>
     public partial class InfoPopup : Window
     {
-        bool running = true;
-        bool doneRunning = false;
         public InfoPopup()
         {
             InitializeComponent();
@@ -40,7 +38,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
         public void OK_Click(object sender, EventArgs e)
         {
-            running = false;
             this.Close();
         }
 

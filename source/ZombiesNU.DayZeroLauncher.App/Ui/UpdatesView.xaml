@@ -6,26 +6,23 @@
              xmlns:Core="clr-namespace:zombiesnu.DayZeroLauncher.App.Core"
              xmlns:Controls="clr-namespace:zombiesnu.DayZeroLauncher.App.Ui.Controls" mc:Ignorable="d" 
 			 Background="#333333"
-             d:DesignHeight="500" d:DesignWidth="250">
+             d:DesignHeight="600" d:DesignWidth="250">
     <Grid>
-		<StackPanel Margin="18 5 18 0">
-			<TextBlock Text="versions"
+        <StackPanel Margin="18 5 18 0">
+            <TextBlock Text="versions"
 						   Foreground="#5A97F2"
 							Margin="0 0 0 0"
 						   FontSize="24"/>
 
-		
-			<Grid Margin="0 5 0 0">
 
-				
-				
-				<StackPanel >
+            <Grid Margin="0 5 0 0">
+                <StackPanel >
                     <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="DayZero Launcher"
+                        <TextBlock Text="DayZero Launcher"
 					   FontWeight="Bold"
 					   Margin="0 0 0 3"
 					   Foreground="#FFFFFF"/>
-                   
+
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="{Binding DayZeroLauncherUpdater.Status}"
@@ -60,140 +57,144 @@
 								   FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
-			</Grid>
-
-
-
-			<Grid Margin="0 0 0 0">
+            </Grid>
+            <StackPanel x:Name="GameErrorPanel" Orientation="Vertical" Visibility="{Binding LocatorError, FallbackValue=Collapsed, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}">
+                <TextBlock x:Name="GameErrorCaption" Text="{Binding LocatorError.Caption}"
+					Margin="0 0 0 3"
+					Foreground="red" FontSize="18" TextAlignment="Left" TextWrapping="Wrap" />
+                <TextBlock x:Name="GameErrorDescription" Text="{Binding LocatorError.Message}"
+					Margin="0 0 0 3"
+					Foreground="white" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel x:Name="GameVersions" Visibility="{Binding LocatorError, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, ConverterParameter=true}">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="ARMA 2"
-					   FontWeight="Bold"
-					   Margin="0 0 0 3"
-					   Foreground="#FFFFFF"/>
-                        
+                			FontWeight="Bold"
+                			Margin="0 0 0 3"
+                			Foreground="#FFFFFF"/>
+
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="{Binding Arma2Updater.Status}"
-						   Foreground="{Binding Arma2Updater.Status, Converter={StaticResource UpdateStatusToForegroundConverter}}"
-						   Margin="0 0 0 0"/>
+                			Foreground="{Binding Arma2Updater.Status, Converter={StaticResource UpdateStatusToForegroundConverter}}"
+                			Margin="0 0 0 0"/>
                     </StackPanel>
 
                     <StackPanel Margin="0 8 0 0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Your Revision: "
-								   Foreground="#DDD"/>
+                				Foreground="#DDD"/>
                             <TextBlock Text="{Binding CalculatedGameSettings.Arma2OABetaVersion.Revision}"
-								   Foreground="#FFFFFF"/>
+                				Foreground="#FFFFFF"/>
                         </StackPanel>
                         <StackPanel Margin="0 9 0 0"
-								Orientation="Horizontal">
+                			Orientation="Horizontal">
                             <TextBlock Text="Latest Revision: "
-									   Foreground="#DDD"/>
+                				Foreground="#DDD"/>
                             <TextBlock Text="{Binding Arma2Updater.LatestVersion}"
-								   Foreground="#FFFFFF"/>
+                				Foreground="#FFFFFF"/>
 
                         </StackPanel>
                         <Button Content="Install latest revision" 
-								Background="#444444"
-								Foreground="LightGreen"
-								HorizontalAlignment="Left"
-								Margin="0 8 0 0"
-								Style="{StaticResource MetroButtonStyle}"
-								Visibility="{Binding Arma2Updater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+                			Background="#444444"
+                			Foreground="LightGreen"
+                			HorizontalAlignment="Left"
+                			Margin="0 8 0 0"
+                			Style="{StaticResource MetroButtonStyle}"
+                			Visibility="{Binding Arma2Updater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 										
-								Click="DownloadArma2_Click"/>
+                			Click="DownloadArma2_Click"/>
 
-                        <TextBlock Text="{Binding Arma2Updater.Installer.Status}"
-								   Foreground="#FFFFFF"
-								   Margin="0 4 0 0"
-								   FontWeight="Bold"/>
+                        <TextBlock Text="{Binding Arma2Updater.Downloader.Status}"
+                			Foreground="#FFFFFF"
+                			Margin="0 4 0 0"
+                			FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
-			</Grid>
-            <Grid>
-                <StackPanel Grid.Column="1">
+
+                <StackPanel>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="DayZero"
-					   FontWeight="Bold"
-					   Margin="0 0 0 3"
-					   Foreground="#FFFFFF"/>
-                            
+            					FontWeight="Bold"
+            					Margin="0 0 0 3"
+            					Foreground="#FFFFFF"/>
+
                         </StackPanel>
                         <StackPanel>
                             <TextBlock Text="{Binding DayZUpdater.Status}"
-						   Foreground="{Binding DayZUpdater.Status, Converter={StaticResource UpdateStatusToForegroundConverter}}"
-						   Margin="0 0 0 0"/>
+            					Foreground="{Binding DayZUpdater.Status, Converter={StaticResource UpdateStatusToForegroundConverter}}"
+            					Margin="0 0 0 0"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal"
-								Margin="0 8 0 0">
+            				Margin="0 8 0 0">
                             <TextBlock Text="Your Version: "
-								   Foreground="#DDD"/>
-                            <TextBlock Text="{Binding CalculatedGameSettings.Current.DayZVersion}"
-								   Foreground="#FFFFFF"/>
+            					Foreground="#DDD"/>
+                            <TextBlock Text="{Binding CalculatedGameSettings.Current.ModContentVersion}"
+            					Foreground="#FFFFFF"/>
                         </StackPanel>
 
 
                         <StackPanel Margin="0 9 0 0"
-								Orientation="Horizontal">
+            				Orientation="Horizontal">
                             <TextBlock Text="Latest Version: "
-									   Foreground="#DDD"/>
+            					Foreground="#DDD"/>
                             <TextBlock Text="{Binding DayZUpdater.LatestVersion}"
-								   Foreground="#FFFFFF"/>
+            					Foreground="#FFFFFF"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Button Content="Install latest version" 
-								Background="#444444"
-								Foreground="LightGreen"
-								HorizontalAlignment="Left"
-								Margin="0 8"
-								Style="{StaticResource MetroButtonStyle}"
-								Visibility="{Binding DayZUpdater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-								Click="DownloadDayZ_Click"/>
+            					Background="#444444"
+            					Foreground="LightGreen"
+            					HorizontalAlignment="Left"
+            					Margin="0 8"
+            					Style="{StaticResource MetroButtonStyle}"
+            					Visibility="{Binding DayZUpdater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+            					Click="DownloadDayZ_Click"/>
 
-                        <Button Content="Verify files" 
-								Background="#444444"
-								Foreground="LightGreen"
-								HorizontalAlignment="Left"
-                                Visibility="{Binding DayZUpdater.VerifyButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-								Margin="0 8"
-								Style="{StaticResource MetroButtonStyle}"
-								Click="Verify_Click"/>
+                            <Button Content="Full system check" 
+            					Background="#444444"
+            					Foreground="LightGreen"
+            					HorizontalAlignment="Left"
+            					Visibility="{Binding DayZUpdater.VerifyButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+            					Margin="0 8"
+            					Style="{StaticResource MetroButtonStyle}"
+            					Click="Verify_Click"/>
 
                         </StackPanel>
-                        <TextBlock Text="{Binding DayZUpdater.Installer.Status}"
-								   Foreground="#FFFFFF"
-								   Margin="0 4 0 0"
-								   FontWeight="Bold"/>
-
+                        <TextBlock Text="{Binding DayZUpdater.Downloader.Status}"
+            				Foreground="#FFFFFF"
+            				Margin="0 4 0 0"
+            				FontWeight="Bold"
+                            Height="Auto"/>
                     </StackPanel>
                 </StackPanel>
-            </Grid>
 
-			<Border Margin="0 0 0 0"
-					BorderBrush="#555555"
-					BorderThickness="0 1 0 0">
-				<StackPanel Orientation="Horizontal">
-					<Button Content="Check Now"
-							Margin="0 10 0 0"
-						HorizontalAlignment="Left"
-							Background="#444444"
-							Foreground="#EEEEEE"
-							Padding="8 2"
-							Style="{StaticResource MetroButtonStyle}"
-							Click="CheckNow_Click"/>
-					<Button Content="Done"
-							Margin="14 10 0 0"
-						HorizontalAlignment="Left"
-							Background="#444444"
-							Foreground="#EEEEEE"
-							Style="{StaticResource MetroButtonStyle}"
-							Padding="8 2"
-							Click="Done_Click"/>
-				</StackPanel>
-			</Border>
-		</StackPanel>
+            </StackPanel>
+            <Border Margin="0,15,0,0"
+            	BorderBrush="#555555"
+            	BorderThickness="0 1 0 0" VerticalAlignment="Top">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Check Now"
+            			Margin="0 10 0 0"
+            			HorizontalAlignment="Left"
+            			Background="#444444"
+            			Foreground="#EEEEEE"
+            			Padding="8 2"
+            			Style="{StaticResource MetroButtonStyle}"
+            			Click="CheckNow_Click"/>
+                    <Button Content="Done"
+            			Margin="14 10 0 0"
+            			HorizontalAlignment="Left"
+            			Background="#444444"
+            			Foreground="#EEEEEE"
+            			Style="{StaticResource MetroButtonStyle}"
+            			Padding="8 2"
+            			Click="Done_Click"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
 
-	</Grid>
+    </Grid>
 </UserControl>

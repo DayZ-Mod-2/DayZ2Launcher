@@ -15,23 +15,19 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if((string) value == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES)
+			if (value != null)
 			{
-				return InProgress;
-			}
-			if((string) value == DayZeroLauncherUpdater.STATUS_DOWNLOADING)
-			{
-				return InProgress;
-			}
-			if((string) value == DayZeroLauncherUpdater.STATUS_RESTARTTOAPPLY
-				|| (string)value == DayZeroLauncherUpdater.STATUS_OUTOFDATE)
-			{
-				return ActionRequired;
-			}
-			if((string) value == DayZeroLauncherUpdater.STATUS_UPTODATE)
-			{
-				return OK;
-			}
+				string realVal = (string)value;
+
+				if (realVal.StartsWith(DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES.Replace("...", String.Empty)))
+					return InProgress;
+				else if (realVal.StartsWith(DayZeroLauncherUpdater.STATUS_DOWNLOADING.Replace("...", String.Empty)))
+					return InProgress;
+				else if (realVal == DayZeroLauncherUpdater.STATUS_RESTARTTOAPPLY || realVal == DayZeroLauncherUpdater.STATUS_OUTOFDATE)
+					return ActionRequired;
+				else if (realVal == DayZeroLauncherUpdater.STATUS_UPTODATE)
+					return OK;
+			}			
 
 			return Default;
 		}

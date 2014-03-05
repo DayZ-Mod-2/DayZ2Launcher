@@ -3,41 +3,180 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Windows;
-using NLog;
 using System.Threading;
-using zombiesnu.DayZeroLauncher.App.Ui;
 using zombiesnu.DayZeroLauncher.App.Ui.Controls;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
+using zombiesnu.DayZeroLauncher.App.Ui;
+using System.Collections.ObjectModel;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
-    public enum Mod {
-        DayZeroPodagorsk,
-        DayZeroChernarus
-    }
-
-	public static class GameLauncher
+	public class MetaGameType
 	{
-		private static Logger _logger = LogManager.GetCurrentClassLogger();
+		[JsonProperty("ident")]
+		public string Ident;
 
-        public static void LaunchGame(Window parentWnd, Mod mod)
+		[JsonProperty("addons")]
+		public List<string> AddOnNames;
+
+		[JsonProperty("name")]
+		public string Name;
+
+		[JsonProperty("launchable")]
+		public bool IsLaunchable;
+	}
+
+	public class GameLauncher : BindableBase
+	{
+		protected class GameTypeNotFound : Exception
+		{
+			public GameTypeNotFound(string gameTypeIdent) : base("Could not find gameType")
+			{
+				GameType = gameTypeIdent;
+			}
+
+			public string GameType { get; set; }
+		}
+
+		public class ButtonInfo : BindableBase
+		{
+			public ButtonInfo(string text, string argument)
+			{
+				Text = text;
+				Argument = argument;
+			}
+
+			private string _text = null;
+			public string Text
+			{
+				get { return _text; }
+				set
+				{
+					_text = value;
+					PropertyHasChanged("Text");
+				}
+			}
+
+			private string _argument = null;
+			public string Argument
+			{
+				get { return _argument; }
+				set
+				{
+					_argument = value;
+					PropertyHasChanged("Argument");
+				}
+			}
+		}
+
+		private ObservableCollection<ButtonInfo> _launchButtons = new ObservableCollection<ButtonInfo>();
+		public ObservableCollection<ButtonInfo> LaunchButtons
+		{
+			get { return _launchButtons; }
+			set
+			{
+				_launchButtons = value;
+				PropertyHasChanged("LaunchButtons");
+			}
+		}
+
+		private MetaModDetails _modDetails = null;
+		public MetaModDetails ModDetails
+		{
+			get { return _modDetails; }
+			set
+			{
+				_modDetails = value;
+
+				Execute.OnUiThread(() =>
+				{
+					LaunchButtons.Clear();
+					foreach (var gameType in _modDetails.GameTypes)
+					{
+						if (!gameType.IsLaunchable)
+							continue;
+
+						LaunchButtons.Add(new ButtonInfo("Launch " + gameType.Name, gameType.Ident));
+					}
+				});	
+			}
+		}
+
+		protected MetaGameType FindGameTypeWithIdent(string gameTypeIdent)
+		{
+			var gameType = ModDetails.GameTypes.FirstOrDefault(x => { return String.Equals(x.Ident, gameTypeIdent, StringComparison.OrdinalIgnoreCase); });
+			if (gameType == null)
+				throw new GameTypeNotFound(gameTypeIdent);
+
+			return gameType;
+		}
+
+		public void LaunchGame(Window parentWnd, string gameTypeIdent)
         {
-            string modArg = String.Format(" \"-mod={0};Expansion;Expansion\\beta;Expansion\\beta\\Expansion;{1};{2}\"", CalculatedGameSettings.Current.Arma2Path, CalculatedGameSettings.Current.DayZPath, CalculatedGameSettings.Current.DayZPath.Substring(0, CalculatedGameSettings.Current.DayZPath.Length - "@DayZero".Length) + "@" + mod);
-            JoinServer(parentWnd, null, modArg);
+			BeginLaunchProcess(parentWnd, null, gameTypeIdent);
         }
 
-        public static void JoinServer(Window parentWnd, Server server)
+        public void JoinServer(Window parentWnd, Server server)
         {
-            string modArg = String.Format(" \"-mod={0};Expansion;Expansion\\beta;expansion\\beta\\Expansion;{1};{2}\"", CalculatedGameSettings.Current.Arma2Path, CalculatedGameSettings.Current.DayZPath, CalculatedGameSettings.Current.DayZPath.Substring(0, CalculatedGameSettings.Current.DayZPath.Length-"@DayZero".Length) + server.Mod);
-            JoinServer(parentWnd, server, modArg);
+			BeginLaunchProcess(parentWnd, server, server.Mod);
         }
 
-        static void JoinServer(Window parentWnd, Server server, string modArg)
+		private LaunchProgress _dlgWindow = null;
+
+		protected void BeginLaunchProcess(Window parentWnd, Server server, string gameTypeIdent)
+		{
+			MetaGameType gameType = null;
+			try { gameType = FindGameTypeWithIdent(gameTypeIdent); }
+			catch (GameTypeNotFound nfe)
+			{
+				MessageBox.Show("Could not find gameType '" + nfe.GameType + "'",
+								"Internal error", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
+			catch (NullReferenceException)
+			{
+				MessageBox.Show("Version metadata not avaialable. Please check for updates first.",
+								"Unknown current version", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
+
+			if (_dlgWindow != null)
+				return;
+
+			var culledAddons = ModDetails.AddOns.Where(x => { return gameType.AddOnNames.Count(y => { return x.Name.Equals(y, StringComparison.OrdinalIgnoreCase); }) > 0; });
+			_dlgWindow = new LaunchProgress(parentWnd, gameType, culledAddons);
+			_dlgWindow.Closed += (object sender, EventArgs e) =>
+				{
+					if (_dlgWindow.InstallSuccessfull == true)
+					{
+						new Thread(() =>
+							{
+								bool launchedGame = ActuallyLaunchGame(parentWnd, server, gameType);
+								if (launchedGame)
+								{
+									TorrentUpdater.StopAllTorrents();
+
+									if (UserSettings.Current.GameOptions.CloseDayZeroLauncher)
+									{
+										Thread.Sleep(1000);
+										Environment.Exit(0);
+									}
+								}								
+							}).Start();						
+					}
+					_dlgWindow = null;
+				};
+			_dlgWindow.Show();
+		}
+
+        protected static bool ActuallyLaunchGame(Window parentWnd, Server server, MetaGameType gameType)
 		{
             CloseGame();
 			var arguments = new StringBuilder();
 
-			string exePath;
-			
+			string exePath;			
 			if(UserSettings.Current.GameOptions.LaunchUsingSteam)
 			{
 				exePath = Path.Combine(LocalMachineInfo.Current.SteamPath, "steam.exe");
@@ -45,7 +184,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					MessageBox.Show("Could not find Steam, please adjust your options or check your Steam installation.",
                         "Steam launch error",MessageBoxButton.OK,MessageBoxImage.Error);
-					return;
+					return false;
 				}
 
                 int mainVersionRev = 0;
@@ -88,7 +227,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                                                     "Or by clicking on the following link:");
                             popup.SetLink("steam://install/" + appId.ToString() + "/","Install " + gameName);
                             popup.Show();
-                            return;
+                            return false;
                         }
                         break;
                     }
@@ -97,7 +236,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 {
                     MessageBox.Show("Steam launch impossible, '" + gameName + "' isn't located inside a SteamLibrary folder.",
                         "Game launch error",MessageBoxButton.OK,MessageBoxImage.Exclamation);
-                    return;
+                    return false;
                 }
                 else { pathInfo = null; }
 
@@ -130,7 +269,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 arguments.Append(" -port=" + server.Port);
                 arguments.Append(" -password=" + server.Password);
             }
-            arguments.AppendFormat(modArg);
+
+			string modArg = String.Format("-mod={0};Expansion;Expansion\\beta;Expansion\\beta\\Expansion", CalculatedGameSettings.Current.Arma2Path);
+			foreach (var addon in gameType.AddOnNames)
+			{
+				string fullPath = Path.Combine(CalculatedGameSettings.Current.AddonsPath, addon);
+				fullPath.Replace('/', '\\');
+				
+				string rootPath = CalculatedGameSettings.Current.Arma2OAPath;
+				rootPath.Replace('/', '\\');
+				if (!rootPath.EndsWith("\\"))
+					rootPath += "\\";
+
+				if (fullPath.StartsWith(rootPath, StringComparison.InvariantCultureIgnoreCase))
+					fullPath = fullPath.Substring(rootPath.Length);
+
+				modArg += String.Format(";{0}", fullPath);
+			}
+			arguments.Append(" \"" + modArg + "\"");
 
 			try
 			{
@@ -145,22 +301,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			        				}
 			        		};
 				p.Start();
-
-                if(UserSettings.Current.GameOptions.CloseDayZeroLauncher){
-                    Thread.Sleep(1000);
-                    Environment.Exit(0);
-                }
 			}
-			catch(Exception)
+			catch (Exception)
 			{
+				return false;
 			}
 			finally
 			{
 				arguments.Clear();
 			}
+
+			return true;
 		}
 
-        public static void CloseGame()
+        protected static void CloseGame()
         {
             foreach (Process process in Process.GetProcessesByName("arma2oa"))
             {

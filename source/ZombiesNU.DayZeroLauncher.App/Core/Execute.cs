@@ -6,10 +6,28 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class Execute
 	{
-		public static void OnUiThread(Action action)
+		public static void OnUiThread(Action action, Dispatcher disp = null, DispatcherPriority prio = DispatcherPriority.Background)
 		{
-			if(Application.Current !=  null && Application.Current.Dispatcher != null)
-				Application.Current.Dispatcher.BeginInvoke(action, DispatcherPriority.Background);
+			if (disp == null)
+			{
+				if (Application.Current != null)
+					disp = Application.Current.Dispatcher;
+			}
+
+			if(disp != null)
+				disp.BeginInvoke(action, prio);
+		}
+
+		public static void OnUiThreadSync(Action action, Dispatcher disp = null, DispatcherPriority prio = DispatcherPriority.Background)
+		{
+			if (disp == null)
+			{
+				if (Application.Current != null)
+					disp = Application.Current.Dispatcher;
+			}
+
+			if (disp != null)
+				disp.Invoke(action, prio);
 		} 
 	}
 }

@@ -6,7 +6,7 @@
         WindowStartupLocation="CenterOwner"
         SizeToContent ="WidthAndHeight"
         Name="InfoWindow">
-    <Grid Background="#444444" Name="ContentGrid" VerticalAlignment="Top" Width="300" Height="AUto">
+    <Grid Background="#444444" Name="ContentGrid" VerticalAlignment="Top" Width="300" Height="Auto">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />

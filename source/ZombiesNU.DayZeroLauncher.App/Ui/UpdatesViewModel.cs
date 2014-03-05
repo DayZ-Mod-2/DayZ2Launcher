@@ -7,6 +7,8 @@ using System.Windows.Data;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
 using zombiesnu.DayZeroLauncher.App.Ui.Friends;
+using System.Net;
+using Newtonsoft.Json;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui
 {
@@ -22,7 +24,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		private ObservableCollection<VersionStatistic> _rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
 		private int _processedCount;
 
-		public UpdatesViewModel()
+		public UpdatesViewModel(GameLauncher gameLauncher)
 		{
 			Arma2VersionStats = CollectionViewSource.GetDefaultView(_rawArma2VersionStats) as ListCollectionView;
 			Arma2VersionStats.SortDescriptions.Add(new SortDescription("Count", ListSortDirection.Descending));
@@ -34,7 +36,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			CalculatedGameSettings = CalculatedGameSettings.Current;
 			DayZeroLauncherUpdater = new DayZeroLauncherUpdater();
 			Arma2Updater = new Arma2Updater();
-			DayZUpdater = new DayZUpdater();
+			DayZUpdater = new DayZUpdater(gameLauncher);
 
 			DayZeroLauncherUpdater.PropertyChanged += AnyModelPropertyChanged;
 			Arma2Updater.PropertyChanged += AnyModelPropertyChanged;
@@ -89,13 +91,66 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
+		public class LocatorErrorClass
+		{
+			public LocatorErrorClass(string caption, string message)
+			{
+				_caption = caption;
+				_message = message;
+			}
+			private string _caption = null;
+			private string _message = null;
+			public string Caption { get { return _caption; } }
+			public string Message { get { return _message; } }
+		}
+
+		private LocatorErrorClass _locatorError = null;
+		public LocatorErrorClass LocatorError
+		{
+			get { return _locatorError; }
+			set
+			{
+				_locatorError = value;
+				PropertyHasChanged("LocatorError");
+			}
+		}
+
 		public void CheckForUpdates()
 		{
 		    CalculatedGameSettings.Current.Update();
             LocalMachineInfo.Current.Update();
+			
 			DayZeroLauncherUpdater.CheckForUpdate();
-			Arma2Updater.CheckForUpdates();
-			DayZUpdater.CheckForUpdates();
+
+			using (var wc = new WebClient())
+			{
+				wc.DownloadStringCompleted += (sender, evt) =>
+					{
+						if (evt.Cancelled)
+							LocatorError = new LocatorErrorClass("Check cancelled", "Locator info fetch cancelled.");
+						else if (evt.Error != null)
+							LocatorError = new LocatorErrorClass("Locator fetch error", evt.Error.Message);
+						else
+						{
+							LocatorError = null;
+							LocatorInfo locator = null;
+							try { locator = LocatorInfo.LoadFromString(evt.Result); }
+							catch (Exception ex)
+							{
+								locator = null;
+								LocatorError = new LocatorErrorClass("Locator parse error", ex.Message);
+							}
+							CalculatedGameSettings.Current.Locator = locator;
+
+							if (locator != null)
+							{
+								Arma2Updater.CheckForUpdates(locator.Patches);
+								DayZUpdater.CheckForUpdates(locator.Mods);
+							}
+						}
+					};
+				wc.DownloadStringAsync(new Uri("https://update.zombies.nu/locator.json"));
+			}
 		}
 
 		public void Handle(ServerUpdated message)

@@ -99,6 +99,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.Windows.Shell\Microsoft.Windows.Shell.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Nat">
+      <HintPath>..\packages\Mono.Nat.1.1.13\lib\Net40\Mono.Nat.dll</HintPath>
+    </Reference>
     <Reference Include="MonoTorrent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MonoTorrent\MonoTorrent.dll</HintPath>
@@ -107,8 +110,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MonoTorrent\MonoTorrent.Dht.dll</HintPath>
     </Reference>
-    <Reference Include="NLog">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.2.0.0.2000\lib\net40\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="Ookii.Dialogs.Wpf, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c15020868fd6249, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Ookii.Dialogs.1.0\lib\net40\Ookii.Dialogs.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="SharpCompress">
       <HintPath>..\packages\sharpcompress.0.8.1\lib\net40\SharpCompress.dll</HintPath>
@@ -116,6 +128,7 @@
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -140,10 +153,12 @@
     <Compile Include="Core\ExtendedWebClient.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Core\TorrentOptions.cs" />
     <Compile Include="Core\GUIDCalculator.cs" />
+    <Compile Include="Core\HashWebClient.cs" />
     <Compile Include="Core\ServerBatchRefresher.cs" />
     <Compile Include="Core\ServerRefreshQueue.cs" />
-    <Compile Include="Core\DayZInstaller.cs" />
+    <Compile Include="Core\TorrentLauncher.cs" />
     <Compile Include="Core\DayZUpdater.cs" />
     <Compile Include="Core\FavoriteServer.cs" />
     <Compile Include="Core\GameOptions.cs" />
@@ -156,8 +171,8 @@
     <Compile Include="Ui\Controls\FavoriteControl.xaml.cs">
       <DependentUpon>FavoriteControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Ui\Controls\FileVerifierPopup.xaml.cs">
-      <DependentUpon>FileVerifierPopup.xaml</DependentUpon>
+    <Compile Include="Ui\LaunchProgress.xaml.cs">
+      <DependentUpon>LaunchProgress.xaml</DependentUpon>
     </Compile>
     <Compile Include="Ui\Controls\NotesControl.xaml.cs">
       <DependentUpon>NotesControl.xaml</DependentUpon>
@@ -192,10 +207,10 @@
     <Compile Include="Ui\Controls\VersionControl.xaml.cs">
       <DependentUpon>VersionControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Core\GameUpdater.cs" />
+    <Compile Include="Core\HttpGetter.cs" />
     <Compile Include="Ui\Converters\BooleanToSelectedOptionColorConverter.cs" />
-    <Compile Include="Ui\Converters\BooleanToVisibilityCollapsedConverter.cs" />
     <Compile Include="Ui\Converters\BooleanToVisibilityHiddenConverter.cs" />
+    <Compile Include="Ui\Converters\BooleanToVisibilityCollapsedConverter.cs" />
     <Compile Include="Ui\Converters\CountsToPercentageConverter.cs" />
     <Compile Include="Ui\Converters\CountToVisibilityConverter.cs" />
     <Compile Include="Ui\Converters\DifficultyToDescriptionConverter.cs" />
@@ -210,11 +225,13 @@
     <Compile Include="Ui\Converters\PingToForegroundConverter.cs" />
     <Compile Include="Ui\Converters\ServerFullnessToColorConverter.cs" />
     <Compile Include="Ui\Converters\ServerRevisionCountToWidthConverter.cs" />
+    <Compile Include="Ui\Converters\TextBoxInputRegExBehaviour.cs" />
     <Compile Include="Ui\Converters\TimeToColorConverter.cs" />
     <Compile Include="Ui\Converters\TimeToTextConverter.cs" />
     <Compile Include="Ui\Converters\UpdateStatusToForegroundConverter.cs" />
     <Compile Include="Ui\Converters\VersionMatchesToForegroundConverter.cs" />
     <Compile Include="Ui\Converters\ZeroToVisibilityConverter.cs" />
+    <Compile Include="Ui\LaunchProgressViewModel.cs" />
     <Compile Include="Ui\NotesView.xaml.cs">
       <DependentUpon>NotesView.xaml</DependentUpon>
     </Compile>
@@ -298,7 +315,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Ui\Controls\FileVerifierPopup.xaml">
+    <Page Include="Ui\LaunchProgress.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -410,29 +427,17 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Resource Include="GSList\gpl.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
     <Resource Include="Assets\Images\logo.png" />
     <Resource Include="Assets\Images\background.jpg" />
     <Resource Include="Assets\Images\dayzero_logo.png" />
     <Resource Include="Assets\Images\bmrf_logo.png" />
     <Resource Include="Assets\Images\zombiesnu_logo.png" />
     <SplashScreen Include="Assets\Images\dayzero_splash.png" />
-    <Content Include="GSList\gslist.exe">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="app.config" />
     <None Include="app.manifest" />
-    <None Include="GSList\gslist">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="GSList\gslist.cfg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="NLog.xsd">
       <SubType>Designer</SubType>
     </None>

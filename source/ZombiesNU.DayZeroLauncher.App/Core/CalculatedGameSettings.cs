@@ -1,8 +1,23 @@
 ﻿using System;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
-{
+{	public class LocatorInfo
+	{
+		[JsonProperty("patches")]
+		public HashWebClient.RemoteFileInfo Patches = null;
+		[JsonProperty("mods")]
+		public HashWebClient.RemoteFileInfo Mods = null;
+		[JsonProperty("installers")]
+		public HashWebClient.RemoteFileInfo Installers = null;
+
+		static public LocatorInfo LoadFromString(string jsonText)
+		{
+			return JsonConvert.DeserializeObject<LocatorInfo>(jsonText);
+		}
+	}
+
 	public class CalculatedGameSettings : BindableBase
 	{
 		private static CalculatedGameSettings _current;
@@ -22,19 +37,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public string Arma2Path { get; set; }
 		public string Arma2OAPath { get; set; }
 		public string Arma2OAExePath { get; set; }
-		public string DayZPath { get; set; }
+		public string AddonsPath { get; set; }
 		public Version Arma2OABetaVersion { get; set; }
-		public Version DayZVersion { get; set; }
+		public string ModContentVersion { get; set; }
+
+		public LocatorInfo Locator { get; set; }
 
 		public void Update()
 		{
 			SetArma2Path();
 			SetArma2OAPath();
 			SetArma2OAExePath();
-			SetDayZPath();
+			SetAddonsPath();
 			SetArma2OABetaVersion();
-			SetDayZVersion();
-			PropertyHasChanged("Arma2Path", "Arma2OAPath", "Arma2OAExePath", "DayZPath", "Arma2OABetaVersion", "DayZVersion");
+			SetModContentVersion();
 		}
 
 		public void SetArma2Path()
@@ -43,6 +59,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				Arma2Path = UserSettings.Current.GameOptions.Arma2DirectoryOverride;
 			else
 				Arma2Path = LocalMachineInfo.Current.Arma2Path;
+
+			PropertyHasChanged("Arma2Path");
 		}
 
 		public void SetArma2OAPath()
@@ -51,6 +69,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				Arma2OAPath = UserSettings.Current.GameOptions.Arma2OADirectoryOverride;
 			else
 				Arma2OAPath = LocalMachineInfo.Current.Arma2OAPath;
+
+			PropertyHasChanged("Arma2OAPath");
 		}
 
 		private void SetArma2OAExePath()
@@ -59,14 +79,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 Arma2OAExePath = GameVersions.BuildArma2OAExePath(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
 			else
 				Arma2OAExePath = LocalMachineInfo.Current.Arma2OABetaExe;
+
+			PropertyHasChanged("Arma2OAExePath");
 		}
 
-		public void SetDayZPath()
+		public void SetAddonsPath()
 		{
-			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.DayZDirectoryOverride))
-				DayZPath = UserSettings.Current.GameOptions.DayZDirectoryOverride;
+			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.AddonsDirectoryOverride))
+				AddonsPath = UserSettings.Current.GameOptions.AddonsDirectoryOverride;
 			else
-				DayZPath = LocalMachineInfo.Current.DayZPath;
+				AddonsPath = Arma2OAPath;
+
+			PropertyHasChanged("AddonsPath");
 		}
 
 		private void SetArma2OABetaVersion()
@@ -75,14 +99,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				Arma2OABetaVersion = GameVersions.ExtractArma2OABetaVersion(Arma2OAExePath);
 			else
 				Arma2OABetaVersion = null;
+
+			PropertyHasChanged("Arma2OABetaVersion");
 		}
 
-		private void SetDayZVersion()
+		private void SetModContentVersion()
 		{
-			if(!string.IsNullOrEmpty(DayZPath))
-				DayZVersion = GameVersions.ExtractDayZVersion(DayZPath);
-			else
-				DayZVersion = null;
+			try
+			{
+				ModContentVersion = File.ReadAllText(UserSettings.ContentCurrentTagFile).Trim();
+			}
+			catch (Exception) { ModContentVersion = null; }
+
+			PropertyHasChanged("ModContentVersion");
 		}
 	}
 }

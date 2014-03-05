@@ -13,7 +13,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
         [DataMember] private bool _closeDayZeroLauncher;
 		[DataMember] private string _arma2DirectoryOverride;
 		[DataMember] private string _arma2OaDirectoryOverride;
-        [DataMember] private string _DayZDirectoryOverride;
+        [DataMember] private string _AddonsDirectoryOverride;
 		[DataMember] private bool _twentyFourHourTimeFormat;
 
 		public string AdditionalStartupParameters
@@ -110,13 +110,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				CalculatedGameSettings.Current.Update();
 			}
 		}
-        public string DayZDirectoryOverride
+        public string AddonsDirectoryOverride
         {
-            get { return _DayZDirectoryOverride; }
+            get { return _AddonsDirectoryOverride; }
             set
             {
-                _DayZDirectoryOverride = value;
-                PropertyHasChanged("DayZDirectoryOverride");
+                _AddonsDirectoryOverride = value;
+				PropertyHasChanged("AddonsDirectoryOverride");
                 UserSettings.Current.Save();
 				CalculatedGameSettings.Current.Update();
             }

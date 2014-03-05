@@ -101,9 +101,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				return CalculatedGameSettings.Current.DayZVersion != null
+				return CalculatedGameSettings.Current.ModContentVersion != null
 				       && DayZVersion != null
-				       && CalculatedGameSettings.Current.DayZVersion.Equals(DayZVersion);
+					   && CalculatedGameSettings.Current.ModContentVersion.Equals(DayZVersion);
 			}
 		}
 
@@ -310,11 +310,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public bool HasPassword
 		{
 			get { return GetSettingOrDefault("password").TryInt() > 0; }
-		}
-
-		public bool Hive
-		{
-			get { return GetSettingOrDefault("mod").SafeContainsIgnoreCase("@hive"); }
 		}
 
 		private Version _arma2Version;

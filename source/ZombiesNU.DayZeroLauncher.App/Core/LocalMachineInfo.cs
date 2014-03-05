@@ -95,35 +95,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private string _dayZPath;
-		public string DayZPath
-		{
-			get { return _dayZPath; }
-			private set
-			{
-				_dayZPath = value;
-				PropertyHasChanged("DayZPath");
-			}
-		}
-
-		private Version _dayZVersion;
-		public Version DayZVersion
-		{
-			get { return _dayZVersion; }
-			private set
-			{
-				_dayZVersion = value;
-				PropertyHasChanged("DayZVersion");
-			}
-		}
-
 		public void Update()
 		{
 			try
 			{
                 SetPaths();
                 Arma2OABetaVersion = GameVersions.ExtractArma2OABetaVersion(Arma2OABetaExe);
-                DayZVersion = GameVersions.ExtractDayZVersion(DayZPath);
 			}
 			catch//(Exception e)
 			{
@@ -196,13 +173,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
                 Arma2OABetaPath = "";
                 Arma2OABetaExe = "";
-                DayZPath = "";
 			}
             else
             {
                 Arma2OABetaPath = Path.Combine(Arma2OAPath, "Expansion\\beta");
                 Arma2OABetaExe = Path.Combine(Arma2OABetaPath, "arma2oa.exe");
-                DayZPath = Path.Combine(Arma2OAPath, "@DayZero");
             }			
 		}
 	}

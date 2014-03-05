@@ -1,16 +1,19 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+using System.IO;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class Arma2Updater : BindableBase
 	{
-		private string _latestDownloadUrl;
-		private int? _latestVersion;
 		private bool _isChecking;
-		private string _status;
-        public const string ArmaBetaListingUrl = "http://www.zombies.nu/armaversion.txt";
+		private HashWebClient.RemoteFileInfo _lastPatchesJsonLoc;
 
 		public Arma2Updater()
 		{
@@ -23,88 +26,97 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 												}
 												else if(args.PropertyName == "Status")
 												{
-													if(Installer.Status == "Install complete")
+													if (Installer.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
 													{
-														CheckForUpdates();
+														CheckForUpdates(_lastPatchesJsonLoc);
 													}
 												}
 			                             	};
 		}
 
-		public bool VersionMismatch
+		private class PatchesMeta
 		{
-			get
+			public class PatchInfo
 			{
-				if(CalculatedGameSettings.Current.Arma2OABetaVersion == null)
-					return true;
-				if(LatestVersion == null)
-					return false;
-				
-				return CalculatedGameSettings.Current.Arma2OABetaVersion.Revision != LatestVersion;
+				[JsonProperty("version")]
+				public int Version = 0;
+
+				[JsonProperty("archive")]
+				public HashWebClient.RemoteFileInfo Archive = null;
+			}
+
+			[JsonProperty("patches")]
+			public List<PatchInfo> Updates = null;
+			[JsonProperty("latest")]
+			public int LatestRevision = 0;
+
+			static public string GetFileName()
+			{
+				string patchesFileName = Path.Combine(UserSettings.PatchesPath, "index.json");
+				return patchesFileName;
+			}
+
+			static public PatchesMeta LoadFromFile(string fullFilePath)
+			{
+				PatchesMeta patchInfo = JsonConvert.DeserializeObject<PatchesMeta>(File.ReadAllText(fullFilePath));
+				return patchInfo;
 			}
 		}
 
-		public bool InstallButtonVisible
-		{
-			get { return VersionMismatch && !_isChecking && !Installer.IsRunning; }
-		}
-
-		public void CheckForUpdates()
+		public void CheckForUpdates(HashWebClient.RemoteFileInfo patches)
 		{
 			if(_isChecking)
 				return;
 
+			_lastPatchesJsonLoc = patches;
 			_isChecking = true;
 
 			Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
-
-			string responseBody;
-            int latestRevision = 0;
-
 			new Thread(() =>
-			           	{
-							try
+			{
+				try
+				{
+					string patchesFileName = PatchesMeta.GetFileName();
+					PatchesMeta patchInfo = null;					
+
+					HashWebClient.DownloadWithStatusDots(patches, patchesFileName, DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES,
+						(newStatus) =>
 							{
-								Thread.Sleep(750);  //In case this happens so fast the UI looks like it didn't work
-								if(!GameUpdater.HttpGet(ArmaBetaListingUrl, out responseBody))
-								{
-									Status = "Zombies.nu not responding";
-									return;
-								}
-                                _latestDownloadUrl = String.Format("http://www.arma2.com/downloads/update/beta/ARMA2_OA_Build_{0}.zip", responseBody);
-                                Int32.TryParse(responseBody, out latestRevision);
-								if(latestRevision != 0)
-								{
-									if(LocalMachineInfo.Current.Arma2OABetaVersion == null || LocalMachineInfo.Current.Arma2OABetaVersion.Revision != latestRevision)
-									{
-										Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
-									}
-									else
-									{
-										Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
-									}
-								}	
-								else
-								{
-									Status = "Coult not determine revision";
-								}
-				
-							}
-							catch(Exception)
+								Status = newStatus;
+							},
+						(wc, fileInfo, destPath) =>
 							{
-								Status = "Error getting version";
-							}
-							finally
+								patchInfo = PatchesMeta.LoadFromFile(patchesFileName);
+							});
+
+					if (patchInfo != null)
+					{
+						Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
+						Thread.Sleep(100);
+
+						try
+						{
+							PatchesMeta.PatchInfo thePatch = patchInfo.Updates.Where(x => x.Version == patchInfo.LatestRevision).Single();
+							SetLatestServerVersion(thePatch);
+
+							if (LocalMachineInfo.Current.Arma2OABetaVersion == null ||
+								LocalMachineInfo.Current.Arma2OABetaVersion.Revision != thePatch.Version)
 							{
-								_isChecking = false;
-								LatestVersion = (int?) latestRevision;
+								Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
 							}
-						}).Start();
+							else
+								Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
+						}
+						catch (Exception) { Status = "Could not determine revision"; }
+					}
+				}
+				finally { _isChecking = false; }
+			}).Start();
 		}
 
 		public void InstallLatestVersion()
 		{
-			Installer.DownloadAndInstall(_latestDownloadUrl);
+			Installer.DownloadAndInstall(_latestServerVersion.Version,_latestServerVersion.Archive);
 		}
 
 		private Arma2Installer _installer;
@@ -118,16 +130,42 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+		PatchesMeta.PatchInfo _latestServerVersion = null;
+		private void SetLatestServerVersion(PatchesMeta.PatchInfo newPatchInfo)
+		{
+			_latestServerVersion = newPatchInfo;
+			Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible"));
+		}
 		public int? LatestVersion
 		{
-			get { return _latestVersion; }
-			set
+			get 
 			{
-				_latestVersion = value;
-				Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible"));			
+				if (_latestServerVersion != null)
+					return _latestServerVersion.Version;
+
+				return new Nullable<int>();
+			}
+		}
+		
+		public bool VersionMismatch
+		{
+			get
+			{
+				if (CalculatedGameSettings.Current.Arma2OABetaVersion == null)
+					return true;
+				if (LatestVersion == null)
+					return false;
+
+				return CalculatedGameSettings.Current.Arma2OABetaVersion.Revision != LatestVersion;
 			}
 		}
 
+		public bool InstallButtonVisible
+		{
+			get { return VersionMismatch && !_isChecking && !Installer.IsRunning; }
+		}
+
+		private string _status;
 		public string Status
 		{
 			get { return _status; }

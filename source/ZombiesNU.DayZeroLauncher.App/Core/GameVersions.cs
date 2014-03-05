@@ -1,10 +1,32 @@
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
+	public class MetaModDetails
+	{
+		[JsonProperty("addons")]
+		public List<MetaAddon> AddOns;
+
+		[JsonProperty("gametypes")]
+		public List<MetaGameType> GameTypes;
+
+		public static string GetFileName(string versionString)
+		{
+			return Path.Combine(UserSettings.ContentMetaPath, versionString + ".json");
+		}
+
+		public static MetaModDetails LoadFromFile(string fullPath)
+		{
+			var modDetails = JsonConvert.DeserializeObject<MetaModDetails>(File.ReadAllText(fullPath));
+			return modDetails;
+		}
+	}
+
 	public static class GameVersions
 	{
 		public static string BuildArma2OAExePath(string arma2OAPath)
@@ -24,41 +46,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return version;
 			}
 			return null;
-		}
-
-		public static Version ExtractDayZVersion(string dayZPath)
-		{
-            try
-            {
-                var dayz_code_file = Path.Combine(dayZPath + "Chernarus", @"addons\zero_code.pbo"); // TODO: Something that's not so hardcoded? (Chernarus..)
-                if (!File.Exists(dayz_code_file))
-                {
-                    return null;
-                }
-                var dayz_code_file_lines = File.ReadAllLines(dayz_code_file);
-                foreach (var changeLogLine in dayz_code_file_lines)
-                {
-                    var match = Regex.Match(changeLogLine, @"\x01\x00version\x00(?<Version>\d(?:\.\d){1,3})", RegexOptions.IgnoreCase);
-                    if (!match.Success)
-                    {
-                        continue;
-                    }
-                    Version version;
-                    var versionMatch = match.Groups["Version"];
-                    if (!versionMatch.Success)
-                        continue;
-
-                    if (Version.TryParse(versionMatch.Value, out version))
-                    {
-                        return version;
-                    }
-                }
-
-            }
-            catch
-            {
-            }
-            return null;
 		}
 	}
 }

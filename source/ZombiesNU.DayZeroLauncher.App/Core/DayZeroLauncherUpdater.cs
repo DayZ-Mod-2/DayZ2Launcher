@@ -12,6 +12,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static readonly string STATUS_UPTODATE = "Up to date";
 		public static readonly string STATUS_OUTOFDATE = "Out of date";
 		public static readonly string STATUS_RESTARTTOAPPLY = "Restart to apply update";
+		public static readonly string STATUS_EXTRACTING = "Extracting...";
+		public static readonly string STATUS_INSTALLING = "Installing...";
+		public static readonly string STATUS_INSTALLCOMPLETE = "Install complete";
 
 		public Version LatestVersion
 		{

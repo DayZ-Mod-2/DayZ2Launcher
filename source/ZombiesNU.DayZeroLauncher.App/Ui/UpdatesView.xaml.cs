@@ -28,24 +28,26 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			InitializeComponent();
 		}
 
+		private UpdatesViewModel ViewModel() { return (UpdatesViewModel)DataContext; }
+
 		private void Done_Click(object sender, RoutedEventArgs e)
 		{
-			((UpdatesViewModel) DataContext).IsVisible = false;
+			ViewModel().IsVisible = false;
 		}
 
 		private void CheckNow_Click(object sender, RoutedEventArgs e)
 		{
-			((UpdatesViewModel) DataContext).CheckForUpdates();
+			ViewModel().CheckForUpdates();
 		}
 
 		private void DownloadArma2_Click(object sender, RoutedEventArgs e)
 		{
-			((UpdatesViewModel) DataContext).Arma2Updater.InstallLatestVersion();
+			ViewModel().Arma2Updater.InstallLatestVersion();
 		}
 
 		private void DownloadDayZ_Click(object sender, RoutedEventArgs e)
 		{
-			((UpdatesViewModel) DataContext).DayZUpdater.InstallLatestVersion();
+			ViewModel().DayZUpdater.UpdateToLatestVersion(false);
 		}
 
 		private void ApplyDayZeroLauncherUpdateNow_Click(object sender, RoutedEventArgs e)
@@ -55,32 +57,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
         private void Verify_Click(object sender, RoutedEventArgs e)
         {
-            string torrentUrl;
-            if (!GameUpdater.HttpGet("http://www.zombies.nu/dayzerotorrent.txt", out torrentUrl))
-            {
-                InfoPopup popup = new InfoPopup();
-                popup.Headline.Content = "An Error occured.";
-                popup.SetMessage("Could not contact Zombies.nu.\nPlease try again.");
-                popup.Owner = popup.Owner = MainWindow.GetWindow(this.Parent);
-                popup.Title = "Error";
-                popup.Show();
-                return;
-            }
-            else
-            {
-                TorrentState state = TorrentUpdater.CurrentState();
-                if (state == TorrentState.Stopped)
-                {
-                    TorrentUpdater verifier = new TorrentUpdater(torrentUrl); // Sets up launcher to start checking files.
-                    verifier.StartTorrents(1);
-                }
-                FileVerifierPopup popup = new FileVerifierPopup();
-                popup.Owner = MainWindow.GetWindow(this.Parent);
-                popup.Headline.Content = "Please Wait";
-                popup.Title = "Please Wait";
-
-                popup.Show();
-            }
+			ViewModel().DayZUpdater.UpdateToLatestVersion(true);
         }
 	}
 }

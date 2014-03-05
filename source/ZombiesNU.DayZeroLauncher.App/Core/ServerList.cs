@@ -83,9 +83,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
             string list = "";
 
-            if (!GameUpdater.HttpGet(serverlistUrl, out list))
+            if (!HttpGetter.HttpGet(serverlistUrl, out list))
             {
-                if (!GameUpdater.HttpGet(serverlistBackupUrl, out list))
+                if (!HttpGetter.HttpGet(serverlistBackupUrl, out list))
                 {
                     return new List<Server>(); // Empty list.. Too bad.
                 }
@@ -119,35 +119,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			var batch = new ServerBatchRefresher("Refreshing all servers...", Items);
 			App.Events.Publish(new RefreshServerRequest(batch));
-		}
-
-		private static string ExecuteGSList(string arguments)
-		{
-			var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			currentDirectory = new DirectoryInfo(currentDirectory).FullName;
-
-#if !DEBUG
-            string gsExePath = @"Current\GSList\gslist.exe";
-#else
-            string gsExePath = @"GSList\gslist.exe";
-#endif
-
-			var p = new Process
-			{
-				StartInfo =
-					{
-						UseShellExecute = false,
-						CreateNoWindow = true,
-						WindowStyle = ProcessWindowStyle.Hidden,
-						RedirectStandardOutput = true,
-						FileName = Path.Combine(currentDirectory, gsExePath),
-						Arguments = arguments
-					}
-			};
-			p.Start();
-			string output = p.StandardOutput.ReadToEnd();
-			p.WaitForExit();
-			return output;
 		}
 
 		private bool _isRunningRefreshBatch;

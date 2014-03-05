@@ -75,15 +75,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return false;
 		}
 
-		public static string MakeSurePathExists(this string path)
-		{
-			if(!Directory.Exists(path))
-			{
-				Directory.CreateDirectory(path);
-			}
-			return path;
-		}
-
 		public static bool SafeContainsIgnoreCase(this string value, string contains)
 		{
 			if(string.IsNullOrEmpty(value))

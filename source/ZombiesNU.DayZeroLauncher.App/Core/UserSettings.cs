@@ -23,6 +23,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		[DataMember] private Filter _filter = new Filter();
 		[DataMember] private WindowSettings _windowSettings = null; //This is null on purpose so the MainWindow view can set defaults if needed
 		[DataMember] private GameOptions _gameOptions = new GameOptions();
+		[DataMember] private TorrentOptions _torrentOptions = new TorrentOptions();
 		[DataMember] private AppOptions _appOptions = new AppOptions();
 		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
 		[DataMember] private List<RecentServer> _recentServers = new List<RecentServer>();
@@ -33,8 +34,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
         public bool IncludeUS
         {
             get { return !_hideUS; }
-            set { refresher.RefreshAll();
-            _hideUS = !value;
+            set 
+			{ 
+				refresher.RefreshAll();
+				_hideUS = !value;
             }
         }
 
@@ -51,8 +54,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
         public bool IncludeAU
         {
             get { return !_hideAU; }
-            set { refresher.RefreshAll();
-            _hideAU = !value;
+            set 
+			{ 
+				refresher.RefreshAll();
+				_hideAU = !value;
             }
         }
 
@@ -61,9 +66,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get
 			{
 				if(_friends == null)
-				{
 					_friends = new List<string>();
-				}
+
 				return _friends;
 			}
 			set { _friends = value; }
@@ -74,9 +78,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get
 			{
 				if(_filter == null)
-				{
 					_filter = new Filter();
-				}
+
 				return _filter;
 			}
 			set { _filter = value; }
@@ -93,12 +96,23 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get
 			{
 				if(_gameOptions == null)
-				{
 					_gameOptions = new GameOptions();
-				}
+
 				return _gameOptions;
 			}
 			set { _gameOptions = value; }
+		}
+
+		public TorrentOptions TorrentOptions
+		{
+			get
+			{
+				if (_torrentOptions == null)
+					_torrentOptions = new TorrentOptions();
+
+				return _torrentOptions;
+			}
+			set { _torrentOptions = value; }
 		}
 
 		public AppOptions AppOptions
@@ -106,9 +120,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get
 			{
 				if(_appOptions == null)
-				{
 					_appOptions = new AppOptions();
-				}
+
 				return _appOptions;
 			}
 			set { _appOptions = value; }
@@ -220,29 +233,116 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             }
         }
 
+		private static string _torrentJunkPath;
+		public static string TorrentJunkPath
+		{
+			get
+			{
+				if (_torrentJunkPath == null)
+				{
+					var torrentJunkPathLocation = Path.Combine(LocalDataPath, "torrent");
+					var dirInfo = new DirectoryInfo(torrentJunkPathLocation);
+					if (!dirInfo.Exists)
+						dirInfo.Create();
+
+					_torrentJunkPath = dirInfo.FullName;
+				}
+				return _torrentJunkPath;
+			}
+		}
+
+		private static string _contentPath;
 		public static string ContentPath
 		{
 			get
 			{
-				var contentPathLocation = Path.Combine(LocalDataPath, "content");
-				var dirInfo = new DirectoryInfo(contentPathLocation);
-				if (!dirInfo.Exists)
-					dirInfo.Create();
+				if (_contentPath == null)
+				{
+					var contentPathLocation = Path.Combine(LocalDataPath, "content");
+					var dirInfo = new DirectoryInfo(contentPathLocation);
+					if (!dirInfo.Exists)
+						dirInfo.Create();
 
-				return dirInfo.FullName;
+					_contentPath = dirInfo.FullName;
+				}
+				return _contentPath;
 			}
 		}
 
+		private static string _contentMetaPath;
+		public static string ContentMetaPath
+		{
+			get
+			{
+				if (_contentMetaPath == null)
+				{
+					var contentMetaPathLocation = Path.Combine(ContentPath, "meta");
+					var dirInfo = new DirectoryInfo(contentMetaPathLocation);
+					if (!dirInfo.Exists)
+						dirInfo.Create();
+
+					_contentMetaPath = dirInfo.FullName;
+				}
+				return _contentMetaPath;
+			}
+		}
+
+		private static string _contentDataPath;
+		public static string ContentDataPath
+		{
+			get
+			{
+				if (_contentDataPath == null)
+				{
+					var contentDataPathLocation = Path.Combine(ContentPath, "data");
+					var dirInfo = new DirectoryInfo(contentDataPathLocation);
+					if (!dirInfo.Exists)
+						dirInfo.Create();
+
+					_contentDataPath = dirInfo.FullName;
+				}
+				return _contentDataPath;
+			}
+		}
+
+		public static string ContentCurrentTagFile
+		{
+			get { return Path.Combine(ContentPath, "current"); }			
+		}
+
+		private static string _patchesPath;
 		public static string PatchesPath
 		{
 			get
 			{
-				var patchesPathLocation = Path.Combine(LocalDataPath, "patches");
-				var dirInfo = new DirectoryInfo(patchesPathLocation);
-				if (!dirInfo.Exists)
-					dirInfo.Create();
+				if (_patchesPath == null)
+				{
+					var patchesPathLocation = Path.Combine(LocalDataPath, "patches");
+					var dirInfo = new DirectoryInfo(patchesPathLocation);
+					if (!dirInfo.Exists)
+						dirInfo.Create();
 
-				return dirInfo.FullName;
+					_patchesPath = dirInfo.FullName;
+				}
+				return _patchesPath;
+			}
+		}
+
+		private static string _installersPath;
+		public static string InstallersPath
+		{
+			get
+			{
+				if (_installersPath == null)
+				{
+					var installersPathLocation = Path.Combine(LocalDataPath, "installers");
+					var dirInfo = new DirectoryInfo(installersPathLocation);
+					if (!dirInfo.Exists)
+						dirInfo.Create();
+
+					_installersPath = dirInfo.FullName;
+				}
+				return _installersPath;
 			}
 		}
 
@@ -330,7 +430,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		private static UserSettings LoadFromXml(XDocument xDocument)
 		{
 			var serializer = new DataContractSerializer(typeof(UserSettings));
-			return (UserSettings)serializer.ReadObject(xDocument.CreateReader());
+			var parsedVal = (UserSettings)serializer.ReadObject(xDocument.CreateReader());
+			if (parsedVal != null && parsedVal.TorrentOptions != null)
+			{
+				if (parsedVal.TorrentOptions.RandomizePort == true)
+					parsedVal.TorrentOptions.ListeningPort = 0; //this calls Random internally
+			}
+			return parsedVal;
 		}
 
 		public bool IsFavorite(Server server)

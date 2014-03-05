@@ -1,137 +1,162 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Linq;
+using System.Windows;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class DayZUpdater : BindableBase
 	{
-		private Version _latestVersion;
 		private bool _isChecking;
-		private string _status;
-        public const string dayZeroTorrentFileUrl = "http://www.zombies.nu/dayzerotorrent.txt";
-        public const string dayZeroVersionUrl = "http://www.zombies.nu/dayzeroversion.txt";
-        public const string deletedFilesUrl = "http://www.zombies.nu/oldfiles.txt";
+		private HashWebClient.RemoteFileInfo _lastModsJsonLoc;
 
-		public DayZUpdater()
+		public DayZUpdater(GameLauncher gameLauncher)
 		{
-			Installer = new DayZInstaller();
-			Installer.PropertyChanged += (sender, args) =>
-			                             	{
-												if(args.PropertyName == "IsRunning")
-												{
-													PropertyHasChanged("InstallButtonVisible");
-												}
-												else if(args.PropertyName == "Status")
-												{
-													if(Installer.Status == "Install complete")
-													{
-														CheckForUpdates();
-													}
-												}
-			                             	};
-            string responseBody;
-            if (!GameUpdater.HttpGet(dayZeroVersionUrl, out responseBody))
-            {
-                Status = "Zombies.nu not responding";
-                return;
-            }
-            Version version;
-            if (Version.TryParse(responseBody, out version))
-            {
-                if (version.Equals(CalculatedGameSettings.Current.DayZVersion)) // If version is up to date. Seed.
-                {
-                    string torrentUrl;
-                    if (!GameUpdater.HttpGet(dayZeroTorrentFileUrl, out torrentUrl))
-                    {
-                        Status = "Zombies.nu not responding";
-                        return;
-                    }
-                    TorrentUpdater seeder = new TorrentUpdater(torrentUrl); // Sets up launcher to start seeding current build.
-                    seeder.StartTorrents(1);
-                }
-            }
-
+			Downloader = new TorrentLauncher(gameLauncher);
+			Downloader.PropertyChanged += (sender, args) =>
+				{
+					if (args.PropertyName == "IsRunning")
+					{
+						PropertyHasChanged("InstallButtonVisible");
+					}
+					else if (args.PropertyName == "Status")
+					{
+						if (Downloader.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
+						{
+							CheckForUpdates(_lastModsJsonLoc);
+						}
+					}
+				};
 		}
 
-		public DayZInstaller Installer { get; set; }
+		public TorrentLauncher Downloader { get; set; }
 
 		public bool VersionMismatch
 		{
 			get
 			{
-				if(CalculatedGameSettings.Current.DayZVersion == null)
+				if (CalculatedGameSettings.Current.ModContentVersion == null)
 					return true;
-				if(LatestVersion == null)
+				if (LatestVersion == null)
 					return false;
 
-                return !CalculatedGameSettings.Current.DayZVersion.Equals(LatestVersion);
+				return !CalculatedGameSettings.Current.ModContentVersion.Equals(LatestVersion,StringComparison.OrdinalIgnoreCase);
+			}
+		}
+
+		private class ModsMeta
+		{
+			public class ModInfo
+			{
+				[JsonProperty("version")]
+				public string Version = null;
+
+				[JsonProperty("archive")]
+				public HashWebClient.RemoteFileInfo Archive = null;
+			}
+
+			[JsonProperty("mods")]
+			public List<ModInfo> Mods = null;
+			[JsonProperty("latest")]
+			public string LatestModVersion = null;
+
+			public static string GetFileName()
+			{
+				string modsFileName = Path.Combine(UserSettings.ContentMetaPath, "index.json");
+				return modsFileName;
+			}
+
+			public static ModsMeta LoadFromFile(string fileFullPath)
+			{
+				ModsMeta modsInfo = JsonConvert.DeserializeObject<ModsMeta>(File.ReadAllText(fileFullPath));
+				return modsInfo;
 			}
 		}
 	
-		public void CheckForUpdates()
+		public void CheckForUpdates(HashWebClient.RemoteFileInfo mods)
 		{
-			if(_isChecking)
+			if (_isChecking)
 				return;
 
+			_lastModsJsonLoc = mods;
 			_isChecking = true;
 
-			Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
-
-			string responseBody;
-			Version latestVersion = null;
-
 			new Thread(() =>
-			           	{
-			           		try
-			           		{
-								Thread.Sleep(750);  //In case this happens so fast the UI looks like it didn't work
-                                if (!GameUpdater.HttpGet(dayZeroVersionUrl, out responseBody))
-			           			{
-			           				Status = "Zombies.nu not responding";
-			           				return;
-			           			}
-			           			Version version;
-			           			if (Version.TryParse(responseBody, out version))
-			           			{
-			           				latestVersion = version;
-                                    if (!latestVersion.Equals(CalculatedGameSettings.Current.DayZVersion))
-			           				{
-			           					Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
-			           				}
-			           				else
-			           				{
-			           					Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
-			           				}
-			           			}
-			           			else
-			           			{
-			           				Status = "Could not determine version from filenames";
+			{
+				try
+				{
+					string modsFileName = ModsMeta.GetFileName();
+					ModsMeta modsInfo = null;
 
-			           			}
-			           		}
-			       			catch(Exception)
+					HashWebClient.DownloadWithStatusDots(mods,modsFileName,DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES,
+						(newStatus) => 
+							{ 
+								Status = newStatus; 
+							},
+						(wc,fileInfo,destPath) => 
 							{
-								Status = "Error getting version";
-							}
-							finally
+								modsInfo = ModsMeta.LoadFromFile(modsFileName);
+							});
+
+					if (modsInfo != null)
+					{
+						Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
+						Thread.Sleep(100);
+
+						try
+						{
+							ModsMeta.ModInfo theMod = modsInfo.Mods.Where(x => x.Version.Equals(modsInfo.LatestModVersion, StringComparison.OrdinalIgnoreCase)).Single();
+							SetLatestModVersion(theMod);
+
+							if (!theMod.Version.Equals(CalculatedGameSettings.Current.ModContentVersion, StringComparison.OrdinalIgnoreCase))
 							{
-								_isChecking = false;
-								LatestVersion = latestVersion;
+								Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
 							}
-						}).Start();
+							else
+							{
+								Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
+								UpdateToLatestVersion(false);
+							}
+						}
+						catch (Exception) { Status = "Could not determine revision"; }
+					}
+				}
+				finally { _isChecking = false; }
+			}).Start();
 		}
 
-		public Version LatestVersion
+		ModsMeta.ModInfo _latestModVersion = null;
+		private void SetLatestModVersion(ModsMeta.ModInfo newModInfo)
 		{
-			get { return _latestVersion; }
-			set
+			_latestModVersion = newModInfo;
+			Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));
+		}
+		public string LatestVersion
+		{
+			get
 			{
-				_latestVersion = value;
-                Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));			
+				if (_latestModVersion != null)
+					return _latestModVersion.Version;
+
+				return null;
 			}
 		}
+		public void UpdateToLatestVersion(bool forceFullSystemsCheck)
+		{
+			if (LatestVersion == null)
+			{
+				MessageBox.Show("Please check for new versions first", "Unable to determine latest version", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
 
+			Downloader.DownloadAndInstall(_latestModVersion.Version,forceFullSystemsCheck,_latestModVersion.Archive,this);
+		}
+
+		private string _status;
 		public string Status
 		{
 			get { return _status; }
@@ -144,24 +169,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public bool InstallButtonVisible
 		{
-			get { return VersionMismatch && !_isChecking && !Installer.IsRunning; }
+			get { return VersionMismatch && !_isChecking && !Downloader.IsRunning; }
 		}
 
         public bool VerifyButtonVisible
         {
-            get { return !VersionMismatch; }
+			get { return !VersionMismatch && !Downloader.IsRunning; }
         } 
-
-		public void InstallLatestVersion()
-		{
-            string responseBody;
-            if (!GameUpdater.HttpGet(dayZeroTorrentFileUrl, out responseBody))
-            {
-                Status = "Zombies.nu not responding";
-                return;
-            }
-
-            Installer.DownloadAndInstall(responseBody, deletedFilesUrl, this);
-		}
 	}
 }

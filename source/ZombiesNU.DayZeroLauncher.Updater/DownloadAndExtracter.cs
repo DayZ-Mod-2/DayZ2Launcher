@@ -14,8 +14,6 @@ namespace zombiesnu.DayZeroLauncher.Updater
 {
 	public class DownloadAndExtracter
 	{
-		private static Logger _logger = LogManager.GetCurrentClassLogger();
-
 		private readonly Version _serverVersion;
 		private readonly Uri _serverZipUri;
 		public static readonly string PENDING_UPDATE_DIRECTORYNAME = "_pendingupdate";

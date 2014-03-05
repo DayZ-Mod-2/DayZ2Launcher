@@ -8,8 +8,6 @@ namespace zombiesnu.DayZeroLauncher.Updater
 {
 	public partial class App
 	{
-		private static Logger _logger = LogManager.GetCurrentClassLogger();
-
 		protected override void OnStartup(StartupEventArgs e)
 		{
 			base.OnStartup(e);
