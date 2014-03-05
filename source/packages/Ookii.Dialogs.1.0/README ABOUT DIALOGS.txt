@@ -1,0 +1,1 @@
+The original library doesn't work with .net 4.0 client profile. This is a minimal version that does.
