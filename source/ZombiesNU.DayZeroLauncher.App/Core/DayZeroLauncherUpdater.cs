@@ -1,5 +1,8 @@
 ﻿using System;
-using zombiesnu.DayZeroLauncher.Updater;
+using System.ComponentModel;
+using System.Deployment.Application;
+using System.Diagnostics;
+using System.Windows;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -11,7 +14,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static readonly string STATUS_DOWNLOADING = "Downloading...";
 		public static readonly string STATUS_UPTODATE = "Up to date";
 		public static readonly string STATUS_OUTOFDATE = "Out of date";
-		public static readonly string STATUS_RESTARTTOAPPLY = "Restart to apply update";
+		public static readonly string STATUS_UPDATEREQUIRED = "Update required!";
+		public static readonly string STATUS_RESTARTREQUIRED = "Restart required";
 		public static readonly string STATUS_EXTRACTING = "Extracting...";
 		public static readonly string STATUS_INSTALLING = "Installing...";
 		public static readonly string STATUS_INSTALLCOMPLETE = "Install complete";
@@ -22,7 +26,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			set
 			{
 				_latestVersion = value;
-				PropertyHasChanged("LatestVersion");
+				Execute.OnUiThread(() => PropertyHasChanged("LatestVersion"));				
 			}
 		}
 
@@ -32,14 +36,23 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			set
 			{
 				_status = value;
-				PropertyHasChanged("Status");
-				PropertyHasChanged("UpdatePending");
+				Execute.OnUiThread(() =>
+					{
+						PropertyHasChanged("Status");
+						PropertyHasChanged("UpdatePending");
+						PropertyHasChanged("RestartPending");
+					});				
 			}
 		}
 
 		public bool UpdatePending
 		{
-			get { return Status == STATUS_RESTARTTOAPPLY; }
+			get { return (Status == STATUS_UPDATEREQUIRED || Status == STATUS_OUTOFDATE); }
+		}
+
+		public bool RestartPending
+		{
+			get { return (Status == STATUS_RESTARTREQUIRED); }
 		}
 
 		public bool VersionMismatch
@@ -53,35 +66,133 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		public void CheckForUpdate()
+		private bool isChecking = false;
+		private bool isUpdating = false;
+		private ApplicationDeployment deployment = null;
+
+		private void VersionCheckComplete(object sender, CheckForUpdateCompletedEventArgs e)
 		{
-			Status = STATUS_CHECKINGFORUPDATES;
+			deployment.CheckForUpdateCompleted -= VersionCheckComplete;
+			isChecking = false;
 
-			var versionChecker = new VersionChecker();
-			versionChecker.Complete += VersionCheckComplete;
-			versionChecker.CheckForUpdate();
-		}
+			string errMsg = null;
+			if (e.Cancelled)
+				errMsg = "Update check cancelled";
+			else if (e.Error != null)
+				errMsg = e.Error.Message;
 
-		private void VersionCheckComplete(object sender, VersionCheckCompleteEventArgs args)
-		{
-			LatestVersion = args.Version;
-
-			if(args.IsNew)
+			if (errMsg != null)
 			{
-				var extracter = new DownloadAndExtracter(args.Version);
-				extracter.ExtractComplete += ExtractComplete;
-				extracter.DownloadAndExtract();
-				Status = STATUS_DOWNLOADING;
+				Status = errMsg;
+				LatestVersion = null;
+				return;
+			}
+
+			if (e.UpdateAvailable)
+			{
+				LatestVersion = e.AvailableVersion;
+				if (e.IsUpdateRequired)
+					Status = STATUS_UPDATEREQUIRED;
+				else
+					Status = STATUS_OUTOFDATE;
 			}
 			else
-			{	
+			{
+				LatestVersion = LocalMachineInfo.Current.DayZeroLauncherVersion;
 				Status = STATUS_UPTODATE;
 			}
 		}
 
-		private void ExtractComplete(object sender, ExtractCompletedArgs args)
+		public void CheckForUpdate()
 		{
-			Status = STATUS_RESTARTTOAPPLY;
+			if (RestartPending)
+				return; //dont let them ruin it
+
+			if (ApplicationDeployment.IsNetworkDeployed)
+			{
+				if (deployment != null)
+				{
+					if (isUpdating)
+						deployment.UpdateAsyncCancel(); ;
+					if (isChecking)
+						deployment.CheckForUpdateAsyncCancel();
+
+					deployment = null;
+					isUpdating = false;
+					isChecking = false;
+				}
+
+				deployment = ApplicationDeployment.CurrentDeployment;
+				deployment.CheckForUpdateCompleted += VersionCheckComplete;
+				Status = STATUS_CHECKINGFORUPDATES;
+				isChecking = true;
+				deployment.CheckForUpdateAsync();
+			}
+			else
+			{
+				deployment = null;
+				Status = STATUS_UPTODATE;
+				LatestVersion = null;
+			}
+		}
+
+		private string GetProgressString(DeploymentProgressState state)
+		{
+			if (state == DeploymentProgressState.DownloadingApplicationFiles)
+				return "files";
+			else if (state == DeploymentProgressState.DownloadingApplicationInformation)
+				return "metadata";
+			else
+				return "manifest";
+		}
+
+		private void UpdateProgressChanged(object sender, DeploymentProgressChangedEventArgs e)
+		{
+			Status = String.Format("Downloading {0} ({1}%)...", GetProgressString(e.State), e.ProgressPercentage); 
+		}
+
+		private void UpdateCompleted(object sender, AsyncCompletedEventArgs e)
+		{
+			deployment.CheckForUpdateCompleted -= VersionCheckComplete;
+			deployment.UpdateProgressChanged -= UpdateProgressChanged;
+			isUpdating = false;
+
+			string errMsg = null;
+			if (e.Cancelled)
+				errMsg = "Update install cancelled";
+			else if (e.Error != null)
+				errMsg = e.Error.Message;
+
+			if (errMsg != null)
+			{
+				Status = errMsg;
+				return;
+			}
+
+			Status = STATUS_RESTARTREQUIRED;
+		}
+
+		public void UpdateToLatest()
+		{
+			if (deployment == null)
+				return;
+
+			if (isChecking || isUpdating)
+				return;
+
+			deployment.UpdateCompleted += UpdateCompleted;
+			deployment.UpdateProgressChanged += UpdateProgressChanged;
+			isUpdating = true;
+			deployment.UpdateAsync();
+		}
+
+		public void RestartNewVersion()
+		{
+			if (deployment != null)
+			{
+				System.Windows.Forms.Application.Restart();
+				Application.Current.Shutdown();
+			}
 		}
 	}
 }

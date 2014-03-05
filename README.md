@@ -1,7 +1,7 @@
 What is DayZero Launcher
 ======================
 
-An open source server browser, mod updater and game launchber for the DayZero mod, built for Arma2.
+An open source server browser, mod updater and game launcher for the DayZero mod, built for Arma2.
 
 Visit http://www.zombies.nu for more information
 

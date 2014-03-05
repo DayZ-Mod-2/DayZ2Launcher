@@ -2,8 +2,8 @@
 using System.IO;
 using System.Reflection;
 using Microsoft.Win32;
-using NLog;
 using System.Security.AccessControl;
+using System.Deployment.Application;
 
 // ReSharper disable InconsistentNaming
 namespace zombiesnu.DayZeroLauncher.App.Core
@@ -26,7 +26,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public Version DayZeroLauncherVersion
 		{
-			get { return Assembly.GetEntryAssembly().GetName().Version; }
+			get 
+			{
+				if (ApplicationDeployment.IsNetworkDeployed)
+					return ApplicationDeployment.CurrentDeployment.CurrentVersion;
+				else
+					return Assembly.GetEntryAssembly().GetName().Version; 
+			}
 		}
 
 		private string _arma2Path;

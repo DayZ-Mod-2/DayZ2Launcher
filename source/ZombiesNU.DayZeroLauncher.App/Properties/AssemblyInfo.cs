@@ -12,11 +12,12 @@ using System.Resources;
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+
+[assembly: AssemblyCompanyAttribute("ZOMBIES.NU")]
+[assembly: AssemblyProductAttribute("DayZero")]
+[assembly: AssemblyVersionAttribute("1.2.0.0")]
 [assembly: AssemblyTitleAttribute("DayZero Launcher")]
-[assembly: AssemblyCompanyAttribute("Zombies.nu")]
-[assembly: AssemblyProductAttribute("DayZero Launcher")]
-[assembly: AssemblyCopyrightAttribute("Copyright 2013-2014 Zombies.nu")]
-[assembly: AssemblyVersionAttribute("1.1.0.1")]
-[assembly: AssemblyFileVersionAttribute("1.1.0.1")]
+[assembly: AssemblyFileVersionAttribute("1.2.0.8")]
+[assembly: AssemblyCopyrightAttribute("Copyright 2013-2014 ZOMBIES.NU")]
 
 [assembly: NeutralResourcesLanguageAttribute("")]

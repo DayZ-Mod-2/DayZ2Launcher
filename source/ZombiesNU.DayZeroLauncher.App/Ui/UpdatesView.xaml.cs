@@ -52,10 +52,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 		private void ApplyDayZeroLauncherUpdateNow_Click(object sender, RoutedEventArgs e)
 		{
-			App.ApplyUpdateIfNeccessary();
+			ViewModel().DayZeroLauncherUpdater.UpdateToLatest();
 		}
 
-        private void Verify_Click(object sender, RoutedEventArgs e)
+		private void RestartDayZeroLauncher_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel().DayZeroLauncherUpdater.RestartNewVersion();
+		}
+
+        private void FullSystemCheck_Click(object sender, RoutedEventArgs e)
         {
 			ViewModel().DayZUpdater.UpdateToLatestVersion(true);
         }

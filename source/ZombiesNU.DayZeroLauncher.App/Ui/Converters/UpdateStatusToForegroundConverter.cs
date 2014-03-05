@@ -23,7 +23,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 					return InProgress;
 				else if (realVal.StartsWith(DayZeroLauncherUpdater.STATUS_DOWNLOADING.Replace("...", String.Empty)))
 					return InProgress;
-				else if (realVal == DayZeroLauncherUpdater.STATUS_RESTARTTOAPPLY || realVal == DayZeroLauncherUpdater.STATUS_OUTOFDATE)
+				else if (realVal == DayZeroLauncherUpdater.STATUS_UPDATEREQUIRED || realVal == DayZeroLauncherUpdater.STATUS_OUTOFDATE)
 					return ActionRequired;
 				else if (realVal == DayZeroLauncherUpdater.STATUS_UPTODATE)
 					return OK;

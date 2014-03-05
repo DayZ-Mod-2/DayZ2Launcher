@@ -36,21 +36,31 @@
                             <TextBlock Text="{Binding LocalMachineInfo.Current.DayZeroLauncherVersion}"
 							   Foreground="#FFFFFF"/>
                         </StackPanel>
-                        <StackPanel Margin="0 9 0 0"
+                        <StackPanel Margin="0,9"
 							Orientation="Horizontal">
                             <TextBlock Text="Latest Version: "
 								   Foreground="#DDD"/>
                             <TextBlock Text="{Binding DayZeroLauncherUpdater.LatestVersion}"
 							   Foreground="#FFFFFF"/>
                         </StackPanel>
-                        <Button Content="Apply now" 
-						Foreground="LightGreen"
-						Visibility="{Binding DayZeroLauncherUpdater.UpdatePending, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-						Margin="0 8 0 0"
-						Background="#444444"
-                        HorizontalAlignment="Left"
-						Click="ApplyDayZeroLauncherUpdateNow_Click"
-						Style="{StaticResource MetroButtonStyle}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Apply now" 
+                        		Foreground="LightGreen"
+                        		Visibility="{Binding DayZeroLauncherUpdater.UpdatePending, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+                        		Margin="0"
+                        		Background="#444444"
+                        		HorizontalAlignment="Left"
+                        		Click="ApplyDayZeroLauncherUpdateNow_Click"
+                        		Style="{StaticResource MetroButtonStyle}"/>
+                            <Button Content="Restart now" 
+                        		Foreground="LightGreen"
+                        		Visibility="{Binding DayZeroLauncherUpdater.RestartPending, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+                        		Margin="0"
+                        		Background="#444444"
+                        		HorizontalAlignment="Left"
+                        		Click="RestartDayZeroLauncher_Click"
+                        		Style="{StaticResource MetroButtonStyle}"/>
+                        </StackPanel>
                         <TextBlock Text=""
 								   Foreground="#FFFFFF"
 								   Margin="0 4 0 0"
@@ -160,7 +170,7 @@
             					Visibility="{Binding DayZUpdater.VerifyButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
             					Margin="0 8"
             					Style="{StaticResource MetroButtonStyle}"
-            					Click="Verify_Click"/>
+            					Click="FullSystemCheck_Click"/>
 
                         </StackPanel>
                         <TextBlock Text="{Binding DayZUpdater.Downloader.Status}"
