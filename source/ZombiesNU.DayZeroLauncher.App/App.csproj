@@ -506,5 +506,6 @@
       <SignableFiles Include="$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\DayZeroLauncher.exe" />
     </ItemGroup>
     <Exec Command="&quot;$(SignToolPath)&quot; sign /sha1 05737e3850657e7b58b6464c2e959374a4091c28 /t $(TsUrl) &quot;%(SignableFiles.Identity)&quot;" />
+    <Exec Command="copy /Y &quot;%(SignableFiles.Identity)&quot; &quot;$(TargetPath)&quot;" />
   </Target>
 </Project>
