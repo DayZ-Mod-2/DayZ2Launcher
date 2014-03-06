@@ -491,21 +491,17 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.  -->
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
+  <Target Name="AfterCompile">
     <CallTarget Targets="SignOutput" />
   </Target>
   <Target Name="SignOutput">
     <PropertyGroup>
       <SignToolPath Condition=" Exists('$(WindowsSDK80Path)bin\x86\signtool.exe') and '$(SignToolPath)'=='' and '$(PROCESSOR_ARCHITECTURE)'=='x86' ">$(WindowsSDK80Path)bin\x86\signtool.exe</SignToolPath>
       <SignToolPath Condition=" Exists('$(WindowsSDK80Path)bin\x64\signtool.exe') and '$(SignToolPath)'=='' and '$(PROCESSOR_ARCHITECTURE)'=='AMD64' ">$(WindowsSDK80Path)bin\x64\signtool.exe</SignToolPath>
-      <TsUrl>http://timestamp.verisign.com/scripts/timestamp.dll</TsUrl>
     </PropertyGroup>
     <ItemGroup>
-      <SignableFiles Include="$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\DayZeroLauncher.exe" />
+      <SignableFiles Include="$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\$(TargetFileName)" />
     </ItemGroup>
-    <Exec Command="&quot;$(SignToolPath)&quot; sign /sha1 05737e3850657e7b58b6464c2e959374a4091c28 /t $(TsUrl) &quot;%(SignableFiles.Identity)&quot;" />
-    <Exec Command="copy /Y &quot;%(SignableFiles.Identity)&quot; &quot;$(TargetPath)&quot;" />
+    <Exec Command="&quot;$(SignToolPath)&quot; sign /d &quot;$(ProductName)&quot; /du &quot;$(InstallUrl)&quot; /sha1 &quot;$(ManifestCertificateThumbprint)&quot; /t &quot;$(ManifestTimestampUrl)&quot; &quot;%(SignableFiles.Identity)&quot;" />
   </Target>
 </Project>
