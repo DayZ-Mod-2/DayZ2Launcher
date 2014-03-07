@@ -40,7 +40,7 @@
 					  IsChecked="{Binding Settings.GameOptions.MultiGpu, Mode=TwoWay}"
 					  Foreground="#DDDDDD"
 					  Margin="0 42 0 0"/>
-                    <CheckBox Content="Close DayZero Launcher (after joining a server)"
+                    <CheckBox Content="Close DayZero Launcher (after launching game)"
 					  IsChecked="{Binding Settings.GameOptions.CloseDayZeroLauncher, Mode=TwoWay}"
 					  Foreground="#DDDDDD"
 					  Margin="0 8 0 0"/>

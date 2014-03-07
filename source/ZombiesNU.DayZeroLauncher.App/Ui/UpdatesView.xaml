@@ -116,7 +116,7 @@
 										
                 			Click="DownloadArma2_Click"/>
 
-                        <TextBlock Text="{Binding Arma2Updater.Downloader.Status}"
+                        <TextBlock Text="{Binding Arma2Updater.Installer.Status}"
                 			Foreground="#FFFFFF"
                 			Margin="0 4 0 0"
                 			FontWeight="Bold"/>

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -249,16 +250,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			StartInstallerDownload(0);
 		}
 
-		private List<string> executableInput = null;
-		private DataReceivedEventHandler stdoutLineReceived = null;
-		private Dictionary<string, List<string>> executableOutput = new Dictionary<string, List<string>>();
-
-		private struct RunStatus
-		{
-			public int ExitCode;
-			public string ErrorString;
-		}
-
 		private static void WaitForProcessEOF(Process process, string field)
 		{
 			FieldInfo asyncStreamReaderField = typeof(Process).GetField(field, BindingFlags.NonPublic | BindingFlags.Instance);
@@ -273,7 +264,14 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			waitUtilEofMethod.Invoke(asyncStreamReader, empty);
 		}
 
-		private RunStatus RunExecutable(string fullExePath, string args=null, bool runAsAdmin=false)
+		private struct RunStatus
+		{
+			public int ExitCode;
+			public string ErrorString;
+		}
+		private delegate void StringLineReceived(object sender, string theLine);
+		
+		private RunStatus RunVerifierExecutable(string fullExePath, StringLineReceived stdoutLineReceived, string args = null)
 		{
 			RunStatus outStatus = new RunStatus();
 			using (var proc = new Process())
@@ -285,32 +283,27 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				startInfo.CreateNoWindow = true;
 				startInfo.UseShellExecute = false;
 
-				if (runAsAdmin)
-					startInfo.Verb = "runas";
-				else
-					startInfo.Verb = "run";
-
-				if (executableInput != null)
-					startInfo.RedirectStandardInput = true;
-				else
-					startInfo.RedirectStandardInput = false;
-
 				if (stdoutLineReceived != null)
 				{
-					proc.OutputDataReceived += stdoutLineReceived;
 					startInfo.RedirectStandardOutput = true;
+					startInfo.StandardOutputEncoding = Encoding.UTF8;
+					proc.OutputDataReceived += (sender, dataArgs) => { stdoutLineReceived(sender, dataArgs.Data); };
 				}
 				else
 					startInfo.RedirectStandardOutput = false;
 
 				startInfo.RedirectStandardError = true;
+				startInfo.StandardErrorEncoding = Encoding.UTF8;
 				proc.ErrorDataReceived += (sender, evt) =>
 					{
-						if (evt.Data == null)
-							return;
-
 						if (outStatus.ErrorString == null)
 							outStatus.ErrorString = "";
+
+						if (evt.Data == null)
+						{
+							outStatus.ErrorString.TrimEnd('\r','\n');
+							return;
+						}
 
 						outStatus.ErrorString += evt.Data;
 					};
@@ -323,15 +316,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				if (startInfo.RedirectStandardError)
 					proc.BeginErrorReadLine();
 
-				if (startInfo.RedirectStandardInput)
-				{
-					foreach (var line in executableInput)
-						proc.StandardInput.WriteLine(line);
-
-					//last one to indicate no more input
-					proc.StandardInput.WriteLine();
-				}
-
 				proc.WaitForExit();
 
 				if (startInfo.RedirectStandardError)
@@ -340,6 +324,93 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 					WaitForProcessEOF(proc, "output");
 
 				outStatus.ExitCode = proc.ExitCode;
+			}
+			return outStatus;
+		}
+
+		private RunStatus RunCopierExecutable(string fullExePath, StringLineReceived stdoutLineReceived, 
+												IEnumerable<string> executableInput = null, bool runAsAdmin = false)
+		{
+			RunStatus outStatus = new RunStatus();
+			using (var proc = new Process())
+			{
+				string clientGuidStr = Guid.NewGuid().ToString(); ;
+				var stdPipeSvr = new NamedPipeServerStream("Copier_" + clientGuidStr + "_data",
+								PipeDirection.InOut, 1, PipeTransmissionMode.Byte);
+				var errPipeSvr = new NamedPipeServerStream("Copier_" + clientGuidStr + "_error",
+								PipeDirection.In, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
+
+				proc.StartInfo = new ProcessStartInfo(fullExePath, clientGuidStr);
+				proc.StartInfo.UseShellExecute = true;
+				proc.StartInfo.CreateNoWindow = true;
+				proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+				if (runAsAdmin)
+					proc.StartInfo.Verb = "runas";
+							
+				proc.Start();
+				var endEvent = new AutoResetEvent(false);
+				errPipeSvr.BeginWaitForConnection((iar) =>
+					{
+						var pipSvr = (NamedPipeServerStream)iar.AsyncState;
+						try
+						{
+							pipSvr.EndWaitForConnection(iar);
+							StringBuilder errSb = new StringBuilder();
+
+							var readBuffer = new byte[4096];
+							pipSvr.BeginRead(readBuffer, 0, readBuffer.Length, (iar2) =>
+								{
+									var pipeStr = (NamedPipeServerStream)iar2.AsyncState;
+									var numBytes = pipeStr.EndRead(iar2);
+
+									if (numBytes > 0)
+									{
+										string recvStr = Encoding.UTF8.GetString(readBuffer, 0, numBytes);
+										errSb.Append(recvStr);
+									}
+									else //EOF
+									{
+										outStatus.ErrorString = errSb.ToString().TrimEnd('\r', '\n');
+										pipeStr.Close();
+										endEvent.Set();
+									}
+								}, pipSvr);
+						}
+						catch (ObjectDisposedException) { return; } //happens if no connection happened
+					}, errPipeSvr);
+
+				stdPipeSvr.WaitForConnection();
+				if (executableInput != null)
+				{
+					var sw = new StreamWriter(stdPipeSvr, Encoding.UTF8);
+					foreach (var line in executableInput)
+						sw.WriteLine(line);
+
+					//last one to indicate no more input
+					sw.WriteLine();
+					sw.Flush();
+				}
+				stdPipeSvr.WaitForPipeDrain(); //wait for process to read all bytes we sent it
+
+				using (var sr = new StreamReader(stdPipeSvr, Encoding.UTF8, false))
+				{					
+					while (stdPipeSvr.IsConnected)
+					{
+						string recvLine = sr.ReadLine();
+						if (stdoutLineReceived != null)
+							stdoutLineReceived(stdPipeSvr, recvLine);
+
+						if (recvLine == null)
+							break; //EOF
+					}
+					
+					sr.Close(); //closes the underlying named pipe as well
+				}
+
+				proc.WaitForExit();
+				outStatus.ExitCode = proc.ExitCode;
+				if (outStatus.ExitCode != 0)
+					endEvent.WaitOne(); //wait for stderr to be read
 			}
 			return outStatus;
 		}
@@ -426,6 +497,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 						return;
 					}
 
+					var verifierOutput = new Dictionary<string, List<string>>();
 					foreach (var addon in addOns)
 					{
 						UpperProgressText = "Verifying " + addon.Description;
@@ -443,9 +515,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 						if (verifierExeFileName == null) //failed to extract exe and already printed error
 							return;
 
-						stdoutLineReceived = (sender, args) =>
+						StringLineReceived stdoutLineReceived = (sender, theLine) =>
 						{
-							string theLine = args.Data;
 							if (theLine == null)
 								return;
 
@@ -456,12 +527,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 							else //data line
 							{
 								List<string> listOut = null;
-								if (executableOutput.ContainsKey(inst.Version))
-									listOut = executableOutput[inst.Version];
+								if (verifierOutput.ContainsKey(inst.Version))
+									listOut = verifierOutput[inst.Version];
 								else
 								{
 									listOut = new List<string>();
-									executableOutput.Add(inst.Version, listOut);
+									verifierOutput.Add(inst.Version, listOut);
 								}
 
 								listOut.Add(theLine);
@@ -470,9 +541,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 						};
 
 						var exeArguments = "\"" + addonSourceDir + "\" \"" + addonDestDir + "\"";
-						var execRes = RunExecutable(verifierExeFileName, exeArguments);
+						var execRes = RunVerifierExecutable(verifierExeFileName, stdoutLineReceived, exeArguments);
 						if (execRes.ExitCode < 0) //bad result
 						{
+							if (String.IsNullOrEmpty(execRes.ErrorString))
+								execRes.ErrorString = String.Format("Verifier error code: {0}", execRes.ExitCode);
+
 							HandleException(UpperProgressText, execRes.ErrorString);
 							return;
 						}
@@ -482,10 +556,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 					UpperProgressValue = 0;
 					UpperProgressLimit = 0;
-					foreach (var list4Inst in executableOutput)
+					foreach (var list4Inst in verifierOutput)
 						UpperProgressLimit += list4Inst.Value.Count;
 
-					foreach (var instList in executableOutput)
+					foreach (var instList in verifierOutput)
 					{
 						var instName = instList.Key;
 						var list = instList.Value;
@@ -503,9 +577,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 						bool isFirstLine = true;
 						bool isFileNameLine = true;
-						stdoutLineReceived = (sender, args) =>
+						StringLineReceived stdoutLineReceived = (sender, theLine) =>
 						{
-							string theLine = args.Data;
 							if (theLine == null)
 								return;
 
@@ -524,6 +597,21 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 								var pipeIndex = theLine.LastIndexOf('|');
 								var fileName = theLine.Substring(0, pipeIndex);
 								var fileSize = theLine.Substring(pipeIndex + 1);
+
+								var addonName = fileName;
+								for (;;)
+								{
+									string temp = Path.GetDirectoryName(addonName);
+									if (String.IsNullOrEmpty(temp))
+										break;
+
+									addonName = temp;
+								}
+								var addon = addOns.FirstOrDefault(a => { return a.Name.Equals(addonName, StringComparison.OrdinalIgnoreCase); });
+								if (addon != null)
+									UpperProgressText = "Installing " + addon.Description + "";
+								else
+									UpperProgressText = "Installing using '" + instName + "'";
 
 								if (fileSize.Equals("DELETE", StringComparison.OrdinalIgnoreCase))
 								{
@@ -554,14 +642,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 							}
 						};
 
-						executableInput = list;
-
-						var execRes = RunExecutable(copierExeFileName, null, false);
+						var execRes = RunCopierExecutable(copierExeFileName, stdoutLineReceived, list, false);
 						if (inst.Copier.RunAsCode.HasValue && execRes.ExitCode == inst.Copier.RunAsCode.GetValueOrDefault()) //needs elevation
-							execRes = RunExecutable(copierExeFileName, null, true);
+							execRes = RunCopierExecutable(copierExeFileName, stdoutLineReceived, list, true);
 
 						if (execRes.ExitCode < 0) //bad return code
 						{
+							if (String.IsNullOrEmpty(execRes.ErrorString))
+								execRes.ErrorString = String.Format("Copier error code: {0}", execRes.ExitCode);
+
 							HandleException(UpperProgressText, execRes.ErrorString);
 							return;
 						}
