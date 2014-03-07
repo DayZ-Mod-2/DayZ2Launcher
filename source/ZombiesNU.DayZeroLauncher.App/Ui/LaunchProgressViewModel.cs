@@ -541,13 +541,22 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 						};
 
 						var exeArguments = "\"" + addonSourceDir + "\" \"" + addonDestDir + "\"";
-						var execRes = RunVerifierExecutable(verifierExeFileName, stdoutLineReceived, exeArguments);
-						if (execRes.ExitCode < 0) //bad result
-						{
-							if (String.IsNullOrEmpty(execRes.ErrorString))
-								execRes.ErrorString = String.Format("Verifier error code: {0}", execRes.ExitCode);
 
-							HandleException(UpperProgressText, execRes.ErrorString);
+						try
+						{
+							var execRes = RunVerifierExecutable(verifierExeFileName, stdoutLineReceived, exeArguments);
+							if (execRes.ExitCode < 0) //bad result
+							{
+								if (String.IsNullOrEmpty(execRes.ErrorString))
+									execRes.ErrorString = String.Format("Verifier error code: {0}", execRes.ExitCode);
+
+								HandleException(UpperProgressText, execRes.ErrorString);
+								return;
+							}
+						}
+						catch (Exception ex)
+						{
+							HandleException(UpperProgressText, "Error running verifier: " + ex.Message);
 							return;
 						}
 
@@ -642,16 +651,24 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 							}
 						};
 
-						var execRes = RunCopierExecutable(copierExeFileName, stdoutLineReceived, list, false);
-						if (inst.Copier.RunAsCode.HasValue && execRes.ExitCode == inst.Copier.RunAsCode.GetValueOrDefault()) //needs elevation
-							execRes = RunCopierExecutable(copierExeFileName, stdoutLineReceived, list, true);
-
-						if (execRes.ExitCode < 0) //bad return code
+						try
 						{
-							if (String.IsNullOrEmpty(execRes.ErrorString))
-								execRes.ErrorString = String.Format("Copier error code: {0}", execRes.ExitCode);
+							var execRes = RunCopierExecutable(copierExeFileName, stdoutLineReceived, list, false);
+							if (inst.Copier.RunAsCode.HasValue && execRes.ExitCode == inst.Copier.RunAsCode.GetValueOrDefault()) //needs elevation
+								execRes = RunCopierExecutable(copierExeFileName, stdoutLineReceived, list, true);
 
-							HandleException(UpperProgressText, execRes.ErrorString);
+							if (execRes.ExitCode < 0) //bad return code
+							{
+								if (String.IsNullOrEmpty(execRes.ErrorString))
+									execRes.ErrorString = String.Format("Copier error code: {0}", execRes.ExitCode);
+
+								HandleException(UpperProgressText, execRes.ErrorString);
+								return;
+							}
+						}
+						catch (Exception ex)
+						{
+							HandleException(UpperProgressText, "Error running copier: " + ex.Message);
 							return;
 						}
 					}
