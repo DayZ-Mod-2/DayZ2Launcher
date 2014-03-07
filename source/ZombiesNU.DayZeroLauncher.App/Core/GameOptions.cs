@@ -14,6 +14,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		[DataMember] private string _arma2DirectoryOverride;
 		[DataMember] private string _arma2OaDirectoryOverride;
         [DataMember] private string _AddonsDirectoryOverride;
+		[DataMember] private string _customBranchName;
+		[DataMember] private string _customBranchPass;
 		[DataMember] private bool _twentyFourHourTimeFormat;
 
 		public string AdditionalStartupParameters
@@ -121,6 +123,29 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				CalculatedGameSettings.Current.Update();
             }
         }
+
+		
+		public string CustomBranchName
+		{
+			get { return _customBranchName; }
+			set
+			{
+				_customBranchName = value;
+				PropertyHasChanged("CustomBranchName");
+				UserSettings.Current.Save();
+			}
+		}
+
+		public string CustomBranchPass
+		{
+			get { return _customBranchPass; }
+			set
+			{
+				_customBranchPass = value;
+				PropertyHasChanged("CustomBranchPass");
+				UserSettings.Current.Save();
+			}
+		}
 		
 		public bool TwentyFourHourTimeFormat
 		{

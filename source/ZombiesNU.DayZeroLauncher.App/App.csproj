@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>10</ApplicationRevision>
-    <ApplicationVersion>1.2.1.10</ApplicationVersion>
+    <ApplicationRevision>11</ApplicationRevision>
+    <ApplicationVersion>1.2.2.11</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -193,6 +193,7 @@
     <Compile Include="Core\GameVersions.cs" />
     <Compile Include="Core\RecentServer.cs" />
     <Compile Include="Core\TorrentUpdater.cs" />
+    <Compile Include="Ui\Behaviors\NumericTextBoxBehavior.cs" />
     <Compile Include="Ui\Controls\InfoPopup.xaml.cs">
       <DependentUpon>InfoPopup.xaml</DependentUpon>
     </Compile>
@@ -253,7 +254,6 @@
     <Compile Include="Ui\Converters\PingToForegroundConverter.cs" />
     <Compile Include="Ui\Converters\ServerFullnessToColorConverter.cs" />
     <Compile Include="Ui\Converters\ServerRevisionCountToWidthConverter.cs" />
-    <Compile Include="Ui\Converters\TextBoxInputRegExBehaviour.cs" />
     <Compile Include="Ui\Converters\TimeToColorConverter.cs" />
     <Compile Include="Ui\Converters\TimeToTextConverter.cs" />
     <Compile Include="Ui\Converters\UpdateStatusToForegroundConverter.cs" />

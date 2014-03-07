@@ -149,7 +149,18 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 							}
 						}
 					};
-				wc.DownloadStringAsync(new Uri("https://update.zombies.nu/locator.json"));
+
+				string locatorUrl = "https://update.zombies.nu/locator";
+				string customBranch = UserSettings.Current.GameOptions.CustomBranchName;
+				if (!string.IsNullOrWhiteSpace(customBranch))
+				{
+					locatorUrl += "/" + Uri.EscapeUriString(customBranch);
+
+					string branchPass = UserSettings.Current.GameOptions.CustomBranchPass;
+					if (!string.IsNullOrEmpty(branchPass))
+						locatorUrl += "?pass=" + Uri.EscapeDataString(branchPass);
+				}
+				wc.DownloadStringAsync(new Uri(locatorUrl));
 			}
 		}
 

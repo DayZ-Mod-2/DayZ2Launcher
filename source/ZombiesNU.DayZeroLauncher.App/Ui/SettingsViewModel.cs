@@ -9,6 +9,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		public SettingsViewModel()
 		{
 			Settings = UserSettings.Current;
+			if (string.IsNullOrWhiteSpace(Settings.GameOptions.CustomBranchName))
+			{
+				CustomBranchEnabled = false;
+				CustomBranchName = "release";
+			}
+			else
+			{
+				CustomBranchName = Settings.GameOptions.CustomBranchName;
+				CustomBranchEnabled = true;
+			}
 		}
 
 		public UserSettings Settings { get; set; }
@@ -147,6 +157,38 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				PropertyHasChanged("AddonsDirectory", "AddonsDirectoryOverride");
             }
         }
+
+		private bool _customBranchEnabled;
+		public bool CustomBranchEnabled
+		{
+			get { return _customBranchEnabled; }
+			set
+			{
+				_customBranchEnabled = value;
+				if (value)
+					Settings.GameOptions.CustomBranchName = CustomBranchName;
+				else
+					Settings.GameOptions.CustomBranchName = "";
+
+				PropertyHasChanged("CustomBranchEnabled", "CustomBranchName");
+			}
+		}
+
+		private string _customBranchName;
+		public string CustomBranchName
+		{
+			get { return _customBranchName; }
+			set
+			{
+				_customBranchName = value;
+				if (CustomBranchEnabled)
+					Settings.GameOptions.CustomBranchName = value;
+				else
+					Settings.GameOptions.CustomBranchName = "";
+
+				PropertyHasChanged("CustomBranchName");
+			}
+		}
 
 		public string DisplayDirectoryPrompt(System.Windows.Window parentWindow, bool allowNewFolder, string previousPath, string description)
 		{
