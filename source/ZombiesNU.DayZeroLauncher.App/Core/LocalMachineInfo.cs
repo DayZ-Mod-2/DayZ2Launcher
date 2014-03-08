@@ -68,123 +68,77 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private string _arma2OaBetaPath;
-		public string Arma2OABetaPath
-		{
-			get { return _arma2OaBetaPath; }
-			private set
-			{
-				_arma2OaBetaPath = value;
-				PropertyHasChanged("Arma2OABetaPath");
-			}
-		}
-
-		private string _arma2OaBetaExe;
-		public string Arma2OABetaExe
-		{
-			get { return _arma2OaBetaExe; }
-			private set
-			{
-				_arma2OaBetaExe = value;
-				PropertyHasChanged("Arma2OABetaExe");
-			}
-		}
-
-		private Version _arma2OaBetaVersion;
-		public Version Arma2OABetaVersion
-		{
-			get { return _arma2OaBetaVersion; }
-			private set
-			{
-				_arma2OaBetaVersion = value;
-				PropertyHasChanged("Arma2OABetaVersion");
-			}
-		}
-
 		public void Update()
 		{
-			try
-			{
-                SetPaths();
-                Arma2OABetaVersion = GameVersions.ExtractArma2OABetaVersion(Arma2OABetaExe);
-			}
-			catch//(Exception e)
-			{
-				//Disabled for now
-				//_logger.ErrorException("Unable to retrieve Local Machine Info.", e);
-			}
+	        SetPaths();
 		}
 
 		private void SetPaths()
 		{
-            RegistryKey baseKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry32);
-
-            try
-            {
-                RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", RegistryKeyPermissionCheck.Default, RegistryRights.QueryValues);
-                SteamPath = (string)steamKey.GetValue("InstallPath", "");
-                steamKey.Close(); steamKey.Dispose();
-            }
-            catch (Exception) { SteamPath = ""; } //no steam key found
-
-            try 
-            { 
-                RegistryKey bohemiaKey = baseKey.OpenSubKey("SOFTWARE\\Bohemia Interactive Studio", RegistryKeyPermissionCheck.Default, RegistryRights.QueryValues); 
-                try
-                {
-                    RegistryKey arma2Key = bohemiaKey.OpenSubKey("ArmA 2",RegistryKeyPermissionCheck.Default, RegistryRights.QueryValues);
-                    Arma2Path = (string)arma2Key.GetValue("main","");
-                    arma2Key.Close(); arma2Key.Dispose();
-                }
-                catch (Exception) { Arma2Path = ""; } //no arma2 key found
-
-                try
-                {
-                    RegistryKey oaKey = bohemiaKey.OpenSubKey("ArmA 2 OA",RegistryKeyPermissionCheck.Default, RegistryRights.QueryValues);
-                    Arma2OAPath = (string)oaKey.GetValue("main","");
-                    oaKey.Close(); oaKey.Dispose();
-                }
-                catch (Exception) { Arma2OAPath = ""; } //no arma2oa key found
-                bohemiaKey.Close(); bohemiaKey.Dispose();
-
-                //Try and figure out one's path based on the other
-                if (string.IsNullOrWhiteSpace(Arma2Path)
-                    && !string.IsNullOrWhiteSpace(Arma2OAPath))
-                {
-                    var pathInfo = new DirectoryInfo(Arma2OAPath);
-                    if (pathInfo.Parent != null)
-                    {
-                        Arma2Path = Path.Combine(pathInfo.Parent.FullName, "arma 2");
-                    }
-                }
-                if (!string.IsNullOrWhiteSpace(Arma2Path)
-                    && string.IsNullOrWhiteSpace(Arma2OAPath))
-                {
-                    var pathInfo = new DirectoryInfo(Arma2Path);
-                    if (pathInfo.Parent != null)
-                    {
-                        Arma2OAPath = Path.Combine(pathInfo.Parent.FullName, "arma 2 operation arrowhead");
-                    }
-                }
-            }
-            catch (Exception) //no bohemia key found
-            {
-                Arma2Path = "";
-                Arma2OAPath = "";
-            }
-
-            baseKey.Dispose(); baseKey = null;
-
-			if(string.IsNullOrWhiteSpace(Arma2OAPath))
+            using (var baseKey = RegistryKey.OpenBaseKey(Microsoft.Win32.RegistryHive.LocalMachine, RegistryView.Registry32))
 			{
-                Arma2OABetaPath = "";
-                Arma2OABetaExe = "";
-			}
-            else
-            {
-                Arma2OABetaPath = Path.Combine(Arma2OAPath, "Expansion\\beta");
-                Arma2OABetaExe = Path.Combine(Arma2OABetaPath, "arma2oa.exe");
-            }			
+				var perm = RegistryKeyPermissionCheck.Default;
+				var rights = RegistryRights.QueryValues;
+
+				try
+				{
+					using (var steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
+					{
+						SteamPath = (string)steamKey.GetValue("InstallPath", "");
+						steamKey.Close();
+					}
+				}
+				catch (Exception) { SteamPath = ""; } //no steam key found
+
+				try
+				{
+					using (var bohemiaKey = baseKey.OpenSubKey("SOFTWARE\\Bohemia Interactive Studio", perm, rights))
+					{
+						try
+						{
+							RegistryKey arma2Key = bohemiaKey.OpenSubKey("ArmA 2", perm, rights);
+							Arma2Path = (string)arma2Key.GetValue("main", "");
+							arma2Key.Close(); arma2Key.Dispose();
+						}
+						catch (Exception) { Arma2Path = ""; } //no arma2 key found
+
+						try
+						{
+							RegistryKey oaKey = bohemiaKey.OpenSubKey("ArmA 2 OA", perm, rights);
+							Arma2OAPath = (string)oaKey.GetValue("main", "");
+							oaKey.Close(); oaKey.Dispose();
+						}
+						catch (Exception) { Arma2OAPath = ""; } //no arma2oa key found
+
+						bohemiaKey.Close();
+					}
+
+					//Try and figure out one's path based on the other
+					if (string.IsNullOrWhiteSpace(Arma2Path)
+						&& !string.IsNullOrWhiteSpace(Arma2OAPath))
+					{
+						var pathInfo = new DirectoryInfo(Arma2OAPath);
+						if (pathInfo.Parent != null)
+						{
+							Arma2Path = Path.Combine(pathInfo.Parent.FullName, "arma 2");
+						}
+					}
+					if (!string.IsNullOrWhiteSpace(Arma2Path)
+						&& string.IsNullOrWhiteSpace(Arma2OAPath))
+					{
+						var pathInfo = new DirectoryInfo(Arma2Path);
+						if (pathInfo.Parent != null)
+						{
+							Arma2OAPath = Path.Combine(pathInfo.Parent.FullName, "arma 2 operation arrowhead");
+						}
+					}
+				}
+				catch (Exception) //no bohemia key found
+				{
+					Arma2Path = "";
+					Arma2OAPath = "";
+				}
+			}	
 		}
 	}
 }

@@ -27,25 +27,79 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		}
 	}
 
-	public static class GameVersions
+	public class GameVersion
 	{
-		public static string BuildArma2OAExePath(string arma2OAPath)
+		private static Version GetFileVersion(string arma2OAExePath)
 		{
-			return Path.Combine(arma2OAPath, "arma2oa.exe");
+			try
+			{
+				var versionInfo = FileVersionInfo.GetVersionInfo(arma2OAExePath);
+				return Version.Parse(versionInfo.ProductVersion);
+			}
+			catch (Exception) { return null; }
 		}
 
-		public static Version ExtractArma2OABetaVersion(string arma2OAExePath)
-		{
-			if(!File.Exists(arma2OAExePath))
-				return null;
+		public string DirPath = null;
+		public string ExePath = null;
+		public Version ExeVersion = null;
 
-			var versionInfo = FileVersionInfo.GetVersionInfo(arma2OAExePath);
-			Version version;
-			if(Version.TryParse(versionInfo.ProductVersion, out version))
+		public int? BuildNo 
+		{
+			get
 			{
-				return version;
+				if (ExeVersion != null)
+					return ExeVersion.Revision;
+
+				return null;
+			}			
+		}
+
+		public GameVersion(string gameDir)
+		{
+			var dirInfo = new DirectoryInfo(gameDir);
+			if (!dirInfo.Exists)
+				return;
+
+			DirPath = dirInfo.FullName;
+			ExePath = Path.Combine(gameDir, "arma2oa.exe");
+			if (!File.Exists(ExePath))
+				ExePath = null;
+			else
+				ExeVersion = GetFileVersion(ExePath);			
+		}
+	}
+
+	public class GameVersions
+	{
+		public GameVersion Retail;
+		public GameVersion Beta;
+
+		public GameVersions(string oaDir)
+		{
+			Retail = new GameVersion(oaDir);
+			if (Retail.DirPath == null)
+				return;
+
+			Beta = new GameVersion(Path.Combine(oaDir, "Expansion\\beta"));
+			if (Beta.DirPath == null)
+				return;
+		}
+
+		public GameVersion BestVersion
+		{
+			get
+			{
+				if ((Retail.BuildNo ?? 0) > (Beta.BuildNo ?? 0))
+					return Retail;
+
+				if ((Beta.BuildNo ?? 0) > 0)
+					return Beta;
+
+				if ((Retail.BuildNo ?? 0) > 0)
+					return Retail;
+
+				return null;
 			}
-			return null;
 		}
 	}
 }

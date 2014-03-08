@@ -11,40 +11,38 @@
         <StackPanel Margin="18 5 18 0">
             <TextBlock Text="versions"
 						   Foreground="#5A97F2"
-							Margin="0 0 0 0"
+							Margin="0,0,0,5"
 						   FontSize="24"/>
 
-
-            <Grid Margin="0 5 0 0">
-                <StackPanel >
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="DayZero Launcher"
+            <StackPanel Margin="0,0,0,8" >
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="DayZero Launcher"
 					   FontWeight="Bold"
 					   Margin="0 0 0 3"
 					   Foreground="#FFFFFF"/>
 
-                    </StackPanel>
-                    <StackPanel>
-                        <TextBlock Text="{Binding DayZeroLauncherUpdater.Status}"
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding DayZeroLauncherUpdater.Status}"
 						   Foreground="{Binding DayZeroLauncherUpdater.Status, Converter={StaticResource UpdateStatusToForegroundConverter}}"
 						   Margin="0 0 0 0"/>
-                    </StackPanel>
-                    <StackPanel Margin="0 8 0 0">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Your Version: "
+                </StackPanel>
+                <StackPanel Margin="0 8 0 0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Your Version: "
 							   Foreground="#DDD"/>
-                            <TextBlock Text="{Binding LocalMachineInfo.Current.DayZeroLauncherVersion}"
+                        <TextBlock Text="{Binding LocalMachineInfo.Current.DayZeroLauncherVersion}"
 							   Foreground="#FFFFFF"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,9"
+                    </StackPanel>
+                    <StackPanel Margin="0,8"
 							Orientation="Horizontal">
-                            <TextBlock Text="Latest Version: "
+                        <TextBlock Text="Latest Version: "
 								   Foreground="#DDD"/>
-                            <TextBlock Text="{Binding DayZeroLauncherUpdater.LatestVersion}"
+                        <TextBlock Text="{Binding DayZeroLauncherUpdater.LatestVersion}"
 							   Foreground="#FFFFFF"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="Apply now" 
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Apply now" 
                         		Foreground="LightGreen"
                         		Visibility="{Binding DayZeroLauncherUpdater.UpdatePending, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
                         		Margin="0"
@@ -52,7 +50,7 @@
                         		HorizontalAlignment="Left"
                         		Click="ApplyDayZeroLauncherUpdateNow_Click"
                         		Style="{StaticResource MetroButtonStyle}"/>
-                            <Button Content="Restart now" 
+                        <Button Content="Restart now" 
                         		Foreground="LightGreen"
                         		Visibility="{Binding DayZeroLauncherUpdater.RestartPending, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
                         		Margin="0"
@@ -60,14 +58,9 @@
                         		HorizontalAlignment="Left"
                         		Click="RestartDayZeroLauncher_Click"
                         		Style="{StaticResource MetroButtonStyle}"/>
-                        </StackPanel>
-                        <TextBlock Text=""
-								   Foreground="#FFFFFF"
-								   Margin="0 4 0 0"
-								   FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
             <StackPanel x:Name="GameErrorPanel" Orientation="Vertical" Visibility="{Binding LocatorError, FallbackValue=Collapsed, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}">
                 <TextBlock x:Name="GameErrorCaption" Text="{Binding LocatorError.Caption}"
 					Margin="0 0 0 3"
@@ -77,7 +70,7 @@
 					Foreground="white" TextWrapping="Wrap" />
             </StackPanel>
             <StackPanel x:Name="GameVersions" Visibility="{Binding LocatorError, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, ConverterParameter=true}">
-                <StackPanel>
+                <StackPanel Margin="0,10,0,8">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="ARMA 2"
                 			FontWeight="Bold"
@@ -95,10 +88,10 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Your Revision: "
                 				Foreground="#DDD"/>
-                            <TextBlock Text="{Binding CalculatedGameSettings.Arma2OABetaVersion.Revision}"
+                            <TextBlock Text="{Binding CalculatedGameSettings.Versions.BestVersion.BuildNo}"
                 				Foreground="#FFFFFF"/>
                         </StackPanel>
-                        <StackPanel Margin="0 9 0 0"
+                        <StackPanel Margin="0,8,0,0"
                 			Orientation="Horizontal">
                             <TextBlock Text="Latest Revision: "
                 				Foreground="#DDD"/>
@@ -112,18 +105,17 @@
                 			HorizontalAlignment="Left"
                 			Margin="0 8 0 0"
                 			Style="{StaticResource MetroButtonStyle}"
-                			Visibility="{Binding Arma2Updater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-										
+                			Visibility="{Binding Arma2Updater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"										
                 			Click="DownloadArma2_Click"/>
-
-                        <TextBlock Text="{Binding Arma2Updater.Installer.Status}"
+                        <TextBlock Visibility="{Binding Arma2Updater.Installer.Status, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+                            Text="{Binding Arma2Updater.Installer.Status}"
                 			Foreground="#FFFFFF"
-                			Margin="0 4 0 0"
+                			Margin="0,8,0,0"
                 			FontWeight="Bold"/>
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel>
+                <StackPanel Margin="0,10,0,8">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="DayZero"
@@ -150,7 +142,7 @@
             				Orientation="Horizontal">
                             <TextBlock Text="Latest Version: "
             					Foreground="#DDD"/>
-                            <TextBlock Text="{Binding DayZUpdater.LatestVersion}"
+                            <TextBlock Text="{Binding DayZUpdater.LatestVersion, TargetNullValue=Unknown}"
             					Foreground="#FFFFFF"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -158,7 +150,7 @@
             					Background="#444444"
             					Foreground="LightGreen"
             					HorizontalAlignment="Left"
-            					Margin="0 8"
+            					Margin="0,8,0,0"
             					Style="{StaticResource MetroButtonStyle}"
             					Visibility="{Binding DayZUpdater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
             					Click="DownloadDayZ_Click"/>
@@ -168,14 +160,15 @@
             					Foreground="LightGreen"
             					HorizontalAlignment="Left"
             					Visibility="{Binding DayZUpdater.VerifyButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-            					Margin="0 8"
+            					Margin="0,8,0,0"
             					Style="{StaticResource MetroButtonStyle}"
             					Click="FullSystemCheck_Click"/>
 
                         </StackPanel>
-                        <TextBlock Text="{Binding DayZUpdater.Downloader.Status}"
+                        <TextBlock Visibility="{Binding DayZUpdater.Downloader.Status, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+                            Text="{Binding DayZUpdater.Downloader.Status}"
             				Foreground="#FFFFFF"
-            				Margin="0 4 0 0"
+            				Margin="0,8,0,0"
             				FontWeight="Bold"
                             Height="Auto"/>
                     </StackPanel>

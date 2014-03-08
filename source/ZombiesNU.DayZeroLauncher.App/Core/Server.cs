@@ -90,10 +90,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get
 			{
 				var reqBuild = GetSettingOrDefault("reqBuild").TryIntNullable();
+				if (reqBuild == null)
+					return false;
 
-				return CalculatedGameSettings.Current.Arma2OABetaVersion != null
-				       && Arma2Version != null
-				       && (reqBuild != null && CalculatedGameSettings.Current.Arma2OABetaVersion.Revision >= reqBuild);
+				var versions = CalculatedGameSettings.Current.Versions;
+				if (versions == null)
+					return false;
+
+				var bestVer = versions.BestVersion;
+				if (bestVer == null)
+					return false;
+
+				return ((bestVer.BuildNo ?? 0) >= (reqBuild ?? 0));
 			}
 		}
 
@@ -101,9 +109,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				return CalculatedGameSettings.Current.ModContentVersion != null
-				       && DayZVersion != null
-					   && CalculatedGameSettings.Current.ModContentVersion.Equals(DayZVersion);
+				var modContentVersion = CalculatedGameSettings.Current.ModContentVersion;
+				if (modContentVersion == null)
+					return false;
+
+				if (DayZVersion == null)
+					return false;
+
+				return modContentVersion.EndsWith(DayZVersion.ToString(), StringComparison.OrdinalIgnoreCase);
 			}
 		}
 

@@ -176,7 +176,36 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             CloseGame();
 			var arguments = new StringBuilder();
 
-			string exePath;			
+			string exePath;
+			string gameName;
+			bool isBeta = false;
+			try
+			{
+				var versions = CalculatedGameSettings.Current.Versions;
+				var bestVer = versions.BestVersion;
+				int bestRev = bestVer.BuildNo ?? 0;
+				if (bestRev <= 0)
+					throw new NullReferenceException();
+
+				exePath = bestVer.ExePath;
+				if (bestVer.Equals(versions.Beta))
+				{
+					isBeta = true;
+					gameName = "Arma 2: Operation Arrowhead Beta";
+				}
+				else
+				{
+					isBeta = false;
+					gameName = "Arma 2: Operation Arrowhead";
+				}
+			}
+			catch (NullReferenceException)
+			{
+				MessageBox.Show("Could not find an appropriate version of the game.",
+								"Game launch error", MessageBoxButton.OK, MessageBoxImage.Error);
+				return false;
+			}
+
 			if(UserSettings.Current.GameOptions.LaunchUsingSteam)
 			{
 				exePath = Path.Combine(LocalMachineInfo.Current.SteamPath, "steam.exe");
@@ -187,27 +216,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					return false;
 				}
 
-                int mainVersionRev = 0;
-                {
-                    string mainEXE = GameVersions.BuildArma2OAExePath(CalculatedGameSettings.Current.Arma2OAPath);
-                    var mainVersion = GameVersions.ExtractArma2OABetaVersion(mainEXE);
-                    if (mainVersion != null) mainVersionRev = mainVersion.Revision;
-                }
-                int betaVersionRev = 0;
-                {
-                    string betaEXE = GameVersions.BuildArma2OAExePath(Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, "Expansion\\beta"));
-                    var betaVersion = GameVersions.ExtractArma2OABetaVersion(betaEXE);
-                    if (betaVersion != null) betaVersionRev = betaVersion.Revision;
-                }
-
                 int appId = 219540;
-                string gameName = "Arma 2: Operation Arrowhead Beta";
-                if (mainVersionRev > betaVersionRev)
-                {
-                    appId = 33930;
-                    gameName = "Arma 2: Operation Arrowhead";
-                }
-
+				if (!isBeta)
+					appId = 33930;
+                
                 var pathInfo = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
                 for (pathInfo = pathInfo.Parent; pathInfo != null; pathInfo = pathInfo.Parent )
                 {
@@ -244,10 +256,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
                 arguments.Append(" -applaunch " + appId.ToString());
 			}
-			else
-			{
-				exePath = CalculatedGameSettings.Current.Arma2OAExePath;
-			}
 
 			if(UserSettings.Current.GameOptions.MultiGpu)
 			{
@@ -272,7 +280,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 arguments.Append(" -password=" + server.Password);
             }
 
-			string modArg = String.Format("-mod={0};Expansion;Expansion\\beta;Expansion\\beta\\Expansion", CalculatedGameSettings.Current.Arma2Path);
+			var modArgSb = new StringBuilder(String.Format("-mod={0};Expansion", CalculatedGameSettings.Current.Arma2Path));
+			if (isBeta)
+				modArgSb.Append(";Expansion\\beta;Expansion\\beta\\Expansion");
+
 			foreach (var addon in gameType.AddOnNames)
 			{
 				string fullPath = Path.Combine(CalculatedGameSettings.Current.AddonsPath, addon);
@@ -286,9 +297,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (fullPath.StartsWith(rootPath, StringComparison.InvariantCultureIgnoreCase))
 					fullPath = fullPath.Substring(rootPath.Length);
 
-				modArg += String.Format(";{0}", fullPath);
+				modArgSb.Append(";");
+				modArgSb.Append(fullPath);
 			}
-			arguments.Append(" \"" + modArg + "\"");
+			arguments.Append(" \"" + modArgSb.ToString() + "\"");
+			modArgSb.Clear(); modArgSb = null;
 
 			try
 			{

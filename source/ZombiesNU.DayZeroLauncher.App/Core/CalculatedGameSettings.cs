@@ -36,9 +36,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public string Arma2Path { get; set; }
 		public string Arma2OAPath { get; set; }
-		public string Arma2OAExePath { get; set; }
 		public string AddonsPath { get; set; }
-		public Version Arma2OABetaVersion { get; set; }
+		public GameVersions Versions { get; set; }
 		public string ModContentVersion { get; set; }
 
 		public LocatorInfo Locator { get; set; }
@@ -47,9 +46,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			SetArma2Path();
 			SetArma2OAPath();
-			SetArma2OAExePath();
 			SetAddonsPath();
-			SetArma2OABetaVersion();
+			SetGameVersions();
 			SetModContentVersion();
 		}
 
@@ -73,16 +71,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			PropertyHasChanged("Arma2OAPath");
 		}
 
-		private void SetArma2OAExePath()
-		{
-			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride))
-                Arma2OAExePath = GameVersions.BuildArma2OAExePath(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
-			else
-				Arma2OAExePath = LocalMachineInfo.Current.Arma2OABetaExe;
-
-			PropertyHasChanged("Arma2OAExePath");
-		}
-
 		public void SetAddonsPath()
 		{
 			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.AddonsDirectoryOverride))
@@ -93,14 +81,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			PropertyHasChanged("AddonsPath");
 		}
 
-		private void SetArma2OABetaVersion()
+		private void SetGameVersions()
 		{
-			if(!string.IsNullOrEmpty(Arma2OAExePath))
-				Arma2OABetaVersion = GameVersions.ExtractArma2OABetaVersion(Arma2OAExePath);
+			if (!string.IsNullOrEmpty(Arma2OAPath))
+				Versions = new GameVersions(Arma2OAPath);
 			else
-				Arma2OABetaVersion = null;
+				Versions = null;
 
-			PropertyHasChanged("Arma2OABetaVersion");
+			PropertyHasChanged("Versions");
 		}
 
 		private void SetModContentVersion()

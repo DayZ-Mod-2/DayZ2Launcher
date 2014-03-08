@@ -102,6 +102,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					}
 
 					Status = DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE;
+					Execute.OnUiThreadSync(() => CalculatedGameSettings.Current.Update(), null, System.Windows.Threading.DispatcherPriority.Input);
 				}
 				catch (Exception)
 				{

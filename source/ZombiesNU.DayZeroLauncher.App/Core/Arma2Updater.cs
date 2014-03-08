@@ -99,13 +99,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							PatchesMeta.PatchInfo thePatch = patchInfo.Updates.Where(x => x.Version == patchInfo.LatestRevision).Single();
 							SetLatestServerVersion(thePatch);
 
-							if (LocalMachineInfo.Current.Arma2OABetaVersion == null ||
-								LocalMachineInfo.Current.Arma2OABetaVersion.Revision != thePatch.Version)
-							{
-								Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
-							}
-							else
-								Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
+							Status = VersionMismatch ? (DayZeroLauncherUpdater.STATUS_OUTOFDATE):(DayZeroLauncherUpdater.STATUS_UPTODATE);
 						}
 						catch (Exception) { Status = "Could not determine revision"; }
 					}
@@ -143,7 +137,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (_latestServerVersion != null)
 					return _latestServerVersion.Version;
 
-				return new Nullable<int>();
+				return null;
 			}
 		}
 		
@@ -151,12 +145,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if (CalculatedGameSettings.Current.Arma2OABetaVersion == null)
-					return true;
-				if (LatestVersion == null)
-					return false;
+				bool mismatch = true;
 
-				return CalculatedGameSettings.Current.Arma2OABetaVersion.Revision != LatestVersion;
+				var versions = CalculatedGameSettings.Current.Versions;
+				if (versions != null)
+				{
+					if ((versions.Retail.BuildNo ?? 0) > (LatestVersion ?? 0))
+						mismatch = false;
+					else if ((versions.Beta.BuildNo ?? 0) == (LatestVersion ?? 0))
+						mismatch = false;
+				}
+
+				return mismatch;
 			}
 		}
 
