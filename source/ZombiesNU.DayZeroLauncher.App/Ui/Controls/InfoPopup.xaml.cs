@@ -20,9 +20,11 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
     /// </summary>
     public partial class InfoPopup : Window
     {
-        public InfoPopup()
+        public InfoPopup(string title, Window owner)
         {
             InitializeComponent();
+			Owner = owner;
+			Title = title;
         }
 
         public void SetMessage(string message)

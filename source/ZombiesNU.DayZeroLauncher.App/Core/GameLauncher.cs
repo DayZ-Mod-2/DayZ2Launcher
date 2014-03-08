@@ -217,16 +217,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                         string fullManifestPath = Path.Combine(pathInfo.FullName, manifestName);
                         if (!File.Exists(fullManifestPath))
                         {
-                            InfoPopup popup = new InfoPopup();
-                            popup.Owner = parentWnd;
-                            popup.Title = "User intervention required";
-                            popup.Headline.Content = "Game couldn't be launched";
-                            popup.SetMessage(       "According to Steam,\n" + 
-                                                    gameName + " is not installed.\n" +
-                                                    "Please install it from the Library tab.\n" +
-                                                    "Or by clicking on the following link:");
-                            popup.SetLink("steam://install/" + appId.ToString() + "/","Install " + gameName);
-                            popup.Show();
+							Execute.OnUiThreadSync(() =>
+								{
+									InfoPopup popup = new InfoPopup("User intervention required", parentWnd);
+									popup.Headline.Content = "Game couldn't be launched";
+									popup.SetMessage("According to Steam,\n" +
+														gameName + " is not installed.\n" +
+														"Please install it from the Library tab.\n" +
+														"Or by clicking on the following link:");
+									popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
+									popup.Show();
+								}, null, System.Windows.Threading.DispatcherPriority.Input);
+							
                             return false;
                         }
                         break;
