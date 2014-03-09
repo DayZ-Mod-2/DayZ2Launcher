@@ -85,25 +85,29 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				};
 			_wc.DownloadFileCompleted += (sender, evt) =>
 				{
-					if (evt.Cancelled || evt.Error != null)
+					using (var wc = (WebClient)sender)
 					{
+						if (evt.Cancelled || evt.Error != null)
+						{
+							DownloadFileCompleted(sender, evt);
+							return;
+						}
+
+						try
+						{
+							if (!Sha1VerifyFile(destPath, fileInfo.Sha1Hash))
+								throw new Exception("Hash mismatch after download");
+						}
+						catch (Exception ex)
+						{
+							var newEvt = new AsyncCompletedEventArgs(ex, false, evt.UserState);
+							DownloadFileCompleted(sender, newEvt);
+							return;
+						}
+
 						DownloadFileCompleted(sender, evt);
-						return;
 					}
-
-					try
-					{
-						if (!Sha1VerifyFile(destPath, fileInfo.Sha1Hash))
-							throw new Exception("Hash mismatch after download");
-					}
-					catch (Exception ex)
-					{
-						var newEvt = new AsyncCompletedEventArgs(ex, false, evt.UserState);
-						DownloadFileCompleted(sender, newEvt);
-						return;
-					}
-
-					DownloadFileCompleted(sender, evt);
+					_wc = null;
 				};
 
 			_wc.DownloadFileAsync(new Uri(fileInfo.Url),destPath);

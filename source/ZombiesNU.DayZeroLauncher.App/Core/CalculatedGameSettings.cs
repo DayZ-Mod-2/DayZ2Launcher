@@ -5,6 +5,11 @@ using Newtonsoft.Json;
 namespace zombiesnu.DayZeroLauncher.App.Core
 {	public class LocatorInfo
 	{
+		[JsonProperty("motd")]
+		public string MotdUrl = null;
+		[JsonProperty("servers")]
+		public string ServerListUrl = null;
+
 		[JsonProperty("patches")]
 		public HashWebClient.RemoteFileInfo Patches = null;
 		[JsonProperty("mods")]

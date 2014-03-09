@@ -69,12 +69,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					{
 						Status = updater.Status = "Async operation cancelled";
 						IsRunning = false;
+						_gameLauncher.SetModDetails(null,true,null);
 					}
 					else if (args.Error != null)
 					{
 						updater.Status = "Error downloading content index file";
 						Status = args.Error.Message;
 						IsRunning = false;
+						_gameLauncher.SetModDetails(null, false, args.Error);
 					}
 					else
 					{
@@ -95,11 +97,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							updater.Status = "Error parsing content index file";
 							Status = ex.Message;
 							IsRunning = false;
+							_gameLauncher.SetModDetails(null, false, ex);
 						}
 
-						_gameLauncher.ModDetails = modDetails;
 						if (modDetails != null)
+						{
+							_gameLauncher.SetModDetails(modDetails);
 							_torrentUpdater = new TorrentUpdater(versionString, modDetails.AddOns, fullSystemCheck, this, updater); //this automatically starts it's async thread
+						}
 					}
 				};
 			wc.BeginDownload(jsonIndex, metaJsonFilename);

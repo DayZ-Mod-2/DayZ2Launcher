@@ -41,8 +41,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			DayZeroLauncherUpdater.PropertyChanged += AnyModelPropertyChanged;
 			Arma2Updater.PropertyChanged += AnyModelPropertyChanged;
 			DayZUpdater.PropertyChanged += AnyModelPropertyChanged;
-
-			CheckForUpdates();
 		}
 
 		private void AnyModelPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -115,6 +113,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
+		public event AsyncCompletedEventHandler LocatorChanged = (o, e) => {};
+
 		public void CheckForUpdates()
 		{
 		    CalculatedGameSettings.Current.Update();
@@ -127,9 +127,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				wc.DownloadStringCompleted += (sender, evt) =>
 					{
 						if (evt.Cancelled)
+						{
 							LocatorError = new LocatorErrorClass("Check cancelled", "Locator info fetch cancelled.");
+							LocatorChanged(this, evt);
+						}
 						else if (evt.Error != null)
+						{
 							LocatorError = new LocatorErrorClass("Locator fetch error", evt.Error.Message);
+							LocatorChanged(this, evt);
+						}
 						else
 						{
 							LocatorError = null;
@@ -139,6 +145,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 							{
 								locator = null;
 								LocatorError = new LocatorErrorClass("Locator parse error", ex.Message);
+								LocatorChanged(this, new AsyncCompletedEventArgs(ex, false, locator));
 							}
 							CalculatedGameSettings.Current.Locator = locator;
 
@@ -146,6 +153,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 							{
 								Arma2Updater.CheckForUpdates(locator.Patches);
 								DayZUpdater.CheckForUpdates(locator.Mods);
+								LocatorChanged(this, new AsyncCompletedEventArgs(null, false, locator));
 							}
 						}
 					};

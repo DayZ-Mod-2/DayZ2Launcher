@@ -21,8 +21,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public string LastException;
 		private bool _isUpdating;
 
-
-
         public Server(string ipAddress, int port, string password, string mod)
 		{
 			_ipAddress = ipAddress;
@@ -267,6 +265,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _port; }
 		}
 
+		public bool MatchesIpPort(string ipAddr, int port)
+		{
+			return (IpAddress.Equals(ipAddr.Trim(), StringComparison.OrdinalIgnoreCase) && Port == port);
+		}
         
 		public string LastJoinedOn
 		{

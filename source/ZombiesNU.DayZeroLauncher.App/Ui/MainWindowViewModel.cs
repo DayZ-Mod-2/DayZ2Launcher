@@ -21,14 +21,14 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			CurrentTab = Tabs.First();
 
 			ServerList = new Core.ServerList();
-			ServerList.GetAndUpdateAll();
-
 			Launcher = new GameLauncher();
 
 			SettingsViewModel = new	SettingsViewModel();
 			UpdatesViewModel = new UpdatesViewModel(Launcher);
+			UpdatesViewModel.LocatorChanged += (sender, e) => { ServerList.GetAndUpdateAll(); };
 
-			ServerListViewModel.Launcher = Launcher;
+			ServerListViewModel.Launcher = Launcher;				 
+			UpdatesViewModel.CheckForUpdates();
 		}
 
 		private Core.ServerList _serverList;

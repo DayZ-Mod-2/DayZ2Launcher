@@ -10,6 +10,7 @@ using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
 using MonoTorrent.Common;
 using zombiesnu.DayZeroLauncher.App.Ui.ServerList;
+using System.Collections.Specialized;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 {
@@ -17,8 +18,20 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 	/// Interaction logic for ServerListGrid.xaml
 	/// </summary>
 	public partial class ServerListGrid : UserControl,
-		IHandle<RefreshingServersChange>
+		IHandle<RefreshingServersChange>, IHandle<ServerListGrid.LaunchJoinServerEvent>
 	{
+		public class LaunchJoinServerEvent : MainWindow.LaunchRoutedCommand
+		{
+			public LaunchJoinServerEvent(string ipAddress, int port, NameValueCollection data, Window mainWnd, string queryString)
+				: base(data, mainWnd)
+			{
+				this.IpAddress = ipAddress;
+				this.Port = port;
+			}
+
+			public string IpAddress;
+			public int Port;
+		}
 
 		public ServerListGrid()
 		{
@@ -28,6 +41,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
 		protected void JoinServer(Server server)
 		{
+			_queuedJoinEvt = null;
+
 			ServerListView listView = null;
 			FrameworkElement parent = (FrameworkElement)this.Parent;
 			do
@@ -56,7 +71,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 				}
 			}
 			var server = (Server) ((Control) sender).DataContext;
-           JoinServer(server);
+			JoinServer(server);
 		}
 
         void RowKeyDown(object sender, KeyEventArgs e)
@@ -79,11 +94,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			App.Events.Publish(new DataGridRowSelected());
 		}
 
+		private List<Server> GetServers()
+		{
+			return ((IEnumerable)TheGrid.DataContext)
+						.Cast<Server>().ToList();
+		}
+
 		private void RefreshAllServer(object sender, RoutedEventArgs e)
 		{
-			var servers = ((IEnumerable) TheGrid.DataContext)
-								.Cast<Server>()
-								.ToList();
+			var servers = GetServers();
 			var batch = new ServerBatchRefresher("Refreshing some servers...", servers);
 			App.Events.Publish(new RefreshServerRequest(batch));
 		}
@@ -93,6 +112,35 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			e.Handled = true;
 		}
 
+		private bool JoinFromEvent(LaunchJoinServerEvent joinEvt)
+		{
+			List<Server> servers;
+			try { servers = GetServers(); }
+			catch (Exception) { servers = null; }
+
+			Server foundServer = null;
+			if (servers != null)
+				foundServer = servers.FirstOrDefault(srv => srv.MatchesIpPort(joinEvt.IpAddress, joinEvt.Port));
+
+			if (foundServer == null)
+				return false;
+			else
+			{
+				JoinServer(foundServer);
+				return true;
+			}
+		}
+
+		private LaunchJoinServerEvent _queuedJoinEvt = null;
+		public void Handle(LaunchJoinServerEvent joinEvt)
+		{
+			Execute.OnUiThread(() =>
+				{
+					if (JoinFromEvent(joinEvt) == false) //defer for later when we know of this server
+						_queuedJoinEvt = joinEvt;
+				}, Dispatcher, System.Windows.Threading.DispatcherPriority.Input);			
+		}
+
 		public void Handle(RefreshingServersChange message)
 		{
 			var column = TheGrid.Columns[5];
@@ -100,6 +148,13 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			var newStyle = new Style(typeof (DataGridColumnHeader), originalStyle);
 				newStyle.Setters.Add(new Setter(VisibilityProperty, message.IsRunning ? Visibility.Hidden : Visibility.Visible));
 			column.HeaderStyle = newStyle;
+
+			if (_queuedJoinEvt != null && message.IsRunning == false) //maybe now we know of this server...
+			{
+				var theEvt = _queuedJoinEvt;
+				_queuedJoinEvt = null; //dont try and connect to this server forever, though
+				JoinFromEvent(theEvt);				
+			}
 		}
 	}
 
