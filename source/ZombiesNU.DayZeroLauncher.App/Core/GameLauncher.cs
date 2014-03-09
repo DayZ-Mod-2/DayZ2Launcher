@@ -10,6 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using zombiesnu.DayZeroLauncher.App.Ui;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Collections.Specialized;
+using Caliburn.Micro;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -28,7 +31,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public bool IsLaunchable;
 	}
 
-	public class GameLauncher : BindableBase
+	public class GameLauncher : ViewModelBase,
+		IHandle<GameLauncher.LaunchStartGameEvent>
 	{
 		protected class GameTypeNotFound : Exception
 		{
@@ -38,6 +42,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 
 			public string GameType { get; set; }
+		}
+
+		public class LaunchStartGameEvent : MainWindow.LaunchRoutedCommand
+		{
+			public LaunchStartGameEvent(string gameType, NameValueCollection data, Window mainWnd)
+				: base(data, mainWnd)
+			{
+				this.GameType = gameType;
+			}
+
+			public string GameType;
 		}
 
 		public class ButtonInfo : BindableBase
@@ -86,22 +101,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public MetaModDetails ModDetails
 		{
 			get { return _modDetails; }
-			set
-			{
-				_modDetails = value;
-
-				Execute.OnUiThread(() =>
-				{
-					LaunchButtons.Clear();
-					foreach (var gameType in _modDetails.GameTypes)
-					{
-						if (!gameType.IsLaunchable)
-							continue;
-
-						LaunchButtons.Add(new ButtonInfo("Launch " + gameType.Name, gameType.Ident));
-					}
-				});	
-			}
 		}
 
 		protected MetaGameType FindGameTypeWithIdent(string gameTypeIdent)
@@ -113,13 +112,74 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return gameType;
 		}
 
+		public void SetModDetails(MetaModDetails newModDetails, bool cancelled=false, Exception ex=null)
+		{				
+			if (newModDetails != null)
+			{
+				_modDetails = newModDetails;
+
+				Execute.OnUiThread(() =>
+					{
+						LaunchButtons.Clear();
+						foreach (var gameType in _modDetails.GameTypes)
+						{
+							if (!gameType.IsLaunchable)
+								continue;
+
+							LaunchButtons.Add(new ButtonInfo("Launch " + gameType.Name, gameType.Ident));
+						}
+					});
+			}
+
+			ModDetailsChanged(newModDetails, cancelled, ex);
+		}
+
+		private LaunchStartGameEvent _queuedLaunchEvt = null;
+		private void ModDetailsChanged(MetaModDetails newModDetails, bool cancelled = false, Exception ex = null)
+		{
+			if (newModDetails != null && cancelled == false && ex == null) //only if we received some fresh new info
+			{
+				if (_queuedLaunchEvt != null)
+				{
+					var theEvt = _queuedLaunchEvt;
+					_queuedLaunchEvt = null; //dont try twice with stale launch
+
+					LaunchFromEvent(theEvt);
+				}
+			}
+		}
+
+		private bool LaunchFromEvent(LaunchStartGameEvent launchEvt)
+		{
+			MetaGameType gt;
+			try { gt = FindGameTypeWithIdent(launchEvt.GameType.Trim()); }
+			catch (Exception) { gt = null; }
+
+			if (gt == null) //defer for later when we know of this server
+				return false;
+			else
+			{
+				Execute.OnUiThread(() => LaunchGame(launchEvt.SourceWindow, gt.Ident),
+									launchEvt.SourceWindow.Dispatcher, System.Windows.Threading.DispatcherPriority.Input);
+				return true;
+			}
+		}
+		
+		public void Handle(LaunchStartGameEvent launchEvt)
+		{
+			if (LaunchFromEvent(launchEvt) == false)
+				_queuedLaunchEvt = launchEvt;
+		}
+
 		public void LaunchGame(Window parentWnd, string gameTypeIdent)
         {
+			_queuedLaunchEvt = null;
 			BeginLaunchProcess(parentWnd, null, gameTypeIdent);
         }
 
         public void JoinServer(Window parentWnd, Server server)
         {
+			_queuedLaunchEvt = null;
 			BeginLaunchProcess(parentWnd, server, server.Mod);
         }
 
@@ -277,7 +337,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             {
                 arguments.Append(" -connect=" + server.IpAddress);
                 arguments.Append(" -port=" + server.Port);
-                arguments.Append(" -password=" + server.Password);
+				if (!string.IsNullOrWhiteSpace(server.Password))
+					arguments.Append(" -password=" + server.Password);
             }
 
 			var modArgSb = new StringBuilder(String.Format("-mod={0};Expansion", CalculatedGameSettings.Current.Arma2Path));

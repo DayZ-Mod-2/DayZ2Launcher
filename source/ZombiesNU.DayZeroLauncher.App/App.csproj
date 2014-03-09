@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>13</ApplicationRevision>
-    <ApplicationVersion>1.2.2.13</ApplicationVersion>
+    <ApplicationRevision>14</ApplicationRevision>
+    <ApplicationVersion>1.2.3.14</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -178,9 +178,7 @@
     <Compile Include="Core\Arma2Installer.cs" />
     <Compile Include="Core\Arma2Updater.cs" />
     <Compile Include="Core\CalculatedGameSettings.cs" />
-    <Compile Include="Core\ExtendedWebClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Core\HttpUtility.cs" />
     <Compile Include="Core\TorrentOptions.cs" />
     <Compile Include="Core\GUIDCalculator.cs" />
     <Compile Include="Core\HashWebClient.cs" />
@@ -236,7 +234,6 @@
     <Compile Include="Ui\Controls\VersionControl.xaml.cs">
       <DependentUpon>VersionControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Core\HttpGetter.cs" />
     <Compile Include="Ui\Converters\BooleanToSelectedOptionColorConverter.cs" />
     <Compile Include="Ui\Converters\BooleanToVisibilityHiddenConverter.cs" />
     <Compile Include="Ui\Converters\BooleanToVisibilityCollapsedConverter.cs" />
