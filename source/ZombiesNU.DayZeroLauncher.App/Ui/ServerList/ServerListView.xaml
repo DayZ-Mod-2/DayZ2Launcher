@@ -12,12 +12,10 @@
 			<ColumnDefinition Width="190"/>
 			<ColumnDefinition/>
 		</Grid.ColumnDefinitions>
-		-->
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition/>
 		</Grid.RowDefinitions>
-        <!--
 		<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
 			<TextBlock Text="{Binding ListViewModel.Servers.Count}" Foreground="#FFF" FontSize="16"/>
 			<TextBlock Text=" results " Foreground="#FFF" FontSize="16"/>
@@ -36,10 +34,8 @@
 		</ScrollViewer>
         -->
 		<Controls:ServerListGrid DataContext="{Binding ListViewModel.Servers}"
-							 Grid.RowSpan="2"
 							 HorizontalAlignment="Stretch"
 							 VerticalAlignment="Stretch"
-							 Grid.Row="0"
-							 Grid.Column="1" Loaded="ServerListGrid_Loaded_1" />
+							 Loaded="ServerListGrid_Loaded_1" />
 	</Grid>
 </UserControl>
