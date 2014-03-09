@@ -95,25 +95,40 @@ namespace zombiesnu.DayZeroLauncher.App
 		}
 
 		private static string[] _exeArguments = null;
+		private static string QueryParamsFromArgs(string[] whichArgs)
+		{
+			var args = new List<string>();
+			foreach (string arg in whichArgs)
+			{
+				string[] tokens = arg.Split('=');
+				for (int i = 0; i < tokens.Length; i++)
+					tokens[i] = Uri.EscapeDataString(tokens[i]);
+
+				args.Add(string.Join("=", tokens));
+			}
+
+			return string.Join("&", args);
+		}
 		public static string GetQueryParams()
 		{
-			string queryString;
+			string queryString = null;
 			if (ApplicationDeployment.IsNetworkDeployed)
-				queryString = ApplicationDeployment.CurrentDeployment.ActivationUri.Query;
-			else
 			{
-				var args = new List<string>();
-				foreach (string arg in _exeArguments)
+				var actUri = ApplicationDeployment.CurrentDeployment.ActivationUri;
+				if (actUri != null)
+					queryString = actUri.Query;
+				else
 				{
-					string[] tokens = arg.Split('=');
-					for (int i = 0; i < tokens.Length; i++)
-						tokens[i] = Uri.EscapeDataString(tokens[i]);
-
-					args.Add(string.Join("=", tokens));
+					try
+					{
+						var actData = AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData;
+						queryString = QueryParamsFromArgs(actData);
+					}
+					catch (Exception) { queryString = null; }
 				}
-
-				queryString = string.Join("&", args);
 			}
+			else
+				queryString = QueryParamsFromArgs(_exeArguments);
 
 			if (queryString == null)
 				return "";
@@ -123,7 +138,10 @@ namespace zombiesnu.DayZeroLauncher.App
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			_exeArguments = e.Args;
+			if (e.Args == null)
+				_exeArguments = new string[0];
+			else
+				_exeArguments = e.Args;
 
 			AppDomain.CurrentDomain.UnhandledException += UncaughtThreadException;
 			DispatcherUnhandledException += UncaughtUiThreadException;
