@@ -32,6 +32,13 @@
 
             <Ui:UpdatesView DataContext="{Binding UpdatesViewModel}"
 							 Grid.RowSpan="5"
+							 Width="205"
+							 HorizontalAlignment="Right"
+							 Canvas.ZIndex="1000"
+						     Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, FallbackValue=Hidden}"/>
+
+            <Ui:PluginsView DataContext="{Binding PluginsViewModel}"
+							 Grid.RowSpan="5"
 							 Width="200"
 							 HorizontalAlignment="Right"
 							 Canvas.ZIndex="1000"
@@ -197,8 +204,7 @@
                         <Button 
 							Margin="16 0 0 0"
 							Click="Updates_Click"
-							Foreground="{Binding UpdatesViewModel.Status, Converter={StaticResource UpdateStatusToForegroundConverter}}"
-								Style="{StaticResource MetroTextButtonStyle}">
+							Style="{Binding UpdatesViewModel.Status, Converter={StaticResource UpdateStatusToStyleConverter}, FallbackValue={StaticResource MetroTextButtonStyle}}">
                             <Button.Template>
                                 <ControlTemplate>
                                     <Border IsHitTestVisible="True"
@@ -217,6 +223,33 @@
 														   Margin="4 0 0 0"
 															FontSize="14"
 														   Foreground="{TemplateBinding Foreground}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button 
+							Margin="16 0 0 0"
+							Click="Plugins_Click"
+                            Style="{StaticResource MetroTextButtonStyle}">
+                            <Button.Template>
+                                <ControlTemplate>
+                                    <Border IsHitTestVisible="True"
+                                		Margin="0"
+                                		Padding="0"
+                                		Background="#222">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Path Data="F1 M49.1958,33.5217 C53.144,37.4699 53.4908,43.6557 50.2361,47.9969 L55.9133,53.6742 C56.5317,54.2925 56.5317,55.295 55.9133,55.9134 55.295,56.5317 54.2925,56.5317 53.6742,55.9134 L47.9969,50.2361 C43.6557,53.4908 37.4698,53.1441 33.5216,49.1959 L36.8804,45.8371 34.0814,43.0381 C33.1539,42.1107 33.1539,40.6069 34.0814,39.6794 35.0089,38.7519 36.5127,38.7519 37.4402,39.6794 L40.2392,42.4784 42.4783,40.2392 39.6794,37.4402 C38.7519,36.5127 38.7519,35.009 39.6794,34.0815 40.6069,33.154 42.1106,33.154 43.0381,34.0815 L45.8371,36.8804 49.1958,33.5217 z"
+                                				Stretch="Uniform" 
+                                				Fill="{TemplateBinding Foreground}" 
+                                				Width="14.322" 
+                                				Height="14.321"
+                                				Margin="0,4,0,0" />
+                                            <TextBlock Text="plugins"
+                                				VerticalAlignment="Top"
+                                				Margin="4 0 0 0"
+                                				FontSize="14"
+                                				Foreground="{TemplateBinding Foreground}"/>
                                         </StackPanel>
                                     </Border>
                                 </ControlTemplate>
@@ -359,7 +392,7 @@
                                     <Button Margin="5,0,0,0" Click="LaunchGameButton_Click" Style="{StaticResource MetroButtonStyle}" Height="23" Background="#444444" Foreground="LightGreen" Cursor="Hand" Content="{Binding Text}"/>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
-                        </ItemsControl>                        
+                        </ItemsControl>
                     </Grid>
                 </Grid>
             </Grid>

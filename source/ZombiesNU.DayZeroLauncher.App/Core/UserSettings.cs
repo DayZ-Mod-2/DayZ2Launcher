@@ -25,6 +25,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		[DataMember] private GameOptions _gameOptions = new GameOptions();
 		[DataMember] private TorrentOptions _torrentOptions = new TorrentOptions();
 		[DataMember] private AppOptions _appOptions = new AppOptions();
+		[DataMember] private List<string> _enabledPlugins = new List<string>();
 		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
 		[DataMember] private List<RecentServer> _recentServers = new List<RecentServer>();
         [DataMember] private bool _hideUS = false; 
@@ -138,6 +139,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return _favorites;
 			}
 			set { _favorites = value; }
+		}
+
+		public List<string> EnabledPlugins
+		{
+			get
+			{
+				if (_enabledPlugins == null)
+				{
+					_enabledPlugins = new List<string>();
+				}
+				return _enabledPlugins;
+			}
+			set { _enabledPlugins = value; }
 		}
 
 		public List<RecentServer> RecentServers

@@ -6,76 +6,33 @@
              xmlns:Controls="clr-namespace:zombiesnu.DayZeroLauncher.App.Ui.Controls" mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-		<DataGrid ItemsSource="{Binding}"
+        <DataGrid ItemsSource="{Binding}"
 				  Margin="0 0 0 0"
 				  Grid.Row="1"
 				  x:Name="TheGrid"
 				  HorizontalGridLinesBrush="#333"
-          VerticalGridLinesBrush="#333"
+                  VerticalGridLinesBrush="#333"
 				  HorizontalAlignment="Stretch"
 				  VerticalAlignment="Stretch"
-					  VerticalScrollBarVisibility="disabled"
+					  VerticalScrollBarVisibility="Disabled"
 						HorizontalScrollBarVisibility="Disabled"
 					  Background="Transparent"
 					 HeadersVisibility="Column"
 					  Foreground="#DDD"
-					  BorderThickness="0"
 				  SelectionMode="Single"
 				  SelectionUnit="FullRow"
-					ColumnHeaderStyle="{StaticResource MetroDataGridHeader}"						  
-					  AutoGenerateColumns="False">
-			<DataGrid.RowStyle>
-				<Style TargetType="{x:Type DataGridRow}">
-					<EventSetter Event="MouseDoubleClick" Handler="RowDoubleClick"/>
+                  Style="{StaticResource MetroDataGridStyle}"
+				  ColumnHeaderStyle="{StaticResource MetroDataGridHeader}"						  
+                  CellStyle="{StaticResource MetroDataGridCellStyle}"
+				  AutoGenerateColumns="False">
+            <DataGrid.RowStyle>
+                <Style BasedOn="{StaticResource MetroDataGridRowStyle}" TargetType="DataGridRow">
+                    <EventSetter Event="MouseDoubleClick" Handler="RowDoubleClick"/>
                     <EventSetter Event="KeyDown" Handler="RowKeyDown"/>
                     <EventSetter Event="KeyUp" Handler="RowKeyUp"/>
-					<EventSetter Event="PreviewMouseLeftButtonDown" Handler="RowLeftButtonDown"/>
-					<Style.Triggers>
-						<Trigger Property="IsMouseOver" Value="False">
-							<Setter Property="Background"
-									Value="Transparent"/>
-						</Trigger>
-						<Trigger Property="IsMouseOver"
-                           Value="True">
-							<Setter Property="Foreground"
-                               Value="#FFF" />
-							<Setter Property="Background"
-									Value="#4A4A4A"/>
-						</Trigger>
-					</Style.Triggers>
-					<Style.Resources>
-						<SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#9CBFF2" />
-						<SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#9CBFF2" />
-						<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}">#555555</SolidColorBrush>
-					</Style.Resources>
-				</Style>
-			</DataGrid.RowStyle>
-			<DataGrid.CellStyle>
-				<Style TargetType="DataGridCell">
-					<Setter Property="BorderThickness" Value="0"/>
-					<Setter Property="BorderBrush" Value="#333"/>
-					<Setter Property="Margin" Value="0"/>
-					
-					<Setter Property="Padding" Value="2 2 8 2"/>
-					<Setter Property="Template">
-						<Setter.Value>
-							<ControlTemplate TargetType="{x:Type DataGridCell}">
-								<Border Padding="{TemplateBinding Padding}" 
-										BorderBrush="{TemplateBinding BorderBrush}" 
-										BorderThickness="{TemplateBinding BorderThickness}" 
-										Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-									<ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
-								</Border>
-							</ControlTemplate>
-						</Setter.Value>
-					</Setter>
-				</Style>
-			</DataGrid.CellStyle>
-			<DataGrid.Resources>
-				<SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" 
-                   Color="#666666"/>
-				<SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}">#555555</SolidColorBrush>
-			</DataGrid.Resources>
+                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="RowLeftButtonDown"/>
+                </Style>
+            </DataGrid.RowStyle>
 			<DataGrid.Columns>
                 <!--
 				<DataGridTemplateColumn

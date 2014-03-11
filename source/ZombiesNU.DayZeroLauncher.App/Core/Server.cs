@@ -114,7 +114,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (DayZVersion == null)
 					return false;
 
-				return modContentVersion.EndsWith(DayZVersion.ToString(), StringComparison.OrdinalIgnoreCase);
+				return modContentVersion.EndsWith(DayZVersion, StringComparison.OrdinalIgnoreCase);
 			}
 		}
 
@@ -163,6 +163,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			internal set
 			{
 				_settings = value;
+				if (_settings != null && _settings.ContainsKey("hostname"))
+				{
+					if (_settings["hostname"] != null)
+						_name = _settings["hostname"];
+				}
 				Info = new ServerInfo((ServerDifficulty?) Difficulty, Name);
 				PropertyHasChanged("Settings");
 				PropertyHasChanged("Name");
@@ -341,16 +346,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private Version _dayZVersion;
-		public Version DayZVersion
+		private string _dayZVersion;
+		public string DayZVersion
 		{
 			get
 			{
 				if(_dayZVersion == null)
-				{
-					var dayZVersionString = GetDayZVersionString(Name);
-					Version.TryParse(dayZVersionString, out _dayZVersion);
-				}
+					_dayZVersion = GetDayZVersionString(Name);
+
 				return _dayZVersion;
 			}
 		}
@@ -427,11 +430,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 
 			var match = Regex.Match(name, @"\d(\.\d){1,3}");
-			if(!match.Success)
-			{
+			if (!match.Success)
 				return null;
+
+			int strlen = match.Value.Length;
+			for (int i=match.Index+strlen; i<name.Length; i++)
+			{
+				if (name[i] == '(' || name[i] == ')' || name[i] == ' ' || name[i] == '\t' || name[i] == '/')
+					break;
+
+				strlen++;
 			}
-			return match.Value;
+
+			return name.Substring(match.Index, strlen);
 		}
 
 		public bool Equals(Server other)

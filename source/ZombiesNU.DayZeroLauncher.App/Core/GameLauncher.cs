@@ -86,6 +86,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+		public GameLauncher()
+		{
+			ModDetailsChanged += (sender, args) => ModDetailsChangedHandler((MetaModDetails)args.UserState, args.Cancelled, args.Error);
+		}
+
 		private ObservableCollection<ButtonInfo> _launchButtons = new ObservableCollection<ButtonInfo>();
 		public ObservableCollection<ButtonInfo> LaunchButtons
 		{
@@ -131,11 +136,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					});
 			}
 
-			ModDetailsChanged(newModDetails, cancelled, ex);
+			ModDetailsChanged(this, new AsyncCompletedEventArgs(ex, cancelled, newModDetails));
 		}
 
+		public event AsyncCompletedEventHandler ModDetailsChanged;
+
 		private LaunchStartGameEvent _queuedLaunchEvt = null;
-		private void ModDetailsChanged(MetaModDetails newModDetails, bool cancelled = false, Exception ex = null)
+		private void ModDetailsChangedHandler(MetaModDetails newModDetails, bool cancelled = false, Exception ex = null)
 		{
 			if (newModDetails != null && cancelled == false && ex == null) //only if we received some fresh new info
 			{
@@ -205,7 +212,21 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (_dlgWindow != null)
 				return;
 
-			var culledAddons = ModDetails.AddOns.Where(x => { return gameType.AddOnNames.Count(y => { return x.Name.Equals(y, StringComparison.OrdinalIgnoreCase); }) > 0; });
+			var culledAddons = new List<MetaAddon>();
+			culledAddons.AddRange(ModDetails.AddOns.Where(x => { return gameType.AddOnNames.Count(y => { return x.Name.Equals(y, StringComparison.OrdinalIgnoreCase); }) > 0; }).AsEnumerable());
+			
+			var enabledPlugins = ModDetails.Plugins.Where(x => UserSettings.Current.EnabledPlugins.Count(y => y.Equals(x.Ident, StringComparison.OrdinalIgnoreCase)) > 0).AsEnumerable();
+			foreach (var plugin in enabledPlugins)
+			{
+				var addonForPlugin = ModDetails.AddOns.SingleOrDefault(x => x.Name.Equals(plugin.Addon, StringComparison.OrdinalIgnoreCase));
+				if (addonForPlugin == null)
+				{
+					MessageBox.Show(String.Format("Could not find addon '{0}' referenced by plugin '{1}'",plugin.Addon,plugin.Ident),
+									"Internal error", MessageBoxButton.OK, MessageBoxImage.Error);
+					return;
+				}
+				culledAddons.Add(addonForPlugin);
+			}
 			_dlgWindow = new LaunchProgress(parentWnd, gameType, culledAddons);
 			_dlgWindow.Closed += (object sender, EventArgs e) =>
 				{
@@ -213,7 +234,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					{
 						new Thread(() =>
 							{
-								bool launchedGame = ActuallyLaunchGame(parentWnd, server, gameType);
+								bool launchedGame = ActuallyLaunchGame(parentWnd, server, culledAddons);
 								if (launchedGame)
 								{
 									TorrentUpdater.StopAllTorrents();
@@ -231,7 +252,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			_dlgWindow.Show();
 		}
 
-        protected static bool ActuallyLaunchGame(Window parentWnd, Server server, MetaGameType gameType)
+        protected static bool ActuallyLaunchGame(Window parentWnd, Server server, IEnumerable<MetaAddon> addOns)
 		{
             CloseGame();
 			var arguments = new StringBuilder();
@@ -345,7 +366,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (isBeta)
 				modArgSb.Append(";Expansion\\beta;Expansion\\beta\\Expansion");
 
-			foreach (var addon in gameType.AddOnNames)
+			var addOnNames = addOns.Select(x => x.Name).AsEnumerable();
+			foreach (var addon in addOnNames)
 			{
 				string fullPath = Path.Combine(CalculatedGameSettings.Current.AddonsPath, addon);
 				fullPath.Replace('/', '\\');

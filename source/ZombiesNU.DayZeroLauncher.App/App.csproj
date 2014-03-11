@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>16</ApplicationRevision>
-    <ApplicationVersion>1.2.3.16</ApplicationVersion>
+    <ApplicationRevision>17</ApplicationRevision>
+    <ApplicationVersion>1.2.4.17</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -198,6 +198,7 @@
     <Compile Include="Ui\Controls\FavoriteControl.xaml.cs">
       <DependentUpon>FavoriteControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Ui\Converters\UpdateStatusToForegroundConverter.cs" />
     <Compile Include="Ui\LaunchProgress.xaml.cs">
       <DependentUpon>LaunchProgress.xaml</DependentUpon>
     </Compile>
@@ -253,7 +254,7 @@
     <Compile Include="Ui\Converters\ServerRevisionCountToWidthConverter.cs" />
     <Compile Include="Ui\Converters\TimeToColorConverter.cs" />
     <Compile Include="Ui\Converters\TimeToTextConverter.cs" />
-    <Compile Include="Ui\Converters\UpdateStatusToForegroundConverter.cs" />
+    <Compile Include="Ui\Converters\UpdateStatusToStyleConverter.cs" />
     <Compile Include="Ui\Converters\VersionMatchesToForegroundConverter.cs" />
     <Compile Include="Ui\Converters\ZeroToVisibilityConverter.cs" />
     <Compile Include="Ui\LaunchProgressViewModel.cs" />
@@ -302,9 +303,13 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Ui\SettingsViewModel.cs" />
+    <Compile Include="Ui\PluginsView.xaml.cs">
+      <DependentUpon>PluginsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Ui\UpdatesView.xaml.cs">
       <DependentUpon>UpdatesView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Ui\PluginsViewModel.cs" />
     <Compile Include="Ui\UpdatesViewModel.cs" />
     <Compile Include="Ui\ViewModelBase.cs" />
     <Compile Include="App.xaml.cs">
@@ -427,6 +432,10 @@
     <Page Include="Ui\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Ui\PluginsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Ui\UpdatesView.xaml">
       <SubType>Designer</SubType>

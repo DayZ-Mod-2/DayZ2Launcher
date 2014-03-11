@@ -19,6 +19,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				CustomBranchName = Settings.GameOptions.CustomBranchName;
 				CustomBranchEnabled = true;
 			}
+
+			this.PropertyChanged += (sender, args) =>
+			{
+				//reconfigure TorrentEngine every time we close this panel, not just on clicking Done
+				if (args.PropertyName == "IsVisible")
+				{
+					if (this.IsVisible == false)
+						TorrentUpdater.ReconfigureEngine();
+				}
+			};
 		}
 
 		public UserSettings Settings { get; set; }

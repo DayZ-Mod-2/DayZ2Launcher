@@ -7,6 +7,28 @@ using System.Text.RegularExpressions;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
+	public class MetaPlugin
+	{
+		public MetaPlugin(string ident)
+		{
+			this.Ident = ident;
+		}
+
+		[JsonProperty("ident")]
+		public string Ident { get; set; }
+
+		[JsonProperty("addon")]
+		public string Addon { get; set; }
+
+		[JsonProperty("name")]
+		public string Name { get; set; }
+
+		[JsonProperty("description")]
+		public string Description { get; set; }
+
+		public bool IsEnabled { get; set; }
+	}
+
 	public class MetaModDetails
 	{
 		[JsonProperty("addons")]
@@ -14,6 +36,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		[JsonProperty("gametypes")]
 		public List<MetaGameType> GameTypes;
+
+		[JsonProperty("plugins")]
+		public List<MetaPlugin> Plugins;
 
 		public static string GetFileName(string versionString)
 		{

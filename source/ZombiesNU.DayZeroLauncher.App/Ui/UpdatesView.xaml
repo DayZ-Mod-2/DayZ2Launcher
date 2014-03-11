@@ -6,7 +6,7 @@
              xmlns:Core="clr-namespace:zombiesnu.DayZeroLauncher.App.Core"
              xmlns:Controls="clr-namespace:zombiesnu.DayZeroLauncher.App.Ui.Controls" mc:Ignorable="d" 
 			 Background="#333333"
-             d:DesignHeight="600" d:DesignWidth="250">
+             d:DesignHeight="600" d:DesignWidth="205">
     <Grid>
         <StackPanel Margin="18 5 18 0">
             <TextBlock Text="versions"

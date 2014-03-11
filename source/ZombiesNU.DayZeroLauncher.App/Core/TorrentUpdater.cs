@@ -378,6 +378,16 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return;
 			}
 
+			// Before starting all the managers, clear out the fastresume data
+			// The torrents currently running already have it loaded, and will save it out on stop/finish
+			// So this only clears out fastresume for torrents we aren't currently running, which is what we want
+			var staleFastResume = Directory.EnumerateFiles(UserSettings.TorrentJunkPath, "fastresume_*.benc",SearchOption.TopDirectoryOnly);
+			foreach (var sfr in staleFastResume)
+			{
+				try { File.Delete(sfr); }
+				catch (Exception) { }
+			}
+
 			foreach (var manager in managers)
 			{
 				// Add this manager to the global torrent engine
