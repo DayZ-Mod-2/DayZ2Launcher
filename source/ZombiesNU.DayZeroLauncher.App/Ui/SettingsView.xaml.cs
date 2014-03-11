@@ -49,7 +49,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		private void Done_Click(object sender, RoutedEventArgs e)
 		{
 			ViewModel.Done();
-			TorrentUpdater.ReconfigureEngine();
 		}
 
 		protected SettingsViewModel ViewModel

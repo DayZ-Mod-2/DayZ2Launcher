@@ -21,7 +21,8 @@
 		<Converters:BooleanToVisibilityCollapsedConverter x:Key="BooleanToVisibilityCollapsedConverter" />
 		<Converters:IsSelectedTabToColorConverter x:Key="IsSelectedTabToColorConverter" />
 		<Converters:IsFavoriteToForegroundConverter x:Key="IsFavoriteToForegroundConverter" />
-		<Converters:UpdateStatusToForegroundConverter x:Key="UpdateStatusToForegroundConverter" />
+        <Converters:UpdateStatusToForegroundConverter x:Key="UpdateStatusToForegroundConverter" />
+        <Converters:UpdateStatusToStyleConverter x:Key="UpdateStatusToStyleConverter" />
 		<Converters:ServerRevisionCountToWidthConverter x:Key="ServerRevisionCountToWidthConverter" />
 		<Converters:CountsToPercentageConverter x:Key="CountsToPercentageConverter" />
 		<Converters:VersionMatchesToForegroundConverter x:Key="VersionMatchesToForegroundConverter" />
@@ -37,16 +38,35 @@
 			</Style.Triggers>
 		</Style>
 
-		<ControlTemplate TargetType="Button" x:Key="MetroTextButton">
-
-			<TextBlock Text="{TemplateBinding Tag}" 
+        <ControlTemplate TargetType="Button" x:Key="MetroTextButton">
+            <TextBlock Text="{TemplateBinding Tag}" 
 								   Foreground="{TemplateBinding Foreground}" 
 								   FontSize="{TemplateBinding FontSize}" 
 									Cursor="Hand"
 								   Margin="{TemplateBinding Margin}"/>
-		</ControlTemplate>
+        </ControlTemplate>
 
-		<ControlTemplate TargetType="Button" x:Key="MetroButton">
+        <Style TargetType="Button" x:Key="MetroTextButtonStyleGray" BasedOn="{StaticResource MetroTextButtonStyle}">
+            <Setter Property="Foreground" Value="#CCC"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="MetroTextButtonStyleLightGray" BasedOn="{StaticResource MetroTextButtonStyle}">
+            <Setter Property="Foreground" Value="#DDD"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="MetroTextButtonStyleRed" BasedOn="{StaticResource MetroTextButtonStyle}">
+            <Setter Property="Foreground" Value="Red"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="MetroTextButtonStyleLightGreen" BasedOn="{StaticResource MetroTextButtonStyle}">
+            <Setter Property="Foreground" Value="LightGreen"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="MetroTextButtonStyleYellow" BasedOn="{StaticResource MetroTextButtonStyle}">
+            <Setter Property="Foreground" Value="Yellow"/>
+        </Style>
+
+        <ControlTemplate TargetType="Button" x:Key="MetroButton">
 			<ContentPresenter/>
 		</ControlTemplate>
 
@@ -61,7 +81,14 @@
 				</Setter.Value>
 			</Setter>
 		</Style>
-
+        
+        <Style x:Key="MetroDataGridStyle" TargetType="{x:Type DataGrid}">
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#666666"/>
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}">#555555</SolidColorBrush>
+            </Style.Resources>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>               
 
 		<Style x:Key="MetroDataGridHeader"
 					  TargetType="{x:Type DataGridColumnHeader}">
@@ -163,7 +190,52 @@
 			</Style.Triggers>
 		</Style>
 
-		<Style x:Key="FilterCheckBox" TargetType="{x:Type CheckBox}">
+        <Style x:Key="MetroDataGridRowStyleNoSelect" TargetType="{x:Type DataGridRow}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Resources>
+                <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}">#555555</SolidColorBrush>
+            </Style.Resources>
+        </Style>
+
+        <Style x:Key="MetroDataGridRowStyle"
+               BasedOn="{StaticResource MetroDataGridRowStyleNoSelect}"
+               TargetType="{x:Type DataGridRow}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Background"
+									Value="Transparent"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver"
+                           Value="True">
+                    <Setter Property="Foreground"
+                               Value="#FFF" />
+                    <Setter Property="Background"
+									Value="#4A4A4A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MetroDataGridCellStyle"  TargetType="{x:Type DataGridCell}">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+            <Setter Property="Margin" Value="0"/>
+
+            <Setter Property="Padding" Value="2 2 8 2"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Border Padding="{TemplateBinding Padding}" 
+										BorderBrush="{TemplateBinding BorderBrush}" 
+										BorderThickness="{TemplateBinding BorderThickness}" 
+										Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                            <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="FilterCheckBox" TargetType="{x:Type CheckBox}">
 			<Setter Property="SnapsToDevicePixels" Value="true"/>
 			<Setter Property="OverridesDefaultStyle" Value="true"/>
 			<Setter Property="Template">

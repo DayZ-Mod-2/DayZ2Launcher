@@ -310,6 +310,11 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			ViewModel.ShowUpdates();
 		}
 
+		private void Plugins_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel.ShowPlugins();
+		}
+
         private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
         {
 			var buttonObj = (FrameworkElement)sender;

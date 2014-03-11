@@ -178,7 +178,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			string dayZVersion = null;
 			if(message.Server.DayZVersion != null)
 			{
-				dayZVersion = message.Server.DayZVersion.ToString();
+				dayZVersion = message.Server.DayZVersion;
 				existingDayZStatistic = _rawDayZVersionStats.FirstOrDefault(x => x.Version == dayZVersion);
 			}
 
@@ -202,8 +202,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 			if(existingDayZStatistic == null)
 			{
-				if(message.Server.DayZVersion != null)
-					_rawDayZVersionStats.Add(new VersionStatistic() { Version = dayZVersion, Count = 1, Parent = this});
+				if (dayZVersion != null)
+					_rawDayZVersionStats.Add(new VersionStatistic() { Version = dayZVersion, Count = 1, Parent = this });
 			}
 			else
 			{
@@ -214,8 +214,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 			if(existingArma2Statistic == null)
 			{
-				if( message.Server.Arma2Version != null)
-					_rawArma2VersionStats.Add(new VersionStatistic() { Version = arma2Version, Count = 1, Parent = this});
+				if (arma2Version != null)
+					_rawArma2VersionStats.Add(new VersionStatistic() { Version = arma2Version, Count = 1, Parent = this });
 			}
 			else
 			{
@@ -265,7 +265,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		public VersionSnapshot(Server server)
 		{
 			if(server.DayZVersion != null)
-				DayZVersion = server.DayZVersion.ToString();
+				DayZVersion = server.DayZVersion;
 			if(server.Arma2Version != null)
 				Arma2Version = server.Arma2Version.Build.ToString();
 		}

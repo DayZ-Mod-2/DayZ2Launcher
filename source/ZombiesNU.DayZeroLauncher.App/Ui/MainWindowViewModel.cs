@@ -27,6 +27,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			UpdatesViewModel = new UpdatesViewModel(Launcher);
 			UpdatesViewModel.LocatorChanged += (sender, e) => { ServerList.GetAndUpdateAll(); };
 
+			PluginsViewModel = new PluginsViewModel();
+			Launcher.ModDetailsChanged += (sender, e) =>
+				{
+					var modDetails = (MetaModDetails)e.UserState;
+					if (modDetails != null && e.Cancelled == false && e.Error == null)
+					{
+						Execute.OnUiThread(() => PluginsViewModel.Refresh(modDetails.Plugins));
+					}
+				};
+
 			ServerListViewModel.Launcher = Launcher;				 
 			UpdatesViewModel.CheckForUpdates();
 		}
@@ -56,7 +66,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		public ServerListViewModel ServerListViewModel { get; set; }
 		public SettingsViewModel SettingsViewModel { get; set; }
 		public UpdatesViewModel UpdatesViewModel { get; set; }
-
+		public PluginsViewModel PluginsViewModel { get; set; }
 
 		private ViewModelBase _currentTab;	
 		public ViewModelBase CurrentTab
@@ -100,18 +110,27 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		{
 			SettingsViewModel.IsVisible = true;
 			UpdatesViewModel.IsVisible = false;
+			PluginsViewModel.IsVisible = false;
 		}
 
 		public void ShowUpdates()
 		{
 			SettingsViewModel.IsVisible = false;
 			UpdatesViewModel.IsVisible = true;
+			PluginsViewModel.IsVisible = false;
+		}
+		public void ShowPlugins()
+		{
+			SettingsViewModel.IsVisible = false;
+			UpdatesViewModel.IsVisible = false;
+			PluginsViewModel.IsVisible = true;
 		}
 
 		public void Escape()
 		{
 			SettingsViewModel.IsVisible = false;
 			UpdatesViewModel.IsVisible = false;
+			PluginsViewModel.IsVisible = false;
 		}
 	}
 }
