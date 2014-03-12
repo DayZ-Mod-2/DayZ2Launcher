@@ -48,7 +48,7 @@
                         		Margin="0"
                         		Background="#444444"
                         		HorizontalAlignment="Left"
-                        		Click="ApplyDayZeroLauncherUpdateNow_Click"
+                        		Click="ApplyLauncherUpdate_Click"
                         		Style="{StaticResource MetroButtonStyle}"/>
                         <Button Content="Restart now" 
                         		Foreground="LightGreen"
@@ -106,7 +106,7 @@
                 			Margin="0 8 0 0"
                 			Style="{StaticResource MetroButtonStyle}"
                 			Visibility="{Binding Arma2Updater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"										
-                			Click="DownloadArma2_Click"/>
+                			Click="InstallLatestPatch_Click"/>
                         <TextBlock Visibility="{Binding Arma2Updater.Installer.Status, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
                             Text="{Binding Arma2Updater.Installer.Status}"
                 			Foreground="#FFFFFF"
@@ -153,7 +153,7 @@
             					Margin="0,8,0,0"
             					Style="{StaticResource MetroButtonStyle}"
             					Visibility="{Binding DayZUpdater.InstallButtonVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-            					Click="DownloadDayZ_Click"/>
+            					Click="InstallLatestVersion_Click"/>
 
                             <Button Content="Full system check" 
             					Background="#444444"

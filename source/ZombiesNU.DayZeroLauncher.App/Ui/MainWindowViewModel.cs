@@ -25,7 +25,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 			SettingsViewModel = new	SettingsViewModel();
 			UpdatesViewModel = new UpdatesViewModel(Launcher);
-			UpdatesViewModel.LocatorChanged += (sender, e) => { ServerList.GetAndUpdateAll(); };
+			UpdatesViewModel.LocatorChanged += (sender, e) => 
+				{ 
+					ServerList.GetAndUpdateAll(); 
+				};
 
 			PluginsViewModel = new PluginsViewModel();
 			Launcher.ModDetailsChanged += (sender, e) =>

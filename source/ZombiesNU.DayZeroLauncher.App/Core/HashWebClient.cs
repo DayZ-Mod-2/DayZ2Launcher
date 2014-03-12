@@ -155,8 +155,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 					loops++;
 				}
-				wc.Dispose();
-				wc = null;
+				if (wc != null)
+				{
+					wc.Dispose();
+					wc = null;
+				}				
 			}
 		}
 	}

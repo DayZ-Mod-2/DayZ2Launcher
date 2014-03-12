@@ -30,27 +30,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 		private UpdatesViewModel ViewModel() { return (UpdatesViewModel)DataContext; }
 
-		private void Done_Click(object sender, RoutedEventArgs e)
-		{
-			ViewModel().IsVisible = false;
-		}
-
-		private void CheckNow_Click(object sender, RoutedEventArgs e)
-		{
-			ViewModel().CheckForUpdates();
-		}
-
-		private void DownloadArma2_Click(object sender, RoutedEventArgs e)
-		{
-			ViewModel().Arma2Updater.InstallLatestVersion();
-		}
-
-		private void DownloadDayZ_Click(object sender, RoutedEventArgs e)
-		{
-			ViewModel().DayZUpdater.UpdateToLatestVersion(false);
-		}
-
-		private void ApplyDayZeroLauncherUpdateNow_Click(object sender, RoutedEventArgs e)
+		private void ApplyLauncherUpdate_Click(object sender, RoutedEventArgs e)
 		{
 			ViewModel().DayZeroLauncherUpdater.UpdateToLatest();
 		}
@@ -60,9 +40,28 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			ViewModel().DayZeroLauncherUpdater.RestartNewVersion();
 		}
 
+		private void InstallLatestPatch_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel().Arma2Updater.InstallLatestVersion();
+		}
+
+		private void InstallLatestVersion_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel().DayZUpdater.DownloadLatestVersion(false);
+		}
+
         private void FullSystemCheck_Click(object sender, RoutedEventArgs e)
         {
-			ViewModel().DayZUpdater.UpdateToLatestVersion(true);
+			ViewModel().DayZUpdater.DownloadLatestVersion(true);
         }
+		private void CheckNow_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel().CheckForUpdates();
+		}
+
+		private void Done_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel().IsVisible = false;
+		}
 	}
 }

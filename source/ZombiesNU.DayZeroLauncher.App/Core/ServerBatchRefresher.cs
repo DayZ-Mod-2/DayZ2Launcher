@@ -10,13 +10,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public string InProgressText { get; set; }
 		private bool _isUpdating;
 		private readonly ICollection<Server> _items;
+		private readonly ICollection<Server> _removedItems;
 		private int _processed;
 		private int _processedServersCount;
 		public event Action RefreshAllComplete;
 
-		public ServerBatchRefresher(string inProgressText, ICollection<Server> items)
+		public ServerBatchRefresher(string inProgressText, ICollection<Server> items, ICollection<Server> _oldItems = null)
 		{
 			_items = items;
+			_removedItems = new List<Server>();
+			if (_oldItems != null)
+			{
+				foreach (var item in _oldItems)
+				{
+					if (_items.Count(x => x.Id.Equals(item.Id)) < 1) //this server has been removed
+						_removedItems.Add(item);
+				}
+			}
+			
 			InProgressText = inProgressText;
 		}
 
@@ -53,8 +64,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			ProcessedServersCount = 0;
 			_processed = 0;
 
-            var items = new ServerList().GetAllSync(); // redownload list.
-            var totalCount = items.Count;
+			var items = _items; //we got the new downloaded list when we were made
+			var totalCount = items.Count;
 			var t = new Thread(() =>
 			                   	{
 			                   		try
@@ -87,7 +98,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			t.IsBackground = true;
 			t.Start();
 
-            var serverUpdates = items
+			var serverRemovals = new Action<Action>[1];
+			serverRemovals[0] = (Action onComplete) =>
+				{
+					Execute.OnUiThread(() =>
+						{
+							foreach (var remSrv in _removedItems)
+								App.Events.Publish(new ServerUpdated(remSrv, false, true));
+						});
+
+					if (onComplete != null)
+						onComplete();
+				};
+
+			var serverUpdates = items
 				.Select<Server, Action<Action>>(server => 
 				                                onComplete => 
 				                                server.BeginUpdate(doubleDispatchServer =>
@@ -105,6 +129,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				                                                   		}
 				                                                   	}))
 				.ToArray();
+
+			ServerRefreshQueue.Instance.Enqueue(serverRemovals);		
 			ServerRefreshQueue.Instance.Enqueue(serverUpdates);			
 		}
 	}
