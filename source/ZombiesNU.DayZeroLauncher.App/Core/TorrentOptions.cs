@@ -13,6 +13,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		[DataMember] private int _maxUlSpeed = 0;
 		[DataMember] private int _numUlSlots = 10;
 		[DataMember] private bool _stopSeeding = false;
+		[DataMember] private bool _disableFastResume = false;
 
 		public int ListeningPort
 		{
@@ -177,6 +178,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					PropertyHasChanged("StopSeeding");
 					UserSettings.Current.Save();
 				}				
+			}
+		}
+
+		public bool DisableFastResume
+		{
+			get { return _disableFastResume; }
+			set
+			{
+				if (_disableFastResume != value)
+				{
+					_disableFastResume = value;
+					PropertyHasChanged("DisableFastResume");
+					UserSettings.Current.Save();
+				}
 			}
 		}
 	}

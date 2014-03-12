@@ -48,7 +48,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private class ModsMeta
+		public class ModsMeta
 		{
 			public class ModInfo
 			{
@@ -112,15 +112,23 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							ModsMeta.ModInfo theMod = modsInfo.Mods.Where(x => x.Version.Equals(modsInfo.LatestModVersion, StringComparison.OrdinalIgnoreCase)).Single();
 							SetLatestModVersion(theMod);
 
-							if (!theMod.Version.Equals(CalculatedGameSettings.Current.ModContentVersion, StringComparison.OrdinalIgnoreCase))
+							string currVersion = CalculatedGameSettings.Current.ModContentVersion;
+							if (!theMod.Version.Equals(currVersion, StringComparison.OrdinalIgnoreCase))
 							{
 								Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
+
+								//this lets them seed/repair version they already have if it's not discontinued
+								ModsMeta.ModInfo currMod = modsInfo.Mods.SingleOrDefault(x => x.Version.Equals(currVersion, StringComparison.OrdinalIgnoreCase));
+								if (currMod != null)
+									DownloadSpecificVersion(currMod, false);
+								else //try getting it from file cache (necessary for switching branches)
+									DownloadLocalVersion(currVersion, false);
 							}
 							else
 							{
 								Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
-								UpdateToLatestVersion(false);
-							}
+								DownloadLatestVersion(false);
+							}							
 						}
 						catch (Exception) { Status = "Could not determine revision"; }
 					}
@@ -145,7 +153,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return null;
 			}
 		}
-		public void UpdateToLatestVersion(bool forceFullSystemsCheck)
+		public void DownloadLatestVersion(bool forceFullSystemsCheck)
 		{
 			if (LatestVersion == null)
 			{
@@ -153,7 +161,16 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return;
 			}
 
-			Downloader.DownloadAndInstall(_latestModVersion.Version,forceFullSystemsCheck,_latestModVersion.Archive,this);
+			Downloader.StartFromNetContent(_latestModVersion.Version,forceFullSystemsCheck,_latestModVersion.Archive,this, false);
+		}
+		public void DownloadSpecificVersion(ModsMeta.ModInfo modInfo, bool forceFullSystemsCheck)
+		{
+			Downloader.StartFromNetContent(modInfo.Version, forceFullSystemsCheck, modInfo.Archive, this, true);
+		}
+
+		public void DownloadLocalVersion(string versionString, bool forceFullSystemsCheck)
+		{
+			Downloader.StartFromContentFile(versionString, forceFullSystemsCheck, this);
 		}
 
 		private string _status;
@@ -169,7 +186,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public bool InstallButtonVisible
 		{
-			get { return VersionMismatch && !_isChecking && !Downloader.IsRunning; }
+			get { return VersionMismatch && !_isChecking && !Downloader.RunningForVersion(LatestVersion); }
 		}
 
         public bool VerifyButtonVisible

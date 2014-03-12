@@ -143,18 +143,21 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
 		public void Handle(RefreshingServersChange message)
 		{
-			var column = TheGrid.Columns[5];
-			var originalStyle = column.HeaderStyle;
-			var newStyle = new Style(typeof (DataGridColumnHeader), originalStyle);
-				newStyle.Setters.Add(new Setter(VisibilityProperty, message.IsRunning ? Visibility.Hidden : Visibility.Visible));
-			column.HeaderStyle = newStyle;
+			Execute.OnUiThread(() =>
+				{
+					var column = TheGrid.Columns[5];
+					var originalStyle = column.HeaderStyle;
+					var newStyle = new Style(typeof(DataGridColumnHeader), originalStyle);
+					newStyle.Setters.Add(new Setter(VisibilityProperty, message.IsRunning ? Visibility.Hidden : Visibility.Visible));
+					column.HeaderStyle = newStyle;
 
-			if (_queuedJoinEvt != null && message.IsRunning == false) //maybe now we know of this server...
-			{
-				var theEvt = _queuedJoinEvt;
-				_queuedJoinEvt = null; //dont try and connect to this server forever, though
-				JoinFromEvent(theEvt);				
-			}
+					if (_queuedJoinEvt != null && message.IsRunning == false) //maybe now we know of this server...
+					{
+						var theEvt = _queuedJoinEvt;
+						_queuedJoinEvt = null; //dont try and connect to this server forever, though
+						JoinFromEvent(theEvt);
+					}
+				}, Dispatcher);
 		}
 	}
 

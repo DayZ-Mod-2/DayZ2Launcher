@@ -70,7 +70,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Favorites
 			if(matchingServer != null)
 			{
 				_rawServers.Remove(matchingServer);
-				_rawServers.Add(message.Server);
+				if (!message.IsRemoved)
+					_rawServers.Add(message.Server);
 			}
 		}
 	}

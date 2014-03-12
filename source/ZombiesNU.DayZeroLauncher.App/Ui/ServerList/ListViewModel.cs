@@ -62,14 +62,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
 		public void Handle(ServerUpdated message)
 		{
 			if(message.SupressRefresh)
-				return; 
+				return;
 
-			_rawServers.Remove(message.Server);
-            if (!IsFiltered(message.Server))
-                _rawServers.Add(message.Server);
+			var theServer = message.Server;
+			_rawServers.Remove(theServer);
+
+			if (!message.IsRemoved && !IsFiltered(theServer))
+				_rawServers.Add(theServer);
 		}
 
-        bool IsFiltered(Server server)
+        private static bool IsFiltered(Server server)
         {
             if (server.Name.Contains("- AU") && !UserSettings.Current.IncludeAU)
                 return true;

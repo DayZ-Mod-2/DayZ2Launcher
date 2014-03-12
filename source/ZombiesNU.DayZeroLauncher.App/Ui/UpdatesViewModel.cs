@@ -162,7 +162,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				string customBranch = UserSettings.Current.GameOptions.CustomBranchName;
 				if (!string.IsNullOrWhiteSpace(customBranch))
 				{
-					locatorUrl += "/" + Uri.EscapeUriString(customBranch);
+					locatorUrl += "/" + Uri.EscapeUriString(customBranch.Trim());
 
 					string branchPass = UserSettings.Current.GameOptions.CustomBranchPass;
 					if (!string.IsNullOrEmpty(branchPass))
@@ -190,9 +190,9 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				existingArma2Statistic = _rawArma2VersionStats.FirstOrDefault(x => x.Version == arma2Version);
 			}
 
-			//If we've seen this server, decrement what it was last time
+			//If we've seen this server (or its gone), decrement what it was last time
 			var serverWasProcessed = _processedServers.ContainsKey(message.Server);
-			if(serverWasProcessed)
+			if(serverWasProcessed || message.IsRemoved)
 			{
 				if(existingDayZStatistic != null)
 					existingDayZStatistic.Count--;				
@@ -200,31 +200,35 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 					existingArma2Statistic.Count--;
 			}
 
-			if(existingDayZStatistic == null)
+			if(existingDayZStatistic == null && !message.IsRemoved)
 			{
 				if (dayZVersion != null)
 					_rawDayZVersionStats.Add(new VersionStatistic() { Version = dayZVersion, Count = 1, Parent = this });
 			}
 			else
 			{
-				existingDayZStatistic.Count++;
+				if (!message.IsRemoved)
+					existingDayZStatistic.Count++;
+
 				_rawDayZVersionStats.Remove(existingDayZStatistic);
 				_rawDayZVersionStats.Add(existingDayZStatistic);
 			}
 
-			if(existingArma2Statistic == null)
+			if(existingArma2Statistic == null && !message.IsRemoved)
 			{
 				if (arma2Version != null)
 					_rawArma2VersionStats.Add(new VersionStatistic() { Version = arma2Version, Count = 1, Parent = this });
 			}
 			else
 			{
-				existingArma2Statistic.Count++;
+				if (!message.IsRemoved)
+					existingArma2Statistic.Count++;
+
 				_rawArma2VersionStats.Remove(existingArma2Statistic);
 				_rawArma2VersionStats.Add(existingArma2Statistic);
 			}
 
-			if(!serverWasProcessed)
+			if(!serverWasProcessed && !message.IsRemoved)
 			{
 				_processedServers.Add(message.Server, new VersionSnapshot(message.Server));
 				ProcessedCount++;

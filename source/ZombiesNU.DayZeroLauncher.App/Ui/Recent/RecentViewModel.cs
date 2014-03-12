@@ -90,16 +90,21 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 			var key = GetKey(message.Server);
 			if(_serverDictionary.ContainsKey(key))
 			{
-				foreach(var recent in _serverDictionary[key])
+				if (message.IsRemoved)
+					_serverDictionary.Remove(key);
+				else
 				{
-					recent.Server = message.Server;
-				}
+					foreach (var recent in _serverDictionary[key])
+					{
+						recent.Server = message.Server;
+					}
+				}				
 			}
 		}
 
 		private string GetKey(Server server)
 		{
-			return server.IpAddress + server.Port;
+			return server.Id;
 		}
 	}
 }

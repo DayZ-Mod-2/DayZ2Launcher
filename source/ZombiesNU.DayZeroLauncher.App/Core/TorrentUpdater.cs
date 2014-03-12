@@ -121,14 +121,16 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		private bool fullSystemCheck;
 		private TorrentLauncher downloader;
 		private DayZUpdater updater;
+		private bool errorMsgsOnly;
 
-        public TorrentUpdater(string versionString, List<MetaAddon> addOns, bool fullSystemCheck, TorrentLauncher downloader, DayZUpdater updater)
+        public TorrentUpdater(string versionString, List<MetaAddon> addOns, bool fullSystemCheck, TorrentLauncher downloader, DayZUpdater updater, bool errorMsgsOnly)
         {
 			this.addOnTorrents = new List<AddOnTorrent>();
 			this.versionString = versionString;
 			this.fullSystemCheck = fullSystemCheck;
 			this.downloader = downloader;
             this.updater = updater;
+			this.errorMsgsOnly = errorMsgsOnly;
 
 			string torrentsDir = null; 
 			try
@@ -335,7 +337,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				try
 				{
 					tm = new TorrentManager(torrent, globalEngine.Settings.SavePath, torrentDefaults, newAddOn.torrentSavePath);
-					if (!fullSystemCheck) //load the fast resume file for this torrent
+					if (!fullSystemCheck && !UserSettings.Current.TorrentOptions.DisableFastResume) //load the fast resume file for this torrent
 					{
 						var fastResumeFilepath = GetFastResumeFileName(tm);
 						if (File.Exists(fastResumeFilepath))
@@ -347,10 +349,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				}
 				catch (Exception ex)
 				{
-					updater.Status = "Error creating torrent manager";
-					downloader.Status = ex.Message;
-					downloader.IsRunning = false;
-					return;
+					if (tm == null) //only if critical failure
+					{
+						updater.Status = "Error creating torrent manager";
+						downloader.Status = ex.Message;
+						downloader.IsRunning = false;
+						return;
+					}
 				}
 
 				managers.Add(tm);
@@ -552,7 +557,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				bool allSeeding = engineTorrents.Count( m => { return (m.Progress < 100 || m.State != TorrentState.Seeding); } ) < 1;
                 if (allSeeding)
                 {
-					if (updater != null)
+					if (updater != null && !errorMsgsOnly)
 						updater.Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
 
 					if (downloader != null)

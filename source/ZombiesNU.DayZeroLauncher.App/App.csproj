@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>17</ApplicationRevision>
-    <ApplicationVersion>1.2.4.17</ApplicationVersion>
+    <ApplicationRevision>19</ApplicationRevision>
+    <ApplicationVersion>1.2.4.19</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -280,7 +280,7 @@
     <Compile Include="Ui\Friends\ManageViewModel.cs" />
     <Compile Include="Ui\Friends\PlayersChangedEvent.cs" />
     <Compile Include="Ui\Friends\RepublishFriendsRequest.cs" />
-    <Compile Include="Ui\Friends\ServerUpdated.cs" />
+    <Compile Include="Core\ServerUpdated.cs" />
     <Compile Include="Ui\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>

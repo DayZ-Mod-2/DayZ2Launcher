@@ -18,6 +18,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	{
 		private bool _downloadingServerList;
 		private ObservableCollection<Server> _items;
+		private ObservableCollection<Server> _oldItems;
 
 		public ServerList()
 		{
@@ -60,7 +61,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			GetAll(() => UpdateAll());
 		}
 
-		public void GetAll(Action uiThreadOnComplete)
+		private void GetAll(Action uiThreadOnComplete)
 		{
 			DownloadingServerList = true;
 			new Thread(() =>
@@ -68,15 +69,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					var servers = GetAllSync();
 					Execute.OnUiThread(() =>
 						{
+							_oldItems = Items;
 							Items = new ObservableCollection<Server>(servers);
 							DownloadingServerList = false;
-							uiThreadOnComplete();
+							if (uiThreadOnComplete != null)
+								uiThreadOnComplete();
 						});
 
 				}).Start();
 		}
 
-		public List<Server> GetAllSync()
+		private List<Server> GetAllSync()
 		{
             string list = "";
 			{
@@ -121,7 +124,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public void UpdateAll()
 		{
-			var batch = new ServerBatchRefresher("Refreshing all servers...", Items);
+			var batch = new ServerBatchRefresher("Refreshing all servers...", Items, _oldItems);
 			App.Events.Publish(new RefreshServerRequest(batch));
 		}
 
@@ -142,7 +145,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			RefreshAllBatch.RefreshAllComplete -= RefreshAllBatchOnRefreshAllComplete;
 			_isRunningRefreshBatch = false;
-			Execute.OnUiThread(() => { App.Events.Publish(new RefreshingServersChange(false)); });
+			App.Events.Publish(new RefreshingServersChange(false));
 		}
 	}
 

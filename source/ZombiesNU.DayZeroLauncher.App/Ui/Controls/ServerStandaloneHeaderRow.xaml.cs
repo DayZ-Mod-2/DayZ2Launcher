@@ -57,9 +57,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
 		public void Handle(RefreshingServersChange message)
 		{
-			RefreshAllButton.Visibility = message.IsRunning
-			                              	? Visibility.Hidden
-			                              	: Visibility.Visible;
+			Execute.OnUiThread(() =>
+				{
+					RefreshAllButton.Visibility = message.IsRunning
+											? Visibility.Hidden
+											: Visibility.Visible;
+				}, Dispatcher);			
 		}
 	}
 }
