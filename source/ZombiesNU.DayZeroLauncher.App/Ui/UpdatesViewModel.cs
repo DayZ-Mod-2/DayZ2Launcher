@@ -162,7 +162,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				string customBranch = UserSettings.Current.GameOptions.CustomBranchName;
 				if (!string.IsNullOrWhiteSpace(customBranch))
 				{
-					locatorUrl += "/" + Uri.EscapeUriString(customBranch);
+					locatorUrl += "/" + Uri.EscapeUriString(customBranch.Trim());
 
 					string branchPass = UserSettings.Current.GameOptions.CustomBranchPass;
 					if (!string.IsNullOrEmpty(branchPass))

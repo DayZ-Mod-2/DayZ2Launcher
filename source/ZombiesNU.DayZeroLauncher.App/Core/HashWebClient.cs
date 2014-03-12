@@ -23,8 +23,44 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public event AsyncCompletedEventHandler DownloadFileCompleted;
 		public event DownloadProgressChangedEventHandler DownloadProgressChanged = delegate {};
+		public int Timeout { get; set; }
 
-		private WebClient _wc;
+		private class CustomWebClient : WebClient
+		{
+			public int Timeout { get; set; }
+			public CustomWebClient(int timeout = -1) : base()
+			{
+				this.Timeout = timeout;
+			}
+
+			protected override WebRequest GetWebRequest(Uri uri)
+			{
+				WebRequest req = base.GetWebRequest(uri);
+				if (Timeout >= 0)
+					req.Timeout = Timeout;
+
+				string userName = UserSettings.Current.GameOptions.CustomBranchName;
+				if (!string.IsNullOrWhiteSpace(userName))
+				{
+					string password = UserSettings.Current.GameOptions.CustomBranchPass;
+					if (!string.IsNullOrEmpty(password))
+					{
+						string authInfo = userName.Trim() + ":" + password;
+						authInfo = Convert.ToBase64String(Encoding.ASCII.GetBytes(authInfo));
+						req.Headers["Authorization"] = "Basic " + authInfo;
+					}
+				}
+
+				return req;
+			}
+		}
+
+		private CustomWebClient _wc;
+
+		public HashWebClient(int timeout=-1)
+		{
+			this.Timeout = timeout;
+		}
 
 		public void Dispose()
 		{
@@ -78,7 +114,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				_wc = null;
 			}
 
-			_wc = new WebClient();
+			_wc = new CustomWebClient(Timeout);
 			_wc.DownloadProgressChanged += (sender, evt) =>
 				{
 					DownloadProgressChanged(sender, evt);
