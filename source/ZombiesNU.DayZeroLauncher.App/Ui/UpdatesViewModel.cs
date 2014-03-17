@@ -179,7 +179,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			if(message.Server.DayZVersion != null)
 			{
 				dayZVersion = message.Server.DayZVersion;
-				existingDayZStatistic = _rawDayZVersionStats.FirstOrDefault(x => x.Version == dayZVersion);
+				if (_rawDayZVersionStats != null)
+					existingDayZStatistic = _rawDayZVersionStats.FirstOrDefault(x => x.Version.Equals(dayZVersion,StringComparison.OrdinalIgnoreCase));
 			}
 
 			VersionStatistic existingArma2Statistic = null;
@@ -187,12 +188,13 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			if(message.Server.Arma2Version != null)
 			{
 				arma2Version = message.Server.Arma2Version.Build.ToString();
-				existingArma2Statistic = _rawArma2VersionStats.FirstOrDefault(x => x.Version == arma2Version);
+				if (_rawArma2VersionStats != null)
+					existingArma2Statistic = _rawArma2VersionStats.FirstOrDefault(x => x.Version.Equals(arma2Version,StringComparison.OrdinalIgnoreCase));
 			}
 
 			//If we've seen this server (or its gone), decrement what it was last time
 			var serverWasProcessed = _processedServers.ContainsKey(message.Server);
-			if(serverWasProcessed || message.IsRemoved)
+			if (serverWasProcessed || message.IsRemoved)
 			{
 				if(existingDayZStatistic != null)
 					existingDayZStatistic.Count--;				
@@ -200,12 +202,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 					existingArma2Statistic.Count--;
 			}
 
-			if(existingDayZStatistic == null && !message.IsRemoved)
+			if (_rawDayZVersionStats == null)
+				_rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
+
+			if (existingDayZStatistic == null && !message.IsRemoved)
 			{
 				if (dayZVersion != null)
 					_rawDayZVersionStats.Add(new VersionStatistic() { Version = dayZVersion, Count = 1, Parent = this });
 			}
-			else
+			else if (existingDayZStatistic != null)
 			{
 				if (!message.IsRemoved)
 					existingDayZStatistic.Count++;
@@ -214,12 +219,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				_rawDayZVersionStats.Add(existingDayZStatistic);
 			}
 
-			if(existingArma2Statistic == null && !message.IsRemoved)
+			if (_rawArma2VersionStats == null)
+				_rawArma2VersionStats = new ObservableCollection<VersionStatistic>();
+
+			if (existingArma2Statistic == null && !message.IsRemoved)
 			{
 				if (arma2Version != null)
 					_rawArma2VersionStats.Add(new VersionStatistic() { Version = arma2Version, Count = 1, Parent = this });
 			}
-			else
+			else if (existingArma2Statistic != null)
 			{
 				if (!message.IsRemoved)
 					existingArma2Statistic.Count++;
