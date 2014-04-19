@@ -362,7 +362,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					arguments.Append(" -password=" + server.Password);
             }
 
-			var modArgSb = new StringBuilder(String.Format("-mod={0};Expansion", CalculatedGameSettings.Current.Arma2Path));
+            var modArgSb = new StringBuilder(String.Format("-mod={0};Expansion;ca", CalculatedGameSettings.Current.Arma2Path));
 			if (isBeta)
 				modArgSb.Append(";Expansion\\beta;Expansion\\beta\\Expansion");
 
