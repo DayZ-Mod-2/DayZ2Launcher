@@ -461,10 +461,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Resource Include="Assets\Images\logo.png" />
-    <Resource Include="Assets\Images\background.jpg" />
     <Resource Include="Assets\Images\dayzero_logo.png" />
-    <Resource Include="Assets\Images\bmrf_logo.png" />
     <Resource Include="Assets\Images\zombiesnu_logo.png" />
     <SplashScreen Include="Assets\Images\dayzero_splash.png" />
     <None Include="app.config" />
