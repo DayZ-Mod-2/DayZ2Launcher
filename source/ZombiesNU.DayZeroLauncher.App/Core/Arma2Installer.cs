@@ -2,9 +2,13 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Windows;
 using System.Threading;
 using SharpCompress.Common;
 using SharpCompress.Reader;
+
+using zombiesnu.DayZeroLauncher.App.Ui.Controls;
+using zombiesnu.DayZeroLauncher.App.Ui;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -31,6 +35,69 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				Execute.OnUiThread(() => PropertyHasChanged("Status"));
 			}
 		}
+
+        public void DownloadAndInstall(int revision, HashWebClient.RemoteFileInfo archiveInfo, bool steamBeta, UpdatesView view)
+        {
+            if (steamBeta)
+            {
+                int appId = 219540;
+                string gameName = "Arma 2: Operation Arrowhead Beta";
+                var steamPath = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
+
+                for (steamPath = steamPath.Parent; steamPath != null; steamPath = steamPath.Parent)
+                {
+                    if (steamPath.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
+                    {
+                        string manifestName = "appmanifest_" + appId.ToString() + ".acf";
+                        string fullManifestPath = Path.Combine(steamPath.FullName, manifestName);
+                        if (!File.Exists(fullManifestPath))
+                        {
+                            Execute.OnUiThreadSync(() =>
+                            {
+                                InfoPopup popup = new InfoPopup("User intervention required", null);
+                                popup.Headline.Content = "Game update via Steam";
+                                popup.SetMessage("According to Steam,\n" +
+                                                    gameName + " is not installed.\n" +
+                                                    "Please install it from the Library tab.\n" +
+                                                    "Or by clicking on the following link:");
+                                popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
+                                popup.Closed += (sender, args) => view.CheckForUpdates();
+                                popup.Show();
+                            }, null, System.Windows.Threading.DispatcherPriority.Input);
+
+                            return;
+                        }
+                        else if (File.Exists(fullManifestPath))
+                        {
+                            Execute.OnUiThreadSync(() =>
+                            {
+                                InfoPopup popup = new InfoPopup("User intervention required", null);
+                                popup.Headline.Content = "Game update via Steam";
+                                popup.SetMessage(gameName + " needs to be updated.\n" +
+                                                    "Please update it by verifying the files.\n" +
+                                                    "Or by clicking on the following link:");
+                                popup.SetLink("steam://validate/" + appId.ToString() + "/", "Update " + gameName);
+                                popup.Closed += (sender, args) => view.CheckForUpdates();
+                                popup.Show();
+                            }, null, System.Windows.Threading.DispatcherPriority.Input);
+
+                            return;
+                        }
+                        break;
+                    }
+                }
+                if (steamPath == null)
+                {
+                    MessageBox.Show("Steam launch impossible, '" + gameName + "' isn't located inside a SteamLibrary folder.",
+                        "Game launch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    return;
+                }
+            }
+            else
+            {
+                DownloadAndInstall(revision, archiveInfo);
+            }
+        }
 
 		public void DownloadAndInstall(int revision, HashWebClient.RemoteFileInfo archiveInfo)
 		{

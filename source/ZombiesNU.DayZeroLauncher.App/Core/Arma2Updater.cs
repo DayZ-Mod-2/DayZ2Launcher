@@ -8,6 +8,8 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 
+using zombiesnu.DayZeroLauncher.App.Ui;
+
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class Arma2Updater : BindableBase
@@ -19,19 +21,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			Installer = new Arma2Installer();
 			Installer.PropertyChanged += (sender, args) =>
-			                             	{
-												if(args.PropertyName == "IsRunning")
-												{
-													PropertyHasChanged("InstallButtonVisible");
-												}
-												else if(args.PropertyName == "Status")
-												{
-													if (Installer.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
-													{
-														CheckForUpdates(_lastPatchesJsonLoc);
-													}
-												}
-			                             	};
+			{
+				if(args.PropertyName == "IsRunning")
+				{
+					PropertyHasChanged("InstallButtonVisible");
+				}
+				else if(args.PropertyName == "Status")
+				{
+					if (Installer.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
+					{
+						CheckForUpdates(_lastPatchesJsonLoc);
+					}
+				}
+			};
 		}
 
 		private class PatchesMeta
@@ -43,6 +45,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 				[JsonProperty("archive")]
 				public HashWebClient.RemoteFileInfo Archive = null;
+
+                [JsonProperty("steambeta")]
+                public bool SteamBeta = false;
 			}
 
 			[JsonProperty("patches")]
@@ -108,9 +113,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}).Start();
 		}
 
-		public void InstallLatestVersion()
+        public void InstallLatestVersion(UpdatesView view)
 		{
-			Installer.DownloadAndInstall(_latestServerVersion.Version,_latestServerVersion.Archive);
+            Installer.DownloadAndInstall(_latestServerVersion.Version,_latestServerVersion.Archive,_latestServerVersion.SteamBeta,view);
 		}
 
 		private Arma2Installer _installer;

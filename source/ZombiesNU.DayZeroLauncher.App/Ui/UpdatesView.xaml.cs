@@ -42,8 +42,13 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 
 		private void InstallLatestPatch_Click(object sender, RoutedEventArgs e)
 		{
-			ViewModel().Arma2Updater.InstallLatestVersion();
+            ViewModel().Arma2Updater.InstallLatestVersion(this);
 		}
+
+        public void CheckForUpdates()
+        {
+            CheckNow_Click(this, null);
+        }
 
 		private void InstallLatestVersion_Click(object sender, RoutedEventArgs e)
 		{
