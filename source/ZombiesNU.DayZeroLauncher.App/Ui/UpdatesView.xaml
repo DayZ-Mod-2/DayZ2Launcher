@@ -10,13 +10,13 @@
     <Grid>
         <StackPanel Margin="18 5 18 0">
             <TextBlock Text="versions"
-						   Foreground="#5A97F2"
+						   Foreground="#FFDED9A2"
 							Margin="0,0,0,5"
-						   FontSize="24"/>
+						   FontSize="24" FontFamily="Bebas Neue"/>
 
             <StackPanel Margin="0,0,0,8" >
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                    <TextBlock Text="DayZero Launcher"
+                    <TextBlock Text="Launcher"
 					   FontWeight="Bold"
 					   Margin="0 0 0 3"
 					   Foreground="#FFFFFF"/>
@@ -29,14 +29,14 @@
                 </StackPanel>
                 <StackPanel Margin="0 8 0 0">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Your Version: "
+                        <TextBlock Text="Installed: "
 							   Foreground="#DDD"/>
                         <TextBlock Text="{Binding LocalMachineInfo.Current.DayZeroLauncherVersion}"
 							   Foreground="#FFFFFF"/>
                     </StackPanel>
                     <StackPanel Margin="0,8"
 							Orientation="Horizontal">
-                        <TextBlock Text="Latest Version: "
+                        <TextBlock Text="Latest: "
 								   Foreground="#DDD"/>
                         <TextBlock Text="{Binding DayZeroLauncherUpdater.LatestVersion}"
 							   Foreground="#FFFFFF"/>
@@ -72,7 +72,7 @@
             <StackPanel x:Name="GameVersions" Visibility="{Binding LocatorError, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, ConverterParameter=true}">
                 <StackPanel Margin="0,10,0,8">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="ARMA 2"
+                        <TextBlock Text="ArmA 2: OA"
                 			FontWeight="Bold"
                 			Margin="0 0 0 3"
                 			Foreground="#FFFFFF"/>
@@ -86,14 +86,14 @@
 
                     <StackPanel Margin="0 8 0 0">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Your Revision: "
+                            <TextBlock Text="Installed: "
                 				Foreground="#DDD"/>
                             <TextBlock Text="{Binding CalculatedGameSettings.Versions.BestVersion.BuildNo}"
                 				Foreground="#FFFFFF"/>
                         </StackPanel>
                         <StackPanel Margin="0,8,0,0"
                 			Orientation="Horizontal">
-                            <TextBlock Text="Latest Revision: "
+                            <TextBlock Text="Latest: "
                 				Foreground="#DDD"/>
                             <TextBlock Text="{Binding Arma2Updater.LatestVersion}"
                 				Foreground="#FFFFFF"/>
@@ -131,7 +131,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal"
             				Margin="0 8 0 0">
-                            <TextBlock Text="Your Version: "
+                            <TextBlock Text="Installed: "
             					Foreground="#DDD"/>
                             <TextBlock Text="{Binding CalculatedGameSettings.Current.ModContentVersion}"
             					Foreground="#FFFFFF"/>
@@ -140,7 +140,7 @@
 
                         <StackPanel Margin="0 9 0 0"
             				Orientation="Horizontal">
-                            <TextBlock Text="Latest Version: "
+                            <TextBlock Text="Latest: "
             					Foreground="#DDD"/>
                             <TextBlock Text="{Binding DayZUpdater.LatestVersion, TargetNullValue=Unknown}"
             					Foreground="#FFFFFF"/>

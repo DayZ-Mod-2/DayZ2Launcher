@@ -10,9 +10,9 @@
     <Grid>
         <StackPanel Margin="18 5 18 0">
             <TextBlock Text="plugins"
-						   Foreground="#5A97F2"
+						   Foreground="#FFDED9A2"
 							Margin="0,0,0,5"
-						   FontSize="24"/>
+						   FontSize="24" FontFamily="Bebas Neue"/>
 
             <StackPanel Margin="0,0,0,8" >
                 <StackPanel Orientation="Horizontal" Margin="0,10,0,0">

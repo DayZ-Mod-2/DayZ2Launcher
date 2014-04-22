@@ -54,10 +54,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                         {
                             Execute.OnUiThreadSync(() =>
                             {
-                                InfoPopup popup = new InfoPopup("User intervention required", null);
-                                popup.Headline.Content = "Game update via Steam";
-                                popup.SetMessage("According to Steam,\n" +
-                                                    gameName + " is not installed.\n" +
+                                InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
+                                popup.Headline.Content = "Game update using Steam";
+                                popup.SetMessage(gameName + " is not installed.\n" +
                                                     "Please install it from the Library tab.\n" +
                                                     "Or by clicking on the following link:");
                                 popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
@@ -71,8 +70,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                         {
                             Execute.OnUiThreadSync(() =>
                             {
-                                InfoPopup popup = new InfoPopup("User intervention required", null);
-                                popup.Headline.Content = "Game update via Steam";
+                                InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
+                                popup.Headline.Content = "Game update using Steam";
                                 popup.SetMessage(gameName + " needs to be updated.\n" +
                                                     "Please update it by verifying the files.\n" +
                                                     "Or by clicking on the following link:");

@@ -13,13 +13,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Label Name="Headline" Foreground="White" HorizontalContentAlignment="Center" FontSize="15" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="0">Headline</Label>
+        <Label Name="Headline" Foreground="#FFDED9A2" HorizontalContentAlignment="Center" FontSize="24" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="0" FontFamily="Bebas Neue">Headline</Label>
         <Label Foreground="White" HorizontalContentAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Top" Grid.Row="1">
             <TextBlock Name="Message" TextAlignment="Center" TextWrapping="Wrap">Information</TextBlock>
         </Label>
         <Label Visibility="Hidden" Name="LinkBlock" HorizontalContentAlignment="Center" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Center">
             <Hyperlink Name="URL" Click="URL_Click">
-                <TextBlock Name="URLText"></TextBlock></Hyperlink>
+                <TextBlock Name="URLText" Foreground="#FFDED9A2" FontWeight="Bold" TextDecorations="Underline"></TextBlock></Hyperlink>
         </Label>
         <Button Name="OKButton" Click="OK_Click" Margin="0.5,10" Height="25" Width="80" VerticalAlignment="Bottom" Grid.Row="3">OK</Button>
     </Grid>
