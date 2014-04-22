@@ -300,8 +300,29 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                 int appId = 219540;
 				if (!isBeta)
 					appId = 33930;
+
+                DirectoryInfo pathInfo = null;
+
+                try
+                {
+                    pathInfo = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
+                }
+                catch (ArgumentException aex)
+                {
+                    var overridenPath = string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
+
+                    Execute.OnUiThreadSync(() =>
+                    {
+                        InfoPopup popup = new InfoPopup("Invalid Path To Arma2: OA", parentWnd);
+                        popup.Headline.Content = "Game path could not be located";
+                        popup.SetMessage(overridenPath ? "Invalid Game override path, please enter a new game path or remove it" : "Game could not located via the registry, please enter an override path");
+
+                        popup.Show();
+                    }, null, System.Windows.Threading.DispatcherPriority.Input);
+
+                    return false;
+                }
                 
-                var pathInfo = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
                 for (pathInfo = pathInfo.Parent; pathInfo != null; pathInfo = pathInfo.Parent )
                 {
                     if (pathInfo.Name.Equals("steamapps",StringComparison.OrdinalIgnoreCase))
