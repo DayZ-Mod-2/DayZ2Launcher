@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>27</ApplicationRevision>
-    <ApplicationVersion>1.2.9.27</ApplicationVersion>
+    <ApplicationRevision>28</ApplicationRevision>
+    <ApplicationVersion>1.2.9.28</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
