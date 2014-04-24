@@ -8,7 +8,7 @@ using System.Resources;
 [assembly: AssemblyCopyrightAttribute("Copyright 2013-2014 ZOMBIES.NU")]
 
 [assembly: AssemblyTitleAttribute("DayZero Launcher")]
-[assembly: AssemblyVersionAttribute("1.2.9.28")]
-[assembly: AssemblyFileVersionAttribute("1.2.9.28")]
+[assembly: AssemblyVersionAttribute("1.2.9.30")]
+[assembly: AssemblyFileVersionAttribute("1.2.9.30")]
 
 [assembly: NeutralResourcesLanguageAttribute("")]
