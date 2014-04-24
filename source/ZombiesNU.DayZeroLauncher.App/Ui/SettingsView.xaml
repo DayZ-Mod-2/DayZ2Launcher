@@ -13,7 +13,7 @@
             <TextBlock Text="settings"
 						   Foreground="#FFDED9A2"
 						   Margin="0,0,0,5"
-						   FontSize="24" FontFamily="Bebas Neue"/>
+						   FontSize="24" FontFamily="./#Bebas Neue"/>
         <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="25*"/>

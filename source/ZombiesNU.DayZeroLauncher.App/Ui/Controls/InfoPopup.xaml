@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Label Name="Headline" Foreground="#FFDED9A2" HorizontalContentAlignment="Center" FontSize="24" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="0" FontFamily="Bebas Neue">Headline</Label>
+        <Label Name="Headline" Foreground="#FFDED9A2" HorizontalContentAlignment="Center" FontSize="24" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="0" FontFamily="../#Bebas Neue">Headline</Label>
         <Label Foreground="White" HorizontalContentAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Top" Grid.Row="1">
             <TextBlock Name="Message" TextAlignment="Center" TextWrapping="Wrap">Information</TextBlock>
         </Label>

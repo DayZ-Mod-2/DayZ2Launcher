@@ -195,7 +195,7 @@
 
                             <Path Data="F1M624.846,564.374L624.846,546.742 645.182,567.074 645.182,527.111 658.123,527.111 658.123,566.933 678.352,546.705 678.321,564.374 651.584,591.111 624.846,564.374z" 
 								  Stretch="Uniform" Fill="LightGreen" Width="14" Height="14" Margin="0,3,3,0" />
-                            <TextBlock Text="Downloading servers list... " 
+                            <TextBlock Text="downloading server list... " 
 									   Foreground="LightGreen"  
 									   FontSize="14"
 									   TextAlignment="Right"/>

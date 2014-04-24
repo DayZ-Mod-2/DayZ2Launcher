@@ -6,7 +6,7 @@
         WindowStartupLocation="CenterOwner"
         SizeToContent ="WidthAndHeight" Background="#444444">
     <StackPanel x:Name="ContentGrid" Background="#444444" Height="Auto" Margin="10,0,10,0" VerticalAlignment="Top" >
-        <Label x:Name="Headline" Foreground="White" HorizontalContentAlignment="Center" FontSize="15" VerticalAlignment="Top" Content="Launching game"/>
+        <Label x:Name="Headline" Foreground="#FFDED9A2" HorizontalContentAlignment="Center" FontSize="24" FontFamily="./#Bebas Neue" VerticalAlignment="Top" Content="launching game"/>
         <StackPanel Orientation="Vertical" Height="46">
             <Label Foreground="White" HorizontalContentAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top">
                 <TextBlock x:Name="UpperMessage" TextAlignment="Left" TextWrapping="Wrap"><Run Text="{Binding UpperProgressText, TargetNullValue=Processing...}"/></TextBlock>

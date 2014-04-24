@@ -14,10 +14,10 @@
 		</Grid.RowDefinitions>
 
 		<StackPanel>
-			<TextBlock Text="server notes (private)"
-							   Foreground="#5A97F2"
+			<TextBlock Text="server notes"
+							   Foreground="#FFDED9A2"
 								Margin="0 0 0 20"
-							   FontSize="24"/>
+							   FontSize="24" FontFamily="./#Bebas Neue"/>
 			<TextBlock Text="{Binding Server.Name}"
 					   FontSize="16"
 					   Foreground="#FFFFFF"/>

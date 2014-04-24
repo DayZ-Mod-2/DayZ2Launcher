@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>25</ApplicationRevision>
-    <ApplicationVersion>1.2.8.25</ApplicationVersion>
+    <ApplicationRevision>27</ApplicationRevision>
+    <ApplicationVersion>1.2.9.27</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -463,6 +463,7 @@
     </EmbeddedResource>
     <Resource Include="Assets\Images\dayzero_logo.png" />
     <Resource Include="Assets\Images\zombiesnu_logo.png" />
+    <Resource Include="Ui\BebasNeue.ttf" />
     <SplashScreen Include="Assets\Images\dayzero_splash.png" />
     <None Include="app.config" />
     <None Include="app.manifest" />
