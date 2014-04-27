@@ -42,11 +42,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             {
                 int appId = 219540;
                 string gameName = "Arma 2: Operation Arrowhead Beta";
-                DirectoryInfo steamPath = null;
+                DirectoryInfo armaPath = null;
 
                 try
                 {
-                    steamPath = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
+                    armaPath = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
                 }
                 catch (ArgumentException aex)
                 {
@@ -64,12 +64,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                     return;
                 }
 
-                for (steamPath = steamPath.Parent; steamPath != null; steamPath = steamPath.Parent)
+                for (armaPath = armaPath.Parent; armaPath != null; armaPath = armaPath.Parent)
                 {
-                    if (steamPath.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
+                    if (armaPath.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
                     {
                         string manifestName = "appmanifest_" + appId.ToString() + ".acf";
-                        string fullManifestPath = Path.Combine(steamPath.FullName, manifestName);
+                        string fullManifestPath = Path.Combine(armaPath.FullName, manifestName);
                         if (!File.Exists(fullManifestPath))
                         {
                             Execute.OnUiThreadSync(() =>
@@ -105,10 +105,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                         break;
                     }
                 }
-                if (steamPath == null)
+                if (armaPath == null)
                 {
-                    MessageBox.Show("Steam launch impossible, '" + gameName + "' isn't located inside a SteamLibrary folder.",
-                        "Game launch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
+                        "Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     return;
                 }
             }

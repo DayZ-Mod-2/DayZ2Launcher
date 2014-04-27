@@ -112,6 +112,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				CalculatedGameSettings.Current.Update();
 			}
 		}
+
         public string AddonsDirectoryOverride
         {
             get { return _AddonsDirectoryOverride; }
@@ -124,7 +125,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             }
         }
 
-		
 		public string CustomBranchName
 		{
 			get { return _customBranchName; }
