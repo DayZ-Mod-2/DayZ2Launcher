@@ -132,11 +132,11 @@
     <Reference Include="Mono.Nat">
       <HintPath>..\packages\Mono.Nat.1.1.13\lib\Net40\Mono.Nat.dll</HintPath>
     </Reference>
-    <Reference Include="MonoTorrent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MonoTorrent, Version=1.0.1.5, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MonoTorrent\MonoTorrent.dll</HintPath>
     </Reference>
-    <Reference Include="MonoTorrent.Dht, Version=0.70.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="MonoTorrent.Dht, Version=0.7.1.3, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MonoTorrent\MonoTorrent.Dht.dll</HintPath>
     </Reference>
