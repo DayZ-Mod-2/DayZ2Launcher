@@ -48,6 +48,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
                 [JsonProperty("steambeta")]
                 public bool SteamBeta = false;
+
+				[JsonProperty("steambuild")]
+				public string SteamBuild = "";
 			}
 
 			[JsonProperty("patches")]
@@ -115,7 +118,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
         public void InstallLatestVersion(UpdatesView view)
 		{
-            Installer.DownloadAndInstall(_latestServerVersion.Version,_latestServerVersion.Archive,_latestServerVersion.SteamBeta,view);
+			Installer.DownloadAndInstall(_latestServerVersion.Version, _latestServerVersion.Archive, _latestServerVersion.SteamBeta, _latestServerVersion.SteamBuild, view);
 		}
 
 		private Arma2Installer _installer;
@@ -155,7 +158,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				var versions = CalculatedGameSettings.Current.Versions;
 				if (versions != null)
 				{
-					if ((versions.Retail.BuildNo ?? 0) > (LatestVersion ?? 0))
+					if ((versions.Retail.BuildNo ?? 0) >= (LatestVersion ?? 0))
 						mismatch = false;
 					else if ((versions.Beta.BuildNo ?? 0) == (LatestVersion ?? 0))
 						mismatch = false;

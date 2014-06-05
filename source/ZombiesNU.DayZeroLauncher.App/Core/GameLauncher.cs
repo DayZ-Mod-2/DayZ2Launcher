@@ -297,9 +297,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					return false;
 				}
 
-                int appId = 219540;
-				if (!isBeta)
-					appId = 33930;
+				int appId = 33930;
 
                 DirectoryInfo pathInfo = null;
 
@@ -384,8 +382,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
             }
 
             var modArgSb = new StringBuilder(String.Format("-mod={0};Expansion;ca", CalculatedGameSettings.Current.Arma2Path));
-			if (isBeta)
-				modArgSb.Append(";Expansion\\beta;Expansion\\beta\\Expansion");
 
 			var addOnNames = addOns.Select(x => x.Name).AsEnumerable();
 			foreach (var addon in addOnNames)

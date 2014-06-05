@@ -35,8 +35,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>30</ApplicationRevision>
-    <ApplicationVersion>1.2.9.30</ApplicationVersion>
+    <ApplicationRevision>33</ApplicationRevision>
+    <ApplicationVersion>1.3.1.33</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -179,6 +179,8 @@
     <Compile Include="Core\Arma2Updater.cs" />
     <Compile Include="Core\CalculatedGameSettings.cs" />
     <Compile Include="Core\HttpUtility.cs" />
+    <Compile Include="Core\KeyValue.cs" />
+    <Compile Include="Core\StreamHelpers.cs" />
     <Compile Include="Core\TorrentOptions.cs" />
     <Compile Include="Core\GUIDCalculator.cs" />
     <Compile Include="Core\HashWebClient.cs" />

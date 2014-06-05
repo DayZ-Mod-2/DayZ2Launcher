@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Windows;
+using System.Linq;
 using System.Threading;
 using SharpCompress.Common;
 using SharpCompress.Reader;
+using SteamKit2;
 
 using zombiesnu.DayZeroLauncher.App.Ui.Controls;
 using zombiesnu.DayZeroLauncher.App.Ui;
@@ -36,11 +38,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-        public void DownloadAndInstall(int revision, HashWebClient.RemoteFileInfo archiveInfo, bool steamBeta, UpdatesView view)
+        public void DownloadAndInstall(int revision, HashWebClient.RemoteFileInfo archiveInfo, bool steamBeta, string steamBuild, UpdatesView view)
         {
             if (steamBeta)
             {
-                int appId = 219540;
+				const int appId = 33930;
                 string gameName = "Arma 2: Operation Arrowhead Beta";
                 DirectoryInfo armaPath = null;
 
@@ -54,9 +56,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
                     Execute.OnUiThreadSync(() =>
                     {
-                        InfoPopup popup = new InfoPopup("Invalid Path To Arma2: OA", MainWindow.GetWindow(view));
-                        popup.Headline.Content = "Game path could not be located";
-                        popup.SetMessage(overridenPath ? "Invalid Game override path, please enter a new game path or remove it" : "Game could not located via the registry, please enter an override path");
+                        InfoPopup popup = new InfoPopup("Invalid path", MainWindow.GetWindow(view));
+                        popup.Headline.Content = "Game could not be found";
+                        popup.SetMessage(overridenPath ? "Invalid game override path, please enter a new game path or remove it" : "Game could not located via the registry, please enter an override path");
 
                         popup.Show();
                     }, null, System.Windows.Threading.DispatcherPriority.Input);
@@ -70,39 +72,88 @@ namespace zombiesnu.DayZeroLauncher.App.Core
                     {
                         string manifestName = "appmanifest_" + appId.ToString() + ".acf";
                         string fullManifestPath = Path.Combine(armaPath.FullName, manifestName);
-                        if (!File.Exists(fullManifestPath))
+                        if (File.Exists(fullManifestPath))
                         {
-                            Execute.OnUiThreadSync(() =>
-                            {
-                                InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
-                                popup.Headline.Content = "Game update using Steam";
-                                popup.SetMessage(gameName + " is not installed.\n" +
-                                                    "Please install it from the Library tab.\n" +
-                                                    "Or by clicking on the following link:");
-                                popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
-                                popup.Closed += (sender, args) => view.CheckForUpdates();
-                                popup.Show();
-                            }, null, System.Windows.Threading.DispatcherPriority.Input);
+							// Kill Steam so we can edit the game configuration.
+							Process[] processes = Process.GetProcessesByName("Steam");
 
-                            return;
-                        }
-                        else if (File.Exists(fullManifestPath))
-                        {
-                            Execute.OnUiThreadSync(() =>
-                            {
-                                InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
-                                popup.Headline.Content = "Game update using Steam";
-                                popup.SetMessage(gameName + " needs to be updated.\n" +
-                                                    "Please update it by verifying the files.\n" +
-                                                    "Or by clicking on the following link:");
-                                popup.SetLink("steam://validate/" + appId.ToString() + "/", "Update " + gameName);
-                                popup.Closed += (sender, args) => view.CheckForUpdates();
-                                popup.Show();
-                            }, null, System.Windows.Threading.DispatcherPriority.Input);
+							foreach (Process process in processes)
+							{
+								// #YOLO
+								process.Kill();
+							}
 
-                            return;
+							Thread.Sleep(1000);
+
+							KeyValue acfKeys = new KeyValue();
+							var reader = new StreamReader(fullManifestPath);
+							var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
+							reader.Close();
+							var currentBuild = acfKeys.Children.FirstOrDefault(k => k.Name == "buildid");
+							if (!String.IsNullOrEmpty(currentBuild.Value))
+							{
+								if (Equals(currentBuild.Value, steamBuild))
+								{
+									Execute.OnUiThreadSync(() =>
+									{
+										InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
+										popup.Headline.Content = "Game update using Steam";
+										popup.SetMessage(gameName + " might be corrupted.\n" +
+															"Please validate your client files manually.\n" +
+															"Or by clicking on the following link:");
+										popup.SetLink("steam://validate/" + appId.ToString() + "/", "Update " + gameName);
+										popup.Closed += (sender, args) => view.CheckForUpdates();
+										popup.Show();
+									}, null, System.Windows.Threading.DispatcherPriority.Input);
+								}
+								else
+								{
+									var gameState = acfKeys.Children.FirstOrDefault(k => k.Name == "StateFlags");
+									if (!String.IsNullOrEmpty(gameState.Value))
+									{
+										currentBuild.Value = steamBuild;
+										gameState.Value = "2";
+										acfKeys.SaveToFile(fullManifestPath, false);
+
+										Thread.Sleep(1000);
+
+										Execute.OnUiThreadSync(() =>
+										{
+											InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
+											popup.Headline.Content = "Game update using Steam";
+											popup.SetMessage(gameName + " branch switched to BETA.\n" +
+															"Please restart Steam to download update.");
+											popup.Closed += (sender, args) => view.CheckForUpdates();
+											popup.Show();
+										}, null, System.Windows.Threading.DispatcherPriority.Input);
+									}
+								}
+							}
+							else
+							{
+								MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
+									"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+								return;
+							}
+
+							return;
                         }
-                        break;
+						else
+						{
+							Execute.OnUiThreadSync(() =>
+							{
+								InfoPopup popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
+								popup.Headline.Content = "Game update using Steam";
+								popup.SetMessage(gameName + " is not installed.\n" +
+													"Please install it from the Library tab.\n" +
+													"Or by clicking on the following link:");
+								popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
+								popup.Closed += (sender, args) => view.CheckForUpdates();
+								popup.Show();
+							}, null, System.Windows.Threading.DispatcherPriority.Input);
+
+							return;
+						}
                     }
                 }
                 if (armaPath == null)

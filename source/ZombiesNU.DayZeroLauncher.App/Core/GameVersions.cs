@@ -114,6 +114,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
+				if (Equals(Retail.BuildNo, Beta.BuildNo))
+					return Retail;
+
 				if ((Retail.BuildNo ?? 0) > (Beta.BuildNo ?? 0))
 					return Retail;
 
