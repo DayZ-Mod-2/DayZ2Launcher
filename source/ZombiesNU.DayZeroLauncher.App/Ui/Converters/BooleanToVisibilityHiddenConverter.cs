@@ -11,10 +11,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 		{
 			bool inverse = parameter != null && bool.Parse((string) parameter);
 			bool val = inverse
-			           	? !(bool)value
-			           	: (bool)value;
+				? !(bool) value
+				: (bool) value;
 
-			if(val)
+			if (val)
 				return Visibility.Visible;
 			return Visibility.Hidden;
 		}

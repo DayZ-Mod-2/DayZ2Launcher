@@ -13,7 +13,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 			if (value == null)
 				return "24/7 Day";
 
-			var format = UserSettings.Current.GameOptions.TwentyFourHourTimeFormat
+			string format = UserSettings.Current.GameOptions.TwentyFourHourTimeFormat
 				? "HH:mm"
 				: "h:mm tt";
 			return dateTime.Value.ToString(format);

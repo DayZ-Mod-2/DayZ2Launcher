@@ -17,6 +17,5 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				UserSettings.Current.Save();
 			}
 		}
-
 	}
 }

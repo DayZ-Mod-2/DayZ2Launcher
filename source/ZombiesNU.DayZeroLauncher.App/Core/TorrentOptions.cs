@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.Serialization;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
@@ -5,27 +6,27 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	[DataContract]
 	public class TorrentOptions : BindableBase
 	{
-		[DataMember] private int _listeningPort = 54321;
-		[DataMember] private bool _randomizePort = true;
+		[DataMember] private bool _disableFastResume;
 		[DataMember] private bool _enableUpnp = true;
-		[DataMember] private int _maxDlSpeed = 0;
+		[DataMember] private int _listeningPort = 54321;
 		[DataMember] private int _maxDlConns = 100;
-		[DataMember] private int _maxUlSpeed = 0;
+		[DataMember] private int _maxDlSpeed;
+		[DataMember] private int _maxUlSpeed;
 		[DataMember] private int _numUlSlots = 10;
-		[DataMember] private bool _stopSeeding = false;
-		[DataMember] private bool _disableFastResume = false;
+		[DataMember] private bool _randomizePort = true;
+		[DataMember] private bool _stopSeeding;
 
 		public int ListeningPort
 		{
 			get { return _listeningPort; }
 			set
 			{
-				var oldValue = _listeningPort;
+				int oldValue = _listeningPort;
 
 				if (value > 0 && value < 65536)
 					_listeningPort = value;
 				else
-					_listeningPort = new System.Random().Next(1, 65536);
+					_listeningPort = new Random().Next(1, 65536);
 
 				if (_listeningPort != oldValue)
 				{
@@ -45,7 +46,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					_randomizePort = value;
 					PropertyHasChanged("RandomizePort");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 
@@ -59,7 +60,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					_enableUpnp = value;
 					PropertyHasChanged("EnableUpnp");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 
@@ -68,7 +69,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _maxDlSpeed; }
 			set
 			{
-				var oldValue = _maxDlSpeed;
+				int oldValue = _maxDlSpeed;
 
 				if (value > 0)
 					_maxDlSpeed = value;
@@ -79,7 +80,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					PropertyHasChanged("MaxDLSpeed");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 
@@ -88,7 +89,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _maxDlConns; }
 			set
 			{
-				var oldValue = _maxDlConns;
+				int oldValue = _maxDlConns;
 
 				if (value > 0)
 					_maxDlConns = value;
@@ -99,7 +100,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					PropertyHasChanged("MaxDLConns");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 
@@ -120,7 +121,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _maxUlSpeed; }
 			set
 			{
-				var oldValue = _maxUlSpeed;
+				int oldValue = _maxUlSpeed;
 
 				if (value > 0)
 					_maxUlSpeed = value;
@@ -131,7 +132,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					PropertyHasChanged("MaxULSpeed");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 
@@ -140,7 +141,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _numUlSlots; }
 			set
 			{
-				var oldValue = _numUlSlots;
+				int oldValue = _numUlSlots;
 
 				if (value > 0)
 					_numUlSlots = value;
@@ -151,7 +152,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					PropertyHasChanged("NumULSlots");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 
@@ -177,7 +178,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					_stopSeeding = value;
 					PropertyHasChanged("StopSeeding");
 					UserSettings.Current.Save();
-				}				
+				}
 			}
 		}
 

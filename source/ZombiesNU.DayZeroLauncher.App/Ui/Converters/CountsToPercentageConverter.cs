@@ -8,11 +8,11 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 	{
 		public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
 		{
-			int count = (int)values[0];
-			int totalCount = (int)values[1];
-			decimal percentage = ((decimal)count/(decimal)totalCount);
-			var roundedPercentage = Math.Round(percentage*100);
-			if(roundedPercentage == 0)
+			var count = (int) values[0];
+			var totalCount = (int) values[1];
+			decimal percentage = (count/(decimal) totalCount);
+			decimal roundedPercentage = Math.Round(percentage*100);
+			if (roundedPercentage == 0)
 				return "< 1%";
 			return roundedPercentage + "%";
 		}

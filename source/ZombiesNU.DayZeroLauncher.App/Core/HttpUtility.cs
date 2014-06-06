@@ -35,23 +35,28 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
-using System.Security.Permissions;
 using System.Text;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class HttpEncoder
 	{
-		static char[] hexChars = "0123456789abcdef".ToCharArray();
-		static object entitiesLock = new object();
-		static SortedDictionary<string, char> entities;
+		private static readonly char[] hexChars = "0123456789abcdef".ToCharArray();
+		private static readonly object entitiesLock = new object();
+		private static SortedDictionary<string, char> entities;
 
-		static Lazy<HttpEncoder> defaultEncoder;
-		static Lazy<HttpEncoder> currentEncoderLazy;
+		private static readonly Lazy<HttpEncoder> defaultEncoder;
+		private static readonly Lazy<HttpEncoder> currentEncoderLazy;
 
-		static HttpEncoder currentEncoder;
+		private static HttpEncoder currentEncoder;
 
-		static IDictionary<string, char> Entities
+		static HttpEncoder()
+		{
+			defaultEncoder = new Lazy<HttpEncoder>(() => new HttpEncoder());
+			currentEncoderLazy = new Lazy<HttpEncoder>(GetCustomEncoderFromConfig);
+		}
+
+		private static IDictionary<string, char> Entities
 		{
 			get
 			{
@@ -83,22 +88,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static HttpEncoder Default
 		{
-			get
-			{
-				return defaultEncoder.Value;
-			}
+			get { return defaultEncoder.Value; }
 		}
 
-		static HttpEncoder()
-		{
-			defaultEncoder = new Lazy<HttpEncoder>(() => new HttpEncoder());
-			currentEncoderLazy = new Lazy<HttpEncoder>(new Func<HttpEncoder>(GetCustomEncoderFromConfig));
-		}
-
-		public HttpEncoder()
-		{
-		}
-		protected internal virtual void HeaderNameValueEncode(string headerName, string headerValue, out string encodedHeaderName, out string encodedHeaderValue)
+		protected internal virtual void HeaderNameValueEncode(string headerName, string headerValue,
+			out string encodedHeaderName, out string encodedHeaderValue)
 		{
 			if (String.IsNullOrEmpty(headerName))
 				encodedHeaderName = headerName;
@@ -111,7 +105,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				encodedHeaderValue = EncodeHeaderString(headerValue);
 		}
 
-		static void StringBuilderAppend(string s, ref StringBuilder sb)
+		private static void StringBuilderAppend(string s, ref StringBuilder sb)
 		{
 			if (sb == null)
 				sb = new StringBuilder(s);
@@ -119,7 +113,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				sb.Append(s);
 		}
 
-		static string EncodeHeaderString(string input)
+		private static string EncodeHeaderString(string input)
 		{
 			StringBuilder sb = null;
 
@@ -128,7 +122,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				char ch = input[i];
 
 				if ((ch < 32 && ch != 9) || ch == 127)
-					StringBuilderAppend(String.Format("%{0:x2}", (int)ch), ref sb);
+					StringBuilderAppend(String.Format("%{0:x2}", (int) ch), ref sb);
 			}
 
 			if (sb != null)
@@ -169,7 +163,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return UrlEncodeToBytes(bytes, offset, count);
 		}
 
-		static HttpEncoder GetCustomEncoderFromConfig()
+		private static HttpEncoder GetCustomEncoderFromConfig()
 		{
 			return Default;
 		}
@@ -179,7 +173,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (String.IsNullOrEmpty(value))
 				return value;
 
-			MemoryStream result = new MemoryStream();
+			var result = new MemoryStream();
 			int length = value.Length;
 			for (int i = 0; i < length; i++)
 				UrlPathEncodeChar(value[i], result);
@@ -202,10 +196,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (count < 0 || count > blen - offset)
 				throw new ArgumentOutOfRangeException("count");
 
-			MemoryStream result = new MemoryStream(count);
+			var result = new MemoryStream(count);
 			int end = offset + count;
 			for (int i = offset; i < end; i++)
-				UrlEncodeChar((char)bytes[i], result, false);
+				UrlEncodeChar((char) bytes[i], result, false);
 
 			return result.ToArray();
 		}
@@ -232,7 +226,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (!needEncode)
 				return s;
 
-			StringBuilder output = new StringBuilder();
+			var output = new StringBuilder();
 			int len = s.Length;
 
 			for (int i = 0; i < len; i++)
@@ -267,7 +261,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						if (ch > 159 && ch < 256)
 						{
 							output.Append("&#");
-							output.Append(((int)ch).ToString(CultureInfo.InvariantCulture));
+							output.Append(((int) ch).ToString(CultureInfo.InvariantCulture));
 							output.Append(";");
 						}
 						else
@@ -282,11 +276,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		internal static string HtmlAttributeEncode(string s)
 		{
 			if (String.IsNullOrEmpty(s))
-				return String.Empty;
-			if (s == null)
-				return null;
-
-			if (s.Length == 0)
 				return String.Empty;
 
 			bool needEncode = false;
@@ -303,7 +292,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (!needEncode)
 				return s;
 
-			StringBuilder output = new StringBuilder();
+			var output = new StringBuilder();
 			int len = s.Length;
 
 			for (int i = 0; i < len; i++)
@@ -342,9 +331,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			if (s.IndexOf('&') == -1)
 				return s;
-			StringBuilder rawEntity = new StringBuilder();
-			StringBuilder entity = new StringBuilder();
-			StringBuilder output = new StringBuilder();
+			var rawEntity = new StringBuilder();
+			var entity = new StringBuilder();
+			var output = new StringBuilder();
 			int len = s.Length;
 			// 0 -> nothing,
 			// 1 -> right after '&'
@@ -382,7 +371,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						have_trailing_digits = false;
 					}
 
-					output.Append(entity.ToString());
+					output.Append(entity);
 					entity.Length = 0;
 					entity.Append('&');
 					continue;
@@ -393,7 +382,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					if (c == ';')
 					{
 						state = 0;
-						output.Append(entity.ToString());
+						output.Append(entity);
 						output.Append(c);
 						entity.Length = 0;
 					}
@@ -433,18 +422,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					if (c == ';')
 					{
 						if (number == 0)
-							output.Append(rawEntity.ToString() + ";");
+							output.Append(rawEntity + ";");
+						else if (number > 65535)
+						{
+							output.Append("&#");
+							output.Append(number.ToString(CultureInfo.InvariantCulture));
+							output.Append(";");
+						}
 						else
-							if (number > 65535)
-							{
-								output.Append("&#");
-								output.Append(number.ToString(CultureInfo.InvariantCulture));
-								output.Append(";");
-							}
-							else
-							{
-								output.Append((char)number);
-							}
+						{
+							output.Append((char) number);
+						}
 						state = 0;
 						entity.Length = 0;
 						rawEntity.Length = 0;
@@ -452,13 +440,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					}
 					else if (is_hex_value && Uri.IsHexDigit(c))
 					{
-						number = number * 16 + Uri.FromHex(c);
+						number = number*16 + Uri.FromHex(c);
 						have_trailing_digits = true;
 						rawEntity.Append(c);
 					}
 					else if (Char.IsDigit(c))
 					{
-						number = number * 10 + ((int)c - '0');
+						number = number*10 + (c - '0');
 						have_trailing_digits = true;
 						rawEntity.Append(c);
 					}
@@ -482,7 +470,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			if (entity.Length > 0)
 			{
-				output.Append(entity.ToString());
+				output.Append(entity);
 			}
 			else if (have_trailing_digits)
 			{
@@ -504,53 +492,53 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				//if (!isUnicode)
 				// throw new ArgumentOutOfRangeException ("c", c, "c must be less than 256");
 				int idx;
-				int i = (int)c;
+				int i = c;
 
-				result.WriteByte((byte)'%');
-				result.WriteByte((byte)'u');
+				result.WriteByte((byte) '%');
+				result.WriteByte((byte) 'u');
 				idx = i >> 12;
-				result.WriteByte((byte)hexChars[idx]);
+				result.WriteByte((byte) hexChars[idx]);
 				idx = (i >> 8) & 0x0F;
-				result.WriteByte((byte)hexChars[idx]);
+				result.WriteByte((byte) hexChars[idx]);
 				idx = (i >> 4) & 0x0F;
-				result.WriteByte((byte)hexChars[idx]);
+				result.WriteByte((byte) hexChars[idx]);
 				idx = i & 0x0F;
-				result.WriteByte((byte)hexChars[idx]);
+				result.WriteByte((byte) hexChars[idx]);
 				return;
 			}
 
 			if (c > ' ' && NotEncoded(c))
 			{
-				result.WriteByte((byte)c);
+				result.WriteByte((byte) c);
 				return;
 			}
 			if (c == ' ')
 			{
-				result.WriteByte((byte)'+');
+				result.WriteByte((byte) '+');
 				return;
 			}
 			if ((c < '0') ||
-			(c < 'A' && c > '9') ||
-			(c > 'Z' && c < 'a') ||
-			(c > 'z'))
+			    (c < 'A' && c > '9') ||
+			    (c > 'Z' && c < 'a') ||
+			    (c > 'z'))
 			{
 				if (isUnicode && c > 127)
 				{
-					result.WriteByte((byte)'%');
-					result.WriteByte((byte)'u');
-					result.WriteByte((byte)'0');
-					result.WriteByte((byte)'0');
+					result.WriteByte((byte) '%');
+					result.WriteByte((byte) 'u');
+					result.WriteByte((byte) '0');
+					result.WriteByte((byte) '0');
 				}
 				else
-					result.WriteByte((byte)'%');
+					result.WriteByte((byte) '%');
 
-				int idx = ((int)c) >> 4;
-				result.WriteByte((byte)hexChars[idx]);
-				idx = ((int)c) & 0x0F;
-				result.WriteByte((byte)hexChars[idx]);
+				int idx = c >> 4;
+				result.WriteByte((byte) hexChars[idx]);
+				idx = c & 0x0F;
+				result.WriteByte((byte) hexChars[idx]);
 			}
 			else
-				result.WriteByte((byte)c);
+				result.WriteByte((byte) c);
 		}
 
 		internal static void UrlPathEncodeChar(char c, Stream result)
@@ -560,24 +548,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				byte[] bIn = Encoding.UTF8.GetBytes(c.ToString());
 				for (int i = 0; i < bIn.Length; i++)
 				{
-					result.WriteByte((byte)'%');
-					int idx = ((int)bIn[i]) >> 4;
-					result.WriteByte((byte)hexChars[idx]);
-					idx = ((int)bIn[i]) & 0x0F;
-					result.WriteByte((byte)hexChars[idx]);
+					result.WriteByte((byte) '%');
+					int idx = bIn[i] >> 4;
+					result.WriteByte((byte) hexChars[idx]);
+					idx = bIn[i] & 0x0F;
+					result.WriteByte((byte) hexChars[idx]);
 				}
 			}
 			else if (c == ' ')
 			{
-				result.WriteByte((byte)'%');
-				result.WriteByte((byte)'2');
-				result.WriteByte((byte)'0');
+				result.WriteByte((byte) '%');
+				result.WriteByte((byte) '2');
+				result.WriteByte((byte) '0');
 			}
 			else
-				result.WriteByte((byte)c);
+				result.WriteByte((byte) c);
 		}
 
-		static void InitEntities()
+		private static void InitEntities()
 		{
 			// Build the hash table of HTML entity references. This list comes
 			// from the HTML 4.01 W3C recommendation.
@@ -840,14 +828,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 	public sealed class HttpUtility
 	{
-		sealed class HttpQSCollection : NameValueCollection
+		private sealed class HttpQSCollection : NameValueCollection
 		{
 			public override string ToString()
 			{
 				int count = Count;
 				if (count == 0)
 					return "";
-				StringBuilder sb = new StringBuilder();
+				var sb = new StringBuilder();
 				string[] keys = AllKeys;
 				for (int i = 0; i < count; i++)
 				{
@@ -861,10 +849,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		#region Constructors
 
-		public HttpUtility()
-		{
-		}
-
 		#endregion // Constructors
 
 		#region Methods
@@ -874,20 +858,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return UrlDecode(str, Encoding.UTF8);
 		}
 
-		static char[] GetChars(MemoryStream b, Encoding e)
+		private static char[] GetChars(MemoryStream b, Encoding e)
 		{
-			return e.GetChars(b.GetBuffer(), 0, (int)b.Length);
+			return e.GetChars(b.GetBuffer(), 0, (int) b.Length);
 		}
 
-		static void WriteCharBytes(IList buf, char ch, Encoding e)
+		private static void WriteCharBytes(IList buf, char ch, Encoding e)
 		{
 			if (ch > 255)
 			{
-				foreach (byte b in e.GetBytes(new char[] { ch }))
+				foreach (byte b in e.GetBytes(new[] {ch}))
 					buf.Add(b);
 			}
 			else
-				buf.Add((byte)ch);
+				buf.Add((byte) ch);
 		}
 
 		public static string UrlDecode(string s, Encoding e)
@@ -917,7 +901,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						xchar = GetChar(s, i + 2, 4);
 						if (xchar != -1)
 						{
-							WriteCharBytes(bytes, (char)xchar, e);
+							WriteCharBytes(bytes, (char) xchar, e);
 							i += 5;
 						}
 						else
@@ -925,7 +909,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					}
 					else if ((xchar = GetChar(s, i + 1, 2)) != -1)
 					{
-						WriteCharBytes(bytes, (char)xchar, e);
+						WriteCharBytes(bytes, (char) xchar, e);
 						i += 2;
 					}
 					else
@@ -942,9 +926,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 
 			byte[] buf = bytes.ToArray();
-			bytes = null;
 			return e.GetString(buf);
-
 		}
 
 		public static string UrlDecode(byte[] bytes, Encoding e)
@@ -955,9 +937,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return UrlDecode(bytes, 0, bytes.Length, e);
 		}
 
-		static int GetInt(byte b)
+		private static int GetInt(byte b)
 		{
-			char c = (char)b;
+			var c = (char) b;
 			if (c >= '0' && c <= '9')
 				return c - '0';
 
@@ -970,7 +952,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return -1;
 		}
 
-		static int GetChar(byte[] bytes, int offset, int length)
+		private static int GetChar(byte[] bytes, int offset, int length)
 		{
 			int value = 0;
 			int end = length + offset;
@@ -985,7 +967,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return value;
 		}
 
-		static int GetChar(string str, int offset, int length)
+		private static int GetChar(string str, int offset, int length)
 		{
 			int val = 0;
 			int end = length + offset;
@@ -995,7 +977,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (c > 127)
 					return -1;
 
-				int current = GetInt((byte)c);
+				int current = GetInt((byte) c);
 				if (current == -1)
 					return -1;
 				val = (val << 4) + current;
@@ -1020,8 +1002,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (count < 0 || offset + count > bytes.Length)
 				throw new ArgumentOutOfRangeException("count");
 
-			StringBuilder output = new StringBuilder();
-			MemoryStream acc = new MemoryStream();
+			var output = new StringBuilder();
+			var acc = new MemoryStream();
 
 			int end = count + offset;
 			int xchar;
@@ -1029,7 +1011,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				if (bytes[i] == '%' && i + 2 < count && bytes[i + 1] != '%')
 				{
-					if (bytes[i + 1] == (byte)'u' && i + 5 < end)
+					if (bytes[i + 1] == (byte) 'u' && i + 5 < end)
 					{
 						if (acc.Length > 0)
 						{
@@ -1039,14 +1021,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						xchar = GetChar(bytes, i + 2, 4);
 						if (xchar != -1)
 						{
-							output.Append((char)xchar);
+							output.Append((char) xchar);
 							i += 5;
 							continue;
 						}
 					}
 					else if ((xchar = GetChar(bytes, i + 1, 2)) != -1)
 					{
-						acc.WriteByte((byte)xchar);
+						acc.WriteByte((byte) xchar);
 						i += 2;
 						continue;
 					}
@@ -1064,7 +1046,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				}
 				else
 				{
-					output.Append((char)bytes[i]);
+					output.Append((char) bytes[i]);
 				}
 			}
 
@@ -1073,7 +1055,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				output.Append(GetChars(acc, e));
 			}
 
-			acc = null;
 			return output.ToString();
 		}
 
@@ -1115,11 +1096,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (count < 0 || offset > len - count)
 				throw new ArgumentOutOfRangeException("count");
 
-			MemoryStream result = new MemoryStream();
+			var result = new MemoryStream();
 			int end = offset + count;
 			for (int i = offset; i < end; i++)
 			{
-				char c = (char)bytes[i];
+				var c = (char) bytes[i];
 				if (c == '+')
 				{
 					c = ' ';
@@ -1129,18 +1110,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					int xchar = GetChar(bytes, i + 1, 2);
 					if (xchar != -1)
 					{
-						c = (char)xchar;
+						c = (char) xchar;
 						i += 2;
 					}
 				}
-				result.WriteByte((byte)c);
+				result.WriteByte((byte) c);
 			}
 
 			return result.ToArray();
 		}
 
 		/// <summary>
-		/// Decodes an HTML-encoded string and returns the decoded string.
+		///     Decodes an HTML-encoded string and returns the decoded string.
 		/// </summary>
 		/// <param name="s">The HTML string to decode. </param>
 		/// <returns>The decoded text.</returns>
@@ -1157,7 +1138,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		}
 
 		/// <summary>
-		/// Decodes an HTML-encoded string and sends the resulting output to a TextWriter output stream.
+		///     Decodes an HTML-encoded string and sends the resulting output to a TextWriter output stream.
 		/// </summary>
 		/// <param name="s">The HTML string to decode</param>
 		/// <param name="output">The TextWriter output stream containing the decoded string. </param>
@@ -1249,6 +1230,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					break;
 			}
 		}
+
 		#endregion // Methods
 	}
 }

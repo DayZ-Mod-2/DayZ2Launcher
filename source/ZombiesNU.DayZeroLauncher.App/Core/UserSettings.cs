@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Linq;
-using zombiesnu.DayZeroLauncher.App.Ui.Friends;
-using zombiesnu.DayZeroLauncher.App.Ui.Recent;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -17,64 +12,56 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	public class UserSettings
 	{
 		private static UserSettings _current;
+		private static readonly object _fileLock = new object();
+		private static string _localDataPath;
+		private static string _torrentJunkPath;
+		private static string _contentPath;
+		private static string _contentMetaPath;
+		private static string _contentDataPath;
+		private static string _patchesPath;
+		private static string _installersPath;
+		private static string _roamingDataPath;
+		private static string _notesPath;
+		private static string _settingsPath;
 
-		[DataMember] private List<string> _friends = new List<string>();
-		[DataMember] private Filter _filter = new Filter();
-		[DataMember] private WindowSettings _windowSettings = null; //This is null on purpose so the MainWindow view can set defaults if needed
-		[DataMember] private GameOptions _gameOptions = new GameOptions();
-		[DataMember] private TorrentOptions _torrentOptions = new TorrentOptions();
 		[DataMember] private AppOptions _appOptions = new AppOptions();
 		[DataMember] private List<string> _enabledPlugins = new List<string>();
 		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
+		[DataMember] private Filter _filter = new Filter();
+		[DataMember] private List<string> _friends = new List<string>();
+		[DataMember] private GameOptions _gameOptions = new GameOptions();
+		[DataMember] private bool _hideAU;
+		[DataMember] private bool _hideEU;
+		[DataMember] private bool _hideUS;
 		[DataMember] private List<RecentServer> _recentServers = new List<RecentServer>();
-        [DataMember] private bool _hideUS = false; 
-        [DataMember] private bool _hideEU = false;
-        [DataMember] private bool _hideAU = false;
+		[DataMember] private TorrentOptions _torrentOptions = new TorrentOptions();
 
-        public bool IncludeUS
-        {
-            get { return !_hideUS; }
-            set 
-			{ 
-				_hideUS = !value;
-            }
-        }
+		[DataMember] private WindowSettings _windowSettings;
+			//This is null on purpose so the MainWindow view can set defaults if needed
 
-        public bool IncludeEU
-        {
-            get { return !_hideEU; }
-            set
-            {
-                _hideEU = !value;
-            }
-        }
-
-        public bool IncludeAU
-        {
-            get { return !_hideAU; }
-            set 
-			{ 
-				_hideAU = !value;
-            }
-        }
-
-		public List<string> Friends
+		public bool IncludeUS
 		{
-			get
-			{
-				if(_friends == null)
-					_friends = new List<string>();
+			get { return !_hideUS; }
+			set { _hideUS = !value; }
+		}
 
-				return _friends;
-			}
-			set { _friends = value; }
+		public bool IncludeEU
+		{
+			get { return !_hideEU; }
+			set { _hideEU = !value; }
+		}
+
+		public bool IncludeAU
+		{
+			get { return !_hideAU; }
+			set { _hideAU = !value; }
 		}
 
 		public Filter Filter
 		{
 			get
 			{
-				if(_filter == null)
+				if (_filter == null)
 					_filter = new Filter();
 
 				return _filter;
@@ -92,7 +79,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if(_gameOptions == null)
+				if (_gameOptions == null)
 					_gameOptions = new GameOptions();
 
 				return _gameOptions;
@@ -116,7 +103,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if(_appOptions == null)
+				if (_appOptions == null)
 					_appOptions = new AppOptions();
 
 				return _appOptions;
@@ -128,7 +115,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if(_favorites == null)
+				if (_favorites == null)
 				{
 					_favorites = new List<FavoriteServer>();
 				}
@@ -154,7 +141,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if(_recentServers == null)
+				if (_recentServers == null)
 				{
 					_recentServers = new List<RecentServer>();
 				}
@@ -163,94 +150,53 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			set { _recentServers = value; }
 		}
 
-		public void Save()
-		{
-			try
-			{
-				lock(_fileLock)
-				{
-					using (var fs = GetSettingsFileStream(FileMode.Create))
-					{
-						var serializer = new DataContractSerializer(GetType());
-						serializer.WriteObject(fs, this);
-						fs.Flush(true);
-					}
-				}
-			}
-			catch(Exception) {}
-		}
-
-		private static UserSettings Load()
-		{
-			try
-			{
-				using(var fs = GetSettingsFileStream(FileMode.Open))
-				{
-					using(var reader = new StreamReader(fs))
-					{
-						var rawXml = reader.ReadToEnd();
-						if(string.IsNullOrWhiteSpace(rawXml))
-							return new UserSettings();
-						else
-							return LoadFromXml(XDocument.Parse(rawXml));
-					}
-				}
-			}
-			catch(FileNotFoundException)
-			{
-				return new UserSettings();
-			}
-		}
-
-		private static FileStream GetSettingsFileStream(FileMode fileMode)
-		{
-			return new FileStream(SettingsPath, fileMode);		
-		}
-
-		private static object _fileLock = new object();
 		public static UserSettings Current
 		{
 			get
 			{
-				lock(_fileLock)
+				lock (_fileLock)
 				{
 					if (_current == null)
 					{
-						try { _current = Load(); }
-						catch (Exception) { _current = new UserSettings(); }
+						try
+						{
+							_current = Load();
+						}
+						catch (Exception)
+						{
+							_current = new UserSettings();
+						}
 					}
 				}
 				return _current;
 			}
 		}
 
-        private static string _localDataPath;
-        private static string LocalDataPath
-        {
-            get
-            {
-                if (_localDataPath == null)
-                {
-                    var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                    var zeroAppDataDir = new DirectoryInfo(Path.Combine(appDataFolder, "DayZeroLauncher"));
-                    if (!zeroAppDataDir.Exists)
-                        zeroAppDataDir.Create();
+		private static string LocalDataPath
+		{
+			get
+			{
+				if (_localDataPath == null)
+				{
+					string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+					var zeroAppDataDir = new DirectoryInfo(Path.Combine(appDataFolder, "DayZeroLauncher"));
+					if (!zeroAppDataDir.Exists)
+						zeroAppDataDir.Create();
 
-                    _localDataPath = zeroAppDataDir.FullName;
-                }
+					_localDataPath = zeroAppDataDir.FullName;
+				}
 
-                return _localDataPath;
-            }
-        }
+				return _localDataPath;
+			}
+		}
 
-		private static string _torrentJunkPath;
 		public static string TorrentJunkPath
 		{
 			get
 			{
 				if (_torrentJunkPath == null)
 				{
-					var torrentJunkPathLocation = Path.Combine(LocalDataPath, "torrent");
+					string torrentJunkPathLocation = Path.Combine(LocalDataPath, "torrent");
 					var dirInfo = new DirectoryInfo(torrentJunkPathLocation);
 					if (!dirInfo.Exists)
 						dirInfo.Create();
@@ -261,14 +207,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _contentPath;
 		public static string ContentPath
 		{
 			get
 			{
 				if (_contentPath == null)
 				{
-					var contentPathLocation = Path.Combine(LocalDataPath, "content");
+					string contentPathLocation = Path.Combine(LocalDataPath, "content");
 					var dirInfo = new DirectoryInfo(contentPathLocation);
 					if (!dirInfo.Exists)
 						dirInfo.Create();
@@ -279,14 +224,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _contentMetaPath;
 		public static string ContentMetaPath
 		{
 			get
 			{
 				if (_contentMetaPath == null)
 				{
-					var contentMetaPathLocation = Path.Combine(ContentPath, "meta");
+					string contentMetaPathLocation = Path.Combine(ContentPath, "meta");
 					var dirInfo = new DirectoryInfo(contentMetaPathLocation);
 					if (!dirInfo.Exists)
 						dirInfo.Create();
@@ -297,14 +241,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _contentDataPath;
 		public static string ContentDataPath
 		{
 			get
 			{
 				if (_contentDataPath == null)
 				{
-					var contentDataPathLocation = Path.Combine(ContentPath, "data");
+					string contentDataPathLocation = Path.Combine(ContentPath, "data");
 					var dirInfo = new DirectoryInfo(contentDataPathLocation);
 					if (!dirInfo.Exists)
 						dirInfo.Create();
@@ -317,17 +260,16 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static string ContentCurrentTagFile
 		{
-			get { return Path.Combine(ContentPath, "current"); }			
+			get { return Path.Combine(ContentPath, "current"); }
 		}
 
-		private static string _patchesPath;
 		public static string PatchesPath
 		{
 			get
 			{
 				if (_patchesPath == null)
 				{
-					var patchesPathLocation = Path.Combine(LocalDataPath, "patches");
+					string patchesPathLocation = Path.Combine(LocalDataPath, "patches");
 					var dirInfo = new DirectoryInfo(patchesPathLocation);
 					if (!dirInfo.Exists)
 						dirInfo.Create();
@@ -338,14 +280,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _installersPath;
 		public static string InstallersPath
 		{
 			get
 			{
 				if (_installersPath == null)
 				{
-					var installersPathLocation = Path.Combine(LocalDataPath, "installers");
+					string installersPathLocation = Path.Combine(LocalDataPath, "installers");
 					var dirInfo = new DirectoryInfo(installersPathLocation);
 					if (!dirInfo.Exists)
 						dirInfo.Create();
@@ -356,14 +297,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _roamingDataPath;
 		private static string RoamingDataPath
 		{
 			get
 			{
 				if (_roamingDataPath == null)
 				{
-					var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+					string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 					var zeroAppDataDir = new DirectoryInfo(Path.Combine(appDataFolder, "DayZeroLauncher"));
 					if (!zeroAppDataDir.Exists)
 						zeroAppDataDir.Create();
@@ -375,18 +315,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _notesPath;
 		private static string NotesPath
 		{
 			get
 			{
 				if (_notesPath == null)
-				{ 
+				{
 					const string notesFolderName = "notes";
-					var newNotesLocation = Path.Combine(RoamingDataPath, notesFolderName);
+					string newNotesLocation = Path.Combine(RoamingDataPath, notesFolderName);
 					if (!Directory.Exists(newNotesLocation))
 					{
-						var newFolder = Directory.CreateDirectory(newNotesLocation);
+						DirectoryInfo newFolder = Directory.CreateDirectory(newNotesLocation);
 						//migrate old notes
 						try
 						{
@@ -394,18 +333,22 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							if (oldFolder.Exists)
 							{
 								FileInfo[] noteFiles = oldFolder.GetFiles("Notes_*.txt");
-								foreach (var noteFile in noteFiles)
+								foreach (FileInfo noteFile in noteFiles)
 								{
 									try
 									{
-										var newName = Path.Combine(newFolder.FullName, noteFile.Name.Replace("Notes_", ""));
+										string newName = Path.Combine(newFolder.FullName, noteFile.Name.Replace("Notes_", ""));
 										File.Move(noteFile.FullName, newName);
 									}
-									catch (Exception) {}
+									catch (Exception)
+									{
+									}
 								}
 							}
 						}
-						catch (Exception) {}
+						catch (Exception)
+						{
+						}
 					}
 					_notesPath = newNotesLocation;
 				}
@@ -413,7 +356,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private static string _settingsPath;
 		private static string SettingsPath
 		{
 			get
@@ -421,7 +363,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (_settingsPath == null)
 				{
 					const string settingsFileName = "settings.xml";
-					var newFileLocation = Path.Combine(RoamingDataPath, settingsFileName);
+					string newFileLocation = Path.Combine(RoamingDataPath, settingsFileName);
 
 					//Migrate old settings location
 					try
@@ -430,20 +372,67 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						if (File.Exists(oldFileLocation) && !File.Exists(newFileLocation))
 							File.Move(oldFileLocation, newFileLocation);
 					}
-					catch (Exception) {}
+					catch (Exception)
+					{
+					}
 					_settingsPath = newFileLocation;
 				}
 				return _settingsPath;
 			}
 		}
 
+		public void Save()
+		{
+			try
+			{
+				lock (_fileLock)
+				{
+					using (FileStream fs = GetSettingsFileStream(FileMode.Create))
+					{
+						var serializer = new DataContractSerializer(GetType());
+						serializer.WriteObject(fs, this);
+						fs.Flush(true);
+					}
+				}
+			}
+			catch (Exception)
+			{
+			}
+		}
+
+		private static UserSettings Load()
+		{
+			try
+			{
+				using (FileStream fs = GetSettingsFileStream(FileMode.Open))
+				{
+					using (var reader = new StreamReader(fs))
+					{
+						string rawXml = reader.ReadToEnd();
+						if (string.IsNullOrWhiteSpace(rawXml))
+							return new UserSettings();
+						return LoadFromXml(XDocument.Parse(rawXml));
+					}
+				}
+			}
+			catch (FileNotFoundException)
+			{
+				return new UserSettings();
+			}
+		}
+
+		private static FileStream GetSettingsFileStream(FileMode fileMode)
+		{
+			return new FileStream(SettingsPath, fileMode);
+		}
+
 		private static UserSettings LoadFromXml(XDocument xDocument)
 		{
-			var serializer = new DataContractSerializer(typeof(UserSettings));
-			var parsedVal = (UserSettings)serializer.ReadObject(xDocument.CreateReader());
+			var serializer = new DataContractSerializer(typeof (UserSettings));
+			var parsedVal = (UserSettings) serializer.ReadObject(xDocument.CreateReader());
 			if (parsedVal != null && parsedVal.TorrentOptions != null)
 			{
-				if (parsedVal.TorrentOptions.RandomizePort == true)
+				if (parsedVal.TorrentOptions.RandomizePort)
 					parsedVal.TorrentOptions.ListeningPort = 0; //this calls Random internally
 			}
 			return parsedVal;
@@ -456,7 +445,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public void AddFavorite(Server server)
 		{
-			if(Favorites.Any(f => f.Matches(server)))
+			if (Favorites.Any(f => f.Matches(server)))
 				return;
 			Favorites.Add(new FavoriteServer(server));
 			App.Events.Publish(new FavoritesUpdated(server));
@@ -465,8 +454,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public void RemoveFavorite(Server server)
 		{
-			var favorite = Favorites.FirstOrDefault(f => f.Matches(server));
-			if(favorite == null)
+			FavoriteServer favorite = Favorites.FirstOrDefault(f => f.Matches(server));
+			if (favorite == null)
 				return;
 			Favorites.Remove(favorite);
 			App.Events.Publish(new FavoritesUpdated(server));
@@ -476,31 +465,31 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public void AddRecent(Server server)
 		{
 			var recentServer = new RecentServer(server, DateTime.Now);
-			if(RecentServers.Count > 50)
+			if (RecentServers.Count > 50)
 			{
-				var oldest = RecentServers.OrderBy(x => x.On).FirstOrDefault();
+				RecentServer oldest = RecentServers.OrderBy(x => x.On).FirstOrDefault();
 				RecentServers.Remove(oldest);
 			}
 			RecentServers.Add(recentServer);
 			recentServer.Server = server;
 			App.Events.Publish(new RecentAdded(recentServer));
-			Save();			
+			Save();
 		}
 
 		public string GetNotes(Server server)
 		{
-			var fileName = GetNoteFileName(server);
-			if(!File.Exists(fileName))
+			string fileName = GetNoteFileName(server);
+			if (!File.Exists(fileName))
 				return "";
 			return File.ReadAllText(fileName, Encoding.UTF8);
 		}
 
 		public void SetNotes(Server server, string text)
 		{
-			var fileName = GetNoteFileName(server);
-			if(string.IsNullOrWhiteSpace(text))
+			string fileName = GetNoteFileName(server);
+			if (string.IsNullOrWhiteSpace(text))
 			{
-				if(File.Exists(fileName))
+				if (File.Exists(fileName))
 					File.Delete(fileName);
 			}
 			else
@@ -522,21 +511,21 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 	public class RecentAdded
 	{
-		public RecentServer Recent { get; set; }
-
 		public RecentAdded(RecentServer recent)
 		{
 			Recent = recent;
 		}
+
+		public RecentServer Recent { get; set; }
 	}
 
 	public class FavoritesUpdated
 	{
-		public Server Server { get; set; }
-
 		public FavoritesUpdated(Server server)
 		{
 			Server = server;
 		}
+
+		public Server Server { get; set; }
 	}
 }

@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Linq;
+using System.Threading;
 using System.Windows;
+using Newtonsoft.Json;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -13,24 +12,26 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	{
 		private bool _isChecking;
 		private HashWebClient.RemoteFileInfo _lastModsJsonLoc;
+		private ModsMeta.ModInfo _latestModVersion;
+		private string _status;
 
 		public DayZUpdater(GameLauncher gameLauncher)
 		{
 			Downloader = new TorrentLauncher(gameLauncher);
 			Downloader.PropertyChanged += (sender, args) =>
+			{
+				if (args.PropertyName == "IsRunning")
 				{
-					if (args.PropertyName == "IsRunning")
+					PropertyHasChanged("InstallButtonVisible");
+				}
+				else if (args.PropertyName == "Status")
+				{
+					if (Downloader.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
 					{
-						PropertyHasChanged("InstallButtonVisible");
+						CheckForUpdates(_lastModsJsonLoc);
 					}
-					else if (args.PropertyName == "Status")
-					{
-						if (Downloader.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
-						{
-							CheckForUpdates(_lastModsJsonLoc);
-						}
-					}
-				};
+				}
+			};
 		}
 
 		public TorrentLauncher Downloader { get; set; }
@@ -44,39 +45,42 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (LatestVersion == null)
 					return false;
 
-				return !CalculatedGameSettings.Current.ModContentVersion.Equals(LatestVersion,StringComparison.OrdinalIgnoreCase);
+				return !CalculatedGameSettings.Current.ModContentVersion.Equals(LatestVersion, StringComparison.OrdinalIgnoreCase);
 			}
 		}
 
-		public class ModsMeta
+		public string LatestVersion
 		{
-			public class ModInfo
+			get
 			{
-				[JsonProperty("version")]
-				public string Version = null;
+				if (_latestModVersion != null)
+					return _latestModVersion.Version;
 
-				[JsonProperty("archive")]
-				public HashWebClient.RemoteFileInfo Archive = null;
-			}
-
-			[JsonProperty("mods")]
-			public List<ModInfo> Mods = null;
-			[JsonProperty("latest")]
-			public string LatestModVersion = null;
-
-			public static string GetFileName()
-			{
-				string modsFileName = Path.Combine(UserSettings.ContentMetaPath, "index.json");
-				return modsFileName;
-			}
-
-			public static ModsMeta LoadFromFile(string fileFullPath)
-			{
-				ModsMeta modsInfo = JsonConvert.DeserializeObject<ModsMeta>(File.ReadAllText(fileFullPath));
-				return modsInfo;
+				return null;
 			}
 		}
-	
+
+		public string Status
+		{
+			get { return _status; }
+			set
+			{
+				_status = value;
+				Execute.OnUiThread(
+					() => PropertyHasChanged("Status", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));
+			}
+		}
+
+		public bool InstallButtonVisible
+		{
+			get { return VersionMismatch && !_isChecking && !Downloader.RunningForVersion(LatestVersion); }
+		}
+
+		public bool VerifyButtonVisible
+		{
+			get { return !VersionMismatch && !Downloader.IsRunning; }
+		}
+
 		public void CheckForUpdates(HashWebClient.RemoteFileInfo mods)
 		{
 			if (_isChecking)
@@ -92,15 +96,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					string modsFileName = ModsMeta.GetFileName();
 					ModsMeta modsInfo = null;
 
-					HashWebClient.DownloadWithStatusDots(mods,modsFileName,DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES,
-						(newStatus) => 
-							{ 
-								Status = newStatus; 
-							},
-						(wc,fileInfo,destPath) => 
-							{
-								modsInfo = ModsMeta.LoadFromFile(modsFileName);
-							});
+					HashWebClient.DownloadWithStatusDots(mods, modsFileName, DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES,
+						newStatus => { Status = newStatus; },
+						(wc, fileInfo, destPath) => { modsInfo = ModsMeta.LoadFromFile(modsFileName); });
 
 					if (modsInfo != null)
 					{
@@ -109,7 +107,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 						try
 						{
-							ModsMeta.ModInfo theMod = modsInfo.Mods.Where(x => x.Version.Equals(modsInfo.LatestModVersion, StringComparison.OrdinalIgnoreCase)).Single();
+							ModsMeta.ModInfo theMod =
+								modsInfo.Mods.Where(x => x.Version.Equals(modsInfo.LatestModVersion, StringComparison.OrdinalIgnoreCase))
+									.Single();
 							SetLatestModVersion(theMod);
 
 							string currVersion = CalculatedGameSettings.Current.ModContentVersion;
@@ -118,7 +118,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 								Status = DayZeroLauncherUpdater.STATUS_OUTOFDATE;
 
 								//this lets them seed/repair version they already have if it's not discontinued
-								ModsMeta.ModInfo currMod = modsInfo.Mods.SingleOrDefault(x => x.Version.Equals(currVersion, StringComparison.OrdinalIgnoreCase));
+								ModsMeta.ModInfo currMod =
+									modsInfo.Mods.SingleOrDefault(x => x.Version.Equals(currVersion, StringComparison.OrdinalIgnoreCase));
 								if (currMod != null)
 									DownloadSpecificVersion(currMod, false);
 								else //try getting it from file cache (necessary for switching branches)
@@ -128,41 +129,41 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							{
 								Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
 								DownloadLatestVersion(false);
-							}							
+							}
 						}
-						catch (Exception) { Status = "Could not determine revision"; }
+						catch (Exception)
+						{
+							Status = "Could not determine revision";
+						}
 					}
 				}
-				finally { _isChecking = false; }
+				finally
+				{
+					_isChecking = false;
+				}
 			}).Start();
 		}
 
-		ModsMeta.ModInfo _latestModVersion = null;
 		private void SetLatestModVersion(ModsMeta.ModInfo newModInfo)
 		{
 			_latestModVersion = newModInfo;
-			Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));
+			Execute.OnUiThread(
+				() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));
 		}
-		public string LatestVersion
-		{
-			get
-			{
-				if (_latestModVersion != null)
-					return _latestModVersion.Version;
 
-				return null;
-			}
-		}
 		public void DownloadLatestVersion(bool forceFullSystemsCheck)
 		{
 			if (LatestVersion == null)
 			{
-				MessageBox.Show("Please check for new versions first", "Unable to determine latest version", MessageBoxButton.OK, MessageBoxImage.Error);
+				MessageBox.Show("Please check for new versions first", "Unable to determine latest version", MessageBoxButton.OK,
+					MessageBoxImage.Error);
 				return;
 			}
 
-			Downloader.StartFromNetContent(_latestModVersion.Version,forceFullSystemsCheck,_latestModVersion.Archive,this, false);
+			Downloader.StartFromNetContent(_latestModVersion.Version, forceFullSystemsCheck, _latestModVersion.Archive, this,
+				false);
 		}
+
 		public void DownloadSpecificVersion(ModsMeta.ModInfo modInfo, bool forceFullSystemsCheck)
 		{
 			Downloader.StartFromNetContent(modInfo.Version, forceFullSystemsCheck, modInfo.Archive, this, true);
@@ -173,25 +174,28 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			Downloader.StartFromContentFile(versionString, forceFullSystemsCheck, this);
 		}
 
-		private string _status;
-		public string Status
+		public class ModsMeta
 		{
-			get { return _status; }
-			set
+			[JsonProperty("latest")] public string LatestModVersion = null;
+			[JsonProperty("mods")] public List<ModInfo> Mods = null;
+
+			public static string GetFileName()
 			{
-				_status = value;
-				Execute.OnUiThread(() => PropertyHasChanged("Status", "VersionMismatch", "InstallButtonVisible", "VerifyButtonVisible"));
+				string modsFileName = Path.Combine(UserSettings.ContentMetaPath, "index.json");
+				return modsFileName;
+			}
+
+			public static ModsMeta LoadFromFile(string fileFullPath)
+			{
+				var modsInfo = JsonConvert.DeserializeObject<ModsMeta>(File.ReadAllText(fileFullPath));
+				return modsInfo;
+			}
+
+			public class ModInfo
+			{
+				[JsonProperty("archive")] public HashWebClient.RemoteFileInfo Archive = null;
+				[JsonProperty("version")] public string Version = null;
 			}
 		}
-
-		public bool InstallButtonVisible
-		{
-			get { return VersionMismatch && !_isChecking && !Downloader.RunningForVersion(LatestVersion); }
-		}
-
-        public bool VerifyButtonVisible
-        {
-			get { return !VersionMismatch && !Downloader.IsRunning; }
-        } 
 	}
 }

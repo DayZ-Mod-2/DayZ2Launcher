@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
+
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	[DataContract]
 	public class FavoriteServer
 	{
 		[DataMember] private readonly string _ipAddress;
-		[DataMember] private readonly int _port;
 		[DataMember] private readonly string _name;
+		[DataMember] private readonly int _port;
 
 		public FavoriteServer(Server server)
 		{
@@ -20,7 +20,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			return server.IpAddress == _ipAddress && server.Port == _port;
 		}
-        /*
+
+		/*
 		public Server CreateServer()
 		{
 			

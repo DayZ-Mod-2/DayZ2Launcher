@@ -1,15 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Deployment.Application;
-using System.Diagnostics;
-using System.Windows;
+using System.Windows.Forms;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class DayZeroLauncherUpdater : BindableBase
 	{
-		private string _status;
-		private Version _latestVersion;
 		public static readonly string STATUS_CHECKINGFORUPDATES = "Checking for updates...";
 		public static readonly string STATUS_DOWNLOADING = "Downloading...";
 		public static readonly string STATUS_UPTODATE = "Up to date";
@@ -19,6 +16,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static readonly string STATUS_EXTRACTING = "Extracting...";
 		public static readonly string STATUS_INSTALLING = "Installing...";
 		public static readonly string STATUS_INSTALLCOMPLETE = "Install complete";
+		private Version _latestVersion;
+		private string _status;
+		private ApplicationDeployment deployment;
+		private bool isChecking;
+		private bool isUpdating;
 
 		public Version LatestVersion
 		{
@@ -26,7 +28,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			set
 			{
 				_latestVersion = value;
-				Execute.OnUiThread(() => PropertyHasChanged("LatestVersion"));				
+				Execute.OnUiThread(() => PropertyHasChanged("LatestVersion"));
 			}
 		}
 
@@ -37,11 +39,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				_status = value;
 				Execute.OnUiThread(() =>
-					{
-						PropertyHasChanged("Status");
-						PropertyHasChanged("UpdatePending");
-						PropertyHasChanged("RestartPending");
-					});				
+				{
+					PropertyHasChanged("Status");
+					PropertyHasChanged("UpdatePending");
+					PropertyHasChanged("RestartPending");
+				});
 			}
 		}
 
@@ -59,16 +61,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if(LatestVersion == null)
+				if (LatestVersion == null)
 					return false;
-				
+
 				return !LocalMachineInfo.Current.DayZeroLauncherVersion.Equals(LatestVersion);
 			}
 		}
-
-		private bool isChecking = false;
-		private bool isUpdating = false;
-		private ApplicationDeployment deployment = null;
 
 		private void VersionCheckComplete(object sender, CheckForUpdateCompletedEventArgs e)
 		{
@@ -113,7 +111,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (deployment != null)
 				{
 					if (isUpdating)
-						deployment.UpdateAsyncCancel(); ;
+						deployment.UpdateAsyncCancel();
+					;
 					if (isChecking)
 						deployment.CheckForUpdateAsyncCancel();
 
@@ -140,15 +139,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			if (state == DeploymentProgressState.DownloadingApplicationFiles)
 				return "files";
-			else if (state == DeploymentProgressState.DownloadingApplicationInformation)
+			if (state == DeploymentProgressState.DownloadingApplicationInformation)
 				return "metadata";
-			else
-				return "manifest";
+			return "manifest";
 		}
 
 		private void UpdateProgressChanged(object sender, DeploymentProgressChangedEventArgs e)
 		{
-			Status = String.Format("Downloading {0} ({1}%)...", GetProgressString(e.State), e.ProgressPercentage); 
+			Status = String.Format("Downloading {0} ({1}%)...", GetProgressString(e.State), e.ProgressPercentage);
 		}
 
 		private void UpdateCompleted(object sender, AsyncCompletedEventArgs e)
@@ -190,8 +188,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			if (deployment != null)
 			{
-				System.Windows.Forms.Application.Restart();
-				Application.Current.Shutdown();
+				Application.Restart();
+				System.Windows.Application.Current.Shutdown();
 			}
 		}
 	}

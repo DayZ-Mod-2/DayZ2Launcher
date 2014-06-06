@@ -1,9 +1,8 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text.RegularExpressions;
+using Newtonsoft.Json;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -11,7 +10,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	{
 		public MetaPlugin(string ident)
 		{
-			this.Ident = ident;
+			Ident = ident;
 		}
 
 		[JsonProperty("ident")]
@@ -31,14 +30,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 	public class MetaModDetails
 	{
-		[JsonProperty("addons")]
-		public List<MetaAddon> AddOns;
+		[JsonProperty("addons")] public List<MetaAddon> AddOns;
 
-		[JsonProperty("gametypes")]
-		public List<MetaGameType> GameTypes;
+		[JsonProperty("gametypes")] public List<MetaGameType> GameTypes;
 
-		[JsonProperty("plugins")]
-		public List<MetaPlugin> Plugins;
+		[JsonProperty("plugins")] public List<MetaPlugin> Plugins;
 
 		public static string GetFileName(string versionString)
 		{
@@ -54,30 +50,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 	public class GameVersion
 	{
-		private static Version GetFileVersion(string arma2OAExePath)
-		{
-			try
-			{
-				var versionInfo = FileVersionInfo.GetVersionInfo(arma2OAExePath);
-				return Version.Parse(versionInfo.ProductVersion);
-			}
-			catch (Exception) { return null; }
-		}
-
 		public string DirPath = null;
 		public string ExePath = null;
 		public Version ExeVersion = null;
-
-		public int? BuildNo 
-		{
-			get
-			{
-				if (ExeVersion != null)
-					return ExeVersion.Revision;
-
-				return null;
-			}			
-		}
 
 		public GameVersion(string gameDir)
 		{
@@ -90,14 +65,38 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (!File.Exists(ExePath))
 				ExePath = null;
 			else
-				ExeVersion = GetFileVersion(ExePath);			
+				ExeVersion = GetFileVersion(ExePath);
+		}
+
+		public int? BuildNo
+		{
+			get
+			{
+				if (ExeVersion != null)
+					return ExeVersion.Revision;
+
+				return null;
+			}
+		}
+
+		private static Version GetFileVersion(string arma2OAExePath)
+		{
+			try
+			{
+				FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(arma2OAExePath);
+				return Version.Parse(versionInfo.ProductVersion);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
 		}
 	}
 
 	public class GameVersions
 	{
-		public GameVersion Retail;
 		public GameVersion Beta;
+		public GameVersion Retail;
 
 		public GameVersions(string oaDir)
 		{

@@ -1,13 +1,16 @@
 ﻿using System;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using SteamKit2;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
-    class GUIDCalculator
-    {
+	internal class GUIDCalculator
+	{
+		private const int appId = 33930;
+		private const string Arma2AppManifestFile = "appmanifest_33930.acf";
+
 		private static string MD5Hex(byte[] bytes)
 		{
 			MD5 mD = new MD5CryptoServiceProvider();
@@ -22,13 +25,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return str;
 		}
 
-		private const int appId = 33930;
-		private const string Arma2AppManifestFile = "appmanifest_33930.acf";
-
 		private static string GetSteamAppsFolderPath()
 		{
 			DirectoryInfo steamConfig;
-			var result = "";
+			string result = "";
 
 			steamConfig = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
 			for (steamConfig = steamConfig.Parent; steamConfig != null; steamConfig = steamConfig.Parent)
@@ -44,7 +44,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static KeyValue GetAppManifestValue(string manifestPath, string key)
 		{
-			KeyValue acfKeys = new KeyValue();
+			var acfKeys = new KeyValue();
 			var reader = new StreamReader(manifestPath);
 			var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
 			reader.Close();
@@ -53,39 +53,37 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static string GetKey()
 		{
-			var result = "Could not calculate GUID.";
-			var steamAppsPath = GetSteamAppsFolderPath();
-			var fullManifestPath = Path.Combine(steamAppsPath, Arma2AppManifestFile);
- 
-			if(!String.IsNullOrEmpty(fullManifestPath) && File.Exists(fullManifestPath))
+			string result = "Could not calculate GUID.";
+			string steamAppsPath = GetSteamAppsFolderPath();
+			string fullManifestPath = Path.Combine(steamAppsPath, Arma2AppManifestFile);
+
+			if (!String.IsNullOrEmpty(fullManifestPath) && File.Exists(fullManifestPath))
 			{
 				try
 				{
-					var lastOwner = GetAppManifestValue(fullManifestPath, "LastOwner");
-                       
+					KeyValue lastOwner = GetAppManifestValue(fullManifestPath, "LastOwner");
+
 					if (lastOwner != null && !String.IsNullOrEmpty(lastOwner.Value))
 					{
 						Int64 steamID = Int64.Parse(lastOwner.Value);
 						int i = 2;
-         
-						byte[] parts = { (byte)'B', (byte)'E', 0, 0, 0, 0, 0, 0, 0, 0 };
-         
+
+						byte[] parts = {(byte) 'B', (byte) 'E', 0, 0, 0, 0, 0, 0, 0, 0};
+
 						do
 						{
-								parts[i++] = (byte)(steamID & 0xFF);
-         
+							parts[i++] = (byte) (steamID & 0xFF);
 						} while ((steamID >>= 8) != 0);
-                               
-                               
+
+
 						result = MD5Hex(parts);
 					}
 				}
 				catch (Exception)
 				{
- 
 				}
 			}
 			return result;
 		}
-    }
+	}
 }

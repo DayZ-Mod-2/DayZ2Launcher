@@ -15,10 +15,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if(value == null)
+			if (value == null)
 				return Empty;
 
-			if((bool)value)
+			if ((bool) value)
 			{
 				return Enabled;
 			}

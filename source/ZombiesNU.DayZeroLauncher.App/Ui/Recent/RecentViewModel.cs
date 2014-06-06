@@ -5,17 +5,18 @@ using System.Linq;
 using System.Timers;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
-using zombiesnu.DayZeroLauncher.App.Ui.Friends;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 {
-	public class RecentViewModel : ViewModelBase, 
+	public class RecentViewModel : ViewModelBase,
 		IHandle<RecentAdded>,
 		IHandle<ServerUpdated>
 	{
+		private readonly Dictionary<string, List<RecentServer>> _serverDictionary =
+			new Dictionary<string, List<RecentServer>>();
+
+		private readonly Timer _updateTimeTimer;
 		private ObservableCollection<RecentServer> _servers;
-		private Dictionary<string, List<RecentServer>> _serverDictionary = new Dictionary<string, List<RecentServer>>();
-		private Timer _updateTimeTimer;
 
 		public RecentViewModel()
 		{
@@ -23,7 +24,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 
 			Servers = new ObservableCollection<RecentServer>();
 
-		/*	foreach(var recent in UserSettings.Current.RecentServers)
+			/*	foreach(var recent in UserSettings.Current.RecentServers)
 			{
 				recent.CreateServer();
 				AddToDictionary(recent);
@@ -34,20 +35,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 			_updateTimeTimer.Start();
 
 			UpdateServersByDateViewModel();
-		}
-
-		private void UpdateTimeTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
-		{
-			_updateTimeTimer.Stop();
-			Execute.OnUiThread(() =>
-			                   	{
-			                   		for(var i = UserSettings.Current.RecentServers.Count -1; i >= 0; i--)
-			                   		{
-			                   			UserSettings.Current.RecentServers[i].RefreshAgo();
-			                   		}
-			                   	});
-
-			_updateTimeTimer.Start();
 		}
 
 		public ObservableCollection<RecentServer> Servers
@@ -66,9 +53,40 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 			UpdateServersByDateViewModel();
 		}
 
+		public void Handle(ServerUpdated message)
+		{
+			string key = GetKey(message.Server);
+			if (_serverDictionary.ContainsKey(key))
+			{
+				if (message.IsRemoved)
+					_serverDictionary.Remove(key);
+				else
+				{
+					foreach (RecentServer recent in _serverDictionary[key])
+					{
+						recent.Server = message.Server;
+					}
+				}
+			}
+		}
+
+		private void UpdateTimeTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+		{
+			_updateTimeTimer.Stop();
+			Execute.OnUiThread(() =>
+			{
+				for (int i = UserSettings.Current.RecentServers.Count - 1; i >= 0; i--)
+				{
+					UserSettings.Current.RecentServers[i].RefreshAgo();
+				}
+			});
+
+			_updateTimeTimer.Start();
+		}
+
 		private void AddToDictionary(RecentServer recent)
 		{
-			var key = GetKey(recent.Server);
+			string key = GetKey(recent.Server);
 			if (!_serverDictionary.ContainsKey(key))
 			{
 				_serverDictionary.Add(key, new List<RecentServer>());
@@ -79,27 +97,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 		private void UpdateServersByDateViewModel()
 		{
 			Servers.Clear();
-			var servers = UserSettings.Current.RecentServers
-							.OrderByDescending(s => s.On);
+			IOrderedEnumerable<RecentServer> servers = UserSettings.Current.RecentServers
+				.OrderByDescending(s => s.On);
 
 			Servers = new ObservableCollection<RecentServer>(servers);
-		}
-
-		public void Handle(ServerUpdated message)
-		{
-			var key = GetKey(message.Server);
-			if(_serverDictionary.ContainsKey(key))
-			{
-				if (message.IsRemoved)
-					_serverDictionary.Remove(key);
-				else
-				{
-					foreach (var recent in _serverDictionary[key])
-					{
-						recent.Server = message.Server;
-					}
-				}				
-			}
 		}
 
 		private string GetKey(Server server)
@@ -108,4 +109,3 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Recent
 		}
 	}
 }
-	

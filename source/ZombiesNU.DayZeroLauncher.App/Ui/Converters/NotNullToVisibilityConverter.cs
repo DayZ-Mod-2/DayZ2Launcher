@@ -10,8 +10,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return value != null
-			       	? Visibility.Visible
-			       	: Visibility.Hidden;
+				? Visibility.Visible
+				: Visibility.Hidden;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

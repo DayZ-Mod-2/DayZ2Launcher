@@ -3,26 +3,25 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Windows.Data;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
-using zombiesnu.DayZeroLauncher.App.Ui.Friends;
-using System.Net;
-using Newtonsoft.Json;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui
 {
-	public class UpdatesViewModel : ViewModelBase, 
+	public class UpdatesViewModel : ViewModelBase,
 		IHandle<ServerUpdated>
 	{
-		private bool _isVisible;
 		//private string STATUS_INPROGRESS = "STATUS_INPROGRESS";
 		//private string STATUS_ERROR = "STATUS_ERROR";
 		//private string STATUS_DEFAULT = "STATUS_DEFAULT";
 		private readonly Dictionary<Server, VersionSnapshot> _processedServers = new Dictionary<Server, VersionSnapshot>();
+		private bool _isVisible;
+		private LocatorErrorClass _locatorError;
+		private int _processedCount;
 		private ObservableCollection<VersionStatistic> _rawArma2VersionStats = new ObservableCollection<VersionStatistic>();
 		private ObservableCollection<VersionStatistic> _rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
-		private int _processedCount;
 
 		public UpdatesViewModel(GameLauncher gameLauncher)
 		{
@@ -43,28 +42,23 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			DayZUpdater.PropertyChanged += AnyModelPropertyChanged;
 		}
 
-		private void AnyModelPropertyChanged(object sender, PropertyChangedEventArgs e)
-		{
-			PropertyHasChanged("Status");
-		}
-
 		public string Status
 		{
 			get
 			{
-				if(DayZeroLauncherUpdater.Status == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES
-					|| Arma2Updater.Status == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES
-					|| DayZUpdater.Status == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES)
-				return DayZeroLauncherUpdater.STATUS_DOWNLOADING;
+				if (DayZeroLauncherUpdater.Status == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES
+				    || Arma2Updater.Status == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES
+				    || DayZUpdater.Status == DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES)
+					return DayZeroLauncherUpdater.STATUS_DOWNLOADING;
 
-				if(DayZeroLauncherUpdater.VersionMismatch 
-				   || Arma2Updater.VersionMismatch
-				   || DayZUpdater.VersionMismatch)
+				if (DayZeroLauncherUpdater.VersionMismatch
+				    || Arma2Updater.VersionMismatch
+				    || DayZUpdater.VersionMismatch)
 					return DayZeroLauncherUpdater.STATUS_OUTOFDATE;
 
-				if(!DayZeroLauncherUpdater.VersionMismatch 
-					&& !Arma2Updater.VersionMismatch
-					&& !DayZUpdater.VersionMismatch)
+				if (!DayZeroLauncherUpdater.VersionMismatch
+				    && !Arma2Updater.VersionMismatch
+				    && !DayZUpdater.VersionMismatch)
 					return DayZeroLauncherUpdater.STATUS_UPTODATE;
 
 				return "Error";
@@ -89,20 +83,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-		public class LocatorErrorClass
-		{
-			public LocatorErrorClass(string caption, string message)
-			{
-				_caption = caption;
-				_message = message;
-			}
-			private string _caption = null;
-			private string _message = null;
-			public string Caption { get { return _caption; } }
-			public string Message { get { return _message; } }
-		}
-
-		private LocatorErrorClass _locatorError = null;
 		public LocatorErrorClass LocatorError
 		{
 			get { return _locatorError; }
@@ -113,62 +93,13 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-		public event AsyncCompletedEventHandler LocatorChanged = (o, e) => {};
-
-		public void CheckForUpdates()
+		public int ProcessedCount
 		{
-		    CalculatedGameSettings.Current.Update();
-            LocalMachineInfo.Current.Update();
-			
-			DayZeroLauncherUpdater.CheckForUpdate();
-
-			using (var wc = new WebClient())
+			get { return _processedCount; }
+			set
 			{
-				wc.DownloadStringCompleted += (sender, evt) =>
-					{
-						if (evt.Cancelled)
-						{
-							LocatorError = new LocatorErrorClass("Check cancelled", "Locator info fetch cancelled.");
-							LocatorChanged(this, evt);
-						}
-						else if (evt.Error != null)
-						{
-							LocatorError = new LocatorErrorClass("Locator fetch error", evt.Error.Message);
-							LocatorChanged(this, evt);
-						}
-						else
-						{
-							LocatorError = null;
-							LocatorInfo locator = null;
-							try { locator = LocatorInfo.LoadFromString(evt.Result); }
-							catch (Exception ex)
-							{
-								locator = null;
-								LocatorError = new LocatorErrorClass("Locator parse error", ex.Message);
-								LocatorChanged(this, new AsyncCompletedEventArgs(ex, false, locator));
-							}
-							CalculatedGameSettings.Current.Locator = locator;
-
-							if (locator != null)
-							{
-								Arma2Updater.CheckForUpdates(locator.Patches);
-								DayZUpdater.CheckForUpdates(locator.Mods);
-								LocatorChanged(this, new AsyncCompletedEventArgs(null, false, locator));
-							}
-						}
-					};
-
-				string locatorUrl = "https://update.zombies.nu/locator";
-				string customBranch = UserSettings.Current.GameOptions.CustomBranchName;
-				if (!string.IsNullOrWhiteSpace(customBranch))
-				{
-					locatorUrl += "/" + Uri.EscapeUriString(customBranch.Trim());
-
-					string branchPass = UserSettings.Current.GameOptions.CustomBranchPass;
-					if (!string.IsNullOrEmpty(branchPass))
-						locatorUrl += "?pass=" + Uri.EscapeDataString(branchPass);
-				}
-				wc.DownloadStringAsync(new Uri(locatorUrl));
+				_processedCount = value;
+				PropertyHasChanged("ProcessedCount");
 			}
 		}
 
@@ -176,29 +107,31 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		{
 			VersionStatistic existingDayZStatistic = null;
 			string dayZVersion = null;
-			if(message.Server.DayZVersion != null)
+			if (message.Server.DayZVersion != null)
 			{
 				dayZVersion = message.Server.DayZVersion;
 				if (_rawDayZVersionStats != null)
-					existingDayZStatistic = _rawDayZVersionStats.FirstOrDefault(x => x.Version.Equals(dayZVersion,StringComparison.OrdinalIgnoreCase));
+					existingDayZStatistic =
+						_rawDayZVersionStats.FirstOrDefault(x => x.Version.Equals(dayZVersion, StringComparison.OrdinalIgnoreCase));
 			}
 
 			VersionStatistic existingArma2Statistic = null;
 			string arma2Version = null;
-			if(message.Server.Arma2Version != null)
+			if (message.Server.Arma2Version != null)
 			{
 				arma2Version = message.Server.Arma2Version.Build.ToString();
 				if (_rawArma2VersionStats != null)
-					existingArma2Statistic = _rawArma2VersionStats.FirstOrDefault(x => x.Version.Equals(arma2Version,StringComparison.OrdinalIgnoreCase));
+					existingArma2Statistic =
+						_rawArma2VersionStats.FirstOrDefault(x => x.Version.Equals(arma2Version, StringComparison.OrdinalIgnoreCase));
 			}
 
 			//If we've seen this server (or its gone), decrement what it was last time
-			var serverWasProcessed = _processedServers.ContainsKey(message.Server);
+			bool serverWasProcessed = _processedServers.ContainsKey(message.Server);
 			if (serverWasProcessed || message.IsRemoved)
 			{
-				if(existingDayZStatistic != null)
-					existingDayZStatistic.Count--;				
-				if(existingArma2Statistic != null)
+				if (existingDayZStatistic != null)
+					existingDayZStatistic.Count--;
+				if (existingArma2Statistic != null)
 					existingArma2Statistic.Count--;
 			}
 
@@ -208,7 +141,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			if (existingDayZStatistic == null && !message.IsRemoved)
 			{
 				if (dayZVersion != null)
-					_rawDayZVersionStats.Add(new VersionStatistic() { Version = dayZVersion, Count = 1, Parent = this });
+					_rawDayZVersionStats.Add(new VersionStatistic {Version = dayZVersion, Count = 1, Parent = this});
 			}
 			else if (existingDayZStatistic != null)
 			{
@@ -225,7 +158,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			if (existingArma2Statistic == null && !message.IsRemoved)
 			{
 				if (arma2Version != null)
-					_rawArma2VersionStats.Add(new VersionStatistic() { Version = arma2Version, Count = 1, Parent = this });
+					_rawArma2VersionStats.Add(new VersionStatistic {Version = arma2Version, Count = 1, Parent = this});
 			}
 			else if (existingArma2Statistic != null)
 			{
@@ -236,29 +169,108 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				_rawArma2VersionStats.Add(existingArma2Statistic);
 			}
 
-			if(!serverWasProcessed && !message.IsRemoved)
+			if (!serverWasProcessed && !message.IsRemoved)
 			{
 				_processedServers.Add(message.Server, new VersionSnapshot(message.Server));
 				ProcessedCount++;
 			}
 		}
 
-		public int ProcessedCount
+		private void AnyModelPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			get { return _processedCount; }
-			set
+			PropertyHasChanged("Status");
+		}
+
+		public event AsyncCompletedEventHandler LocatorChanged = (o, e) => { };
+
+		public void CheckForUpdates()
+		{
+			CalculatedGameSettings.Current.Update();
+			LocalMachineInfo.Current.Update();
+
+			DayZeroLauncherUpdater.CheckForUpdate();
+
+			using (var wc = new WebClient())
 			{
-				_processedCount = value;
-				PropertyHasChanged("ProcessedCount");
+				wc.DownloadStringCompleted += (sender, evt) =>
+				{
+					if (evt.Cancelled)
+					{
+						LocatorError = new LocatorErrorClass("Check cancelled", "Locator info fetch cancelled.");
+						LocatorChanged(this, evt);
+					}
+					else if (evt.Error != null)
+					{
+						LocatorError = new LocatorErrorClass("Locator fetch error", evt.Error.Message);
+						LocatorChanged(this, evt);
+					}
+					else
+					{
+						LocatorError = null;
+						LocatorInfo locator = null;
+						try
+						{
+							locator = LocatorInfo.LoadFromString(evt.Result);
+						}
+						catch (Exception ex)
+						{
+							locator = null;
+							LocatorError = new LocatorErrorClass("Locator parse error", ex.Message);
+							LocatorChanged(this, new AsyncCompletedEventArgs(ex, false, locator));
+						}
+						CalculatedGameSettings.Current.Locator = locator;
+
+						if (locator != null)
+						{
+							Arma2Updater.CheckForUpdates(locator.Patches);
+							DayZUpdater.CheckForUpdates(locator.Mods);
+							LocatorChanged(this, new AsyncCompletedEventArgs(null, false, locator));
+						}
+					}
+				};
+
+				string locatorUrl = "https://update.zombies.nu/locator";
+				string customBranch = UserSettings.Current.GameOptions.CustomBranchName;
+				if (!string.IsNullOrWhiteSpace(customBranch))
+				{
+					locatorUrl += "/" + Uri.EscapeUriString(customBranch.Trim());
+
+					string branchPass = UserSettings.Current.GameOptions.CustomBranchPass;
+					if (!string.IsNullOrEmpty(branchPass))
+						locatorUrl += "?pass=" + Uri.EscapeDataString(branchPass);
+				}
+				wc.DownloadStringAsync(new Uri(locatorUrl));
+			}
+		}
+
+		public class LocatorErrorClass
+		{
+			private readonly string _caption;
+			private readonly string _message;
+
+			public LocatorErrorClass(string caption, string message)
+			{
+				_caption = caption;
+				_message = message;
+			}
+
+			public string Caption
+			{
+				get { return _caption; }
+			}
+
+			public string Message
+			{
+				get { return _message; }
 			}
 		}
 	}
 
 	public class VersionStatistic : BindableBase
 	{
+		private int _count;
 		public string Version { get; set; }
 
-		private int _count;
 		public int Count
 		{
 			get { return _count; }
@@ -276,9 +288,9 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 	{
 		public VersionSnapshot(Server server)
 		{
-			if(server.DayZVersion != null)
+			if (server.DayZVersion != null)
 				DayZVersion = server.DayZVersion;
-			if(server.Arma2Version != null)
+			if (server.Arma2Version != null)
 				Arma2Version = server.Arma2Version.Build.ToString();
 		}
 

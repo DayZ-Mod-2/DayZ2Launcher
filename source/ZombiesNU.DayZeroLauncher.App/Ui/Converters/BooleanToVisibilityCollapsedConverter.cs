@@ -9,14 +9,14 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			bool inverse = parameter != null && bool.Parse((string)parameter);
+			bool inverse = parameter != null && bool.Parse((string) parameter);
 			bool val;
 			if (value == null)
 				val = false;
 			else
 			{
-				if (value.GetType().Equals(typeof(bool)))
-					val = (bool)value;
+				if (value.GetType().Equals(typeof (bool)))
+					val = (bool) value;
 				else
 					val = true;
 			}
@@ -26,8 +26,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 
 			if (val)
 				return Visibility.Visible;
-			else
-				return Visibility.Collapsed;
+			return Visibility.Collapsed;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

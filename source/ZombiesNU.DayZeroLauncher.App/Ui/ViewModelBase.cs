@@ -4,8 +4,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 {
 	public abstract class ViewModelBase : BindableBase
 	{
-		private string _title;
 		private bool _isSelected;
+		private string _title;
 
 		protected ViewModelBase()
 		{

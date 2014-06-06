@@ -1,32 +1,31 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Linq;
-using System.Reflection;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-
+using System.Linq;
+using System.Threading;
+using Newtonsoft.Json;
 using zombiesnu.DayZeroLauncher.App.Ui;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class Arma2Updater : BindableBase
 	{
+		private Arma2Installer _installer;
 		private bool _isChecking;
 		private HashWebClient.RemoteFileInfo _lastPatchesJsonLoc;
+		private PatchesMeta.PatchInfo _latestServerVersion;
+		private string _status;
 
 		public Arma2Updater()
 		{
 			Installer = new Arma2Installer();
 			Installer.PropertyChanged += (sender, args) =>
 			{
-				if(args.PropertyName == "IsRunning")
+				if (args.PropertyName == "IsRunning")
 				{
 					PropertyHasChanged("InstallButtonVisible");
 				}
-				else if(args.PropertyName == "Status")
+				else if (args.PropertyName == "Status")
 				{
 					if (Installer.Status == DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE)
 					{
@@ -36,92 +35,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			};
 		}
 
-		private class PatchesMeta
-		{
-			public class PatchInfo
-			{
-				[JsonProperty("version")]
-				public int Version = 0;
-
-				[JsonProperty("archive")]
-				public HashWebClient.RemoteFileInfo Archive = null;
-
-                [JsonProperty("steambeta")]
-                public bool SteamBeta = false;
-
-				[JsonProperty("steambuild")]
-				public string SteamBuild = "";
-			}
-
-			[JsonProperty("patches")]
-			public List<PatchInfo> Updates = null;
-			[JsonProperty("latest")]
-			public int LatestRevision = 0;
-
-			static public string GetFileName()
-			{
-				string patchesFileName = Path.Combine(UserSettings.PatchesPath, "index.json");
-				return patchesFileName;
-			}
-
-			static public PatchesMeta LoadFromFile(string fullFilePath)
-			{
-				PatchesMeta patchInfo = JsonConvert.DeserializeObject<PatchesMeta>(File.ReadAllText(fullFilePath));
-				return patchInfo;
-			}
-		}
-
-		public void CheckForUpdates(HashWebClient.RemoteFileInfo patches)
-		{
-			if(_isChecking)
-				return;
-
-			_lastPatchesJsonLoc = patches;
-			_isChecking = true;
-
-			Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
-			new Thread(() =>
-			{
-				try
-				{
-					string patchesFileName = PatchesMeta.GetFileName();
-					PatchesMeta patchInfo = null;					
-
-					HashWebClient.DownloadWithStatusDots(patches, patchesFileName, DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES,
-						(newStatus) =>
-							{
-								Status = newStatus;
-							},
-						(wc, fileInfo, destPath) =>
-							{
-								patchInfo = PatchesMeta.LoadFromFile(patchesFileName);
-							});
-
-					if (patchInfo != null)
-					{
-						Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
-						Thread.Sleep(100);
-
-						try
-						{
-							PatchesMeta.PatchInfo thePatch = patchInfo.Updates.Where(x => x.Version == patchInfo.LatestRevision).Single();
-							SetLatestServerVersion(thePatch);
-
-							Status = VersionMismatch ? (DayZeroLauncherUpdater.STATUS_OUTOFDATE):(DayZeroLauncherUpdater.STATUS_UPTODATE);
-						}
-						catch (Exception) { Status = "Could not determine revision"; }
-					}
-				}
-				finally { _isChecking = false; }
-			}).Start();
-		}
-
-        public void InstallLatestVersion(UpdatesView view)
-		{
-			Installer.DownloadAndInstall(_latestServerVersion.Version, _latestServerVersion.Archive, _latestServerVersion.SteamBeta, _latestServerVersion.SteamBuild, view);
-		}
-
-		private Arma2Installer _installer;
 		public Arma2Installer Installer
 		{
 			get { return _installer; }
@@ -132,15 +45,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		PatchesMeta.PatchInfo _latestServerVersion = null;
-		private void SetLatestServerVersion(PatchesMeta.PatchInfo newPatchInfo)
-		{
-			_latestServerVersion = newPatchInfo;
-			Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible"));
-		}
 		public int? LatestVersion
 		{
-			get 
+			get
 			{
 				if (_latestServerVersion != null)
 					return _latestServerVersion.Version;
@@ -148,14 +55,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				return null;
 			}
 		}
-		
+
 		public bool VersionMismatch
 		{
 			get
 			{
 				bool mismatch = true;
 
-				var versions = CalculatedGameSettings.Current.Versions;
+				GameVersions versions = CalculatedGameSettings.Current.Versions;
 				if (versions != null)
 				{
 					if ((versions.Retail.BuildNo ?? 0) >= (LatestVersion ?? 0))
@@ -173,7 +80,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return VersionMismatch && !_isChecking && !Installer.IsRunning; }
 		}
 
-		private string _status;
 		public string Status
 		{
 			get { return _status; }
@@ -181,6 +87,91 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				_status = value;
 				Execute.OnUiThread(() => PropertyHasChanged("Status", "VersionMismatch", "InstallButtonVisible"));
+			}
+		}
+
+		public void CheckForUpdates(HashWebClient.RemoteFileInfo patches)
+		{
+			if (_isChecking)
+				return;
+
+			_lastPatchesJsonLoc = patches;
+			_isChecking = true;
+
+			Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
+			new Thread(() =>
+			{
+				try
+				{
+					string patchesFileName = PatchesMeta.GetFileName();
+					PatchesMeta patchInfo = null;
+
+					HashWebClient.DownloadWithStatusDots(patches, patchesFileName, DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES,
+						newStatus => { Status = newStatus; },
+						(wc, fileInfo, destPath) => { patchInfo = PatchesMeta.LoadFromFile(patchesFileName); });
+
+					if (patchInfo != null)
+					{
+						Status = DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES;
+						Thread.Sleep(100);
+
+						try
+						{
+							PatchesMeta.PatchInfo thePatch = patchInfo.Updates.Where(x => x.Version == patchInfo.LatestRevision).Single();
+							SetLatestServerVersion(thePatch);
+
+							Status = VersionMismatch ? (DayZeroLauncherUpdater.STATUS_OUTOFDATE) : (DayZeroLauncherUpdater.STATUS_UPTODATE);
+						}
+						catch (Exception)
+						{
+							Status = "Could not determine revision";
+						}
+					}
+				}
+				finally
+				{
+					_isChecking = false;
+				}
+			}).Start();
+		}
+
+		public void InstallLatestVersion(UpdatesView view)
+		{
+			Installer.DownloadAndInstall(_latestServerVersion.Version, _latestServerVersion.Archive,
+				_latestServerVersion.SteamBeta, _latestServerVersion.SteamBuild, view);
+		}
+
+		private void SetLatestServerVersion(PatchesMeta.PatchInfo newPatchInfo)
+		{
+			_latestServerVersion = newPatchInfo;
+			Execute.OnUiThread(() => PropertyHasChanged("LatestVersion", "VersionMismatch", "InstallButtonVisible"));
+		}
+
+		private class PatchesMeta
+		{
+			[JsonProperty("patches")] public readonly List<PatchInfo> Updates = null;
+			[JsonProperty("latest")] public int LatestRevision = 0;
+
+			public static string GetFileName()
+			{
+				string patchesFileName = Path.Combine(UserSettings.PatchesPath, "index.json");
+				return patchesFileName;
+			}
+
+			public static PatchesMeta LoadFromFile(string fullFilePath)
+			{
+				var patchInfo = JsonConvert.DeserializeObject<PatchesMeta>(File.ReadAllText(fullFilePath));
+				return patchInfo;
+			}
+
+			public class PatchInfo
+			{
+				[JsonProperty("archive")] public readonly HashWebClient.RemoteFileInfo Archive = null;
+
+				[JsonProperty("steambeta")] public bool SteamBeta = false;
+
+				[JsonProperty("steambuild")] public string SteamBuild = "";
+				[JsonProperty("version")] public int Version = 0;
 			}
 		}
 	}

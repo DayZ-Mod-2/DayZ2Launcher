@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
@@ -16,15 +15,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if(value == null)
+			if (value == null)
 				return Nothing;
 
 			var val = (long) value;
-			if(val > 0 && val < 100)
+			if (val > 0 && val < 100)
 				return Fastest;
-			if(val >= 100 && val < 160)
+			if (val >= 100 && val < 160)
 				return Fast;
-			if(val >= 160 && val < 275)
+			if (val >= 160 && val < 275)
 				return Medium;
 
 			return Slow;

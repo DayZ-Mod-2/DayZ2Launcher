@@ -9,7 +9,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if((bool)value)
+			if ((bool) value)
 				return new SolidColorBrush(Colors.White);
 			return new SolidColorBrush(Color.FromArgb(255, 170, 170, 170));
 		}

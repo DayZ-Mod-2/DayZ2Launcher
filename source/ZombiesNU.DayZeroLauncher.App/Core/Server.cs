@@ -4,30 +4,38 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using zombiesnu.DayZeroLauncher.App.Ui.Friends;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class Server : BindableBase, IEquatable<Server>
 	{
+		public static Regex ServerTimeRegex = new Regex(@"((GmT|Utc)[\s]*(?<Offset>([+]|[-])[\s]?[\d]{1,2})?)",
+			RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
 		private readonly string _ipAddress;
+		private readonly string _mod;
+		private readonly string _password;
 		private readonly int _port;
-        private readonly string _password;
-        private readonly string _mod;
 		private readonly ServerQueryClient _queryClient;
+		public string LastException;
+		private Version _arma2Version;
+		private string _dayZVersion;
+		private bool? _hasNotes;
+		private string _hostName;
+		private ServerInfo _info;
+		private bool _isUpdating;
+		private string _name;
 		private long _ping;
 		private ObservableCollection<Player> _players;
 		private SortedDictionary<string, string> _settings;
-		public string LastException;
-		private bool _isUpdating;
 
-        public Server(string ipAddress, int port, string password, string mod)
+		public Server(string ipAddress, int port, string password, string mod)
 		{
 			_ipAddress = ipAddress;
 			_port = port;
-            _password = password;
-            _mod = mod;
-            
+			_password = password;
+			_mod = mod;
+
 			_queryClient = new ServerQueryClient(this, ipAddress, port);
 			Settings = new SortedDictionary<string, string>();
 			Players = new ObservableCollection<Player>();
@@ -39,12 +47,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _ipAddress + _port; }
 		}
 
-		private string _name;
 		public string Name
 		{
 			get
 			{
-				if(string.IsNullOrEmpty(_name))
+				if (string.IsNullOrEmpty(_name))
 				{
 					_name = CleanServerName(HostName);
 				}
@@ -52,12 +59,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private string _hostName;
 		public string HostName
 		{
 			get
 			{
-				if(string.IsNullOrEmpty(_hostName))
+				if (string.IsNullOrEmpty(_hostName))
 				{
 					_hostName = GetSettingOrDefault("hostname");
 				}
@@ -70,7 +76,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return UserSettings.Current.IsFavorite(this); }
 			set
 			{
-				if(value)
+				if (value)
 					UserSettings.Current.AddFavorite(this);
 				else
 					UserSettings.Current.RemoveFavorite(this);
@@ -87,19 +93,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				var reqBuild = GetSettingOrDefault("reqBuild").TryIntNullable();
+				int? reqBuild = GetSettingOrDefault("reqBuild").TryIntNullable();
 				if (reqBuild == null)
 					return false;
 
-				var versions = CalculatedGameSettings.Current.Versions;
+				GameVersions versions = CalculatedGameSettings.Current.Versions;
 				if (versions == null)
 					return false;
 
-				var bestVer = versions.BestVersion;
+				GameVersion bestVer = versions.BestVersion;
 				if (bestVer == null)
 					return false;
 
-				return ((bestVer.BuildNo ?? 0) >= (reqBuild ?? 0));
+				return ((bestVer.BuildNo ?? 0) >= reqBuild);
 			}
 		}
 
@@ -107,7 +113,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				var modContentVersion = CalculatedGameSettings.Current.ModContentVersion;
+				string modContentVersion = CalculatedGameSettings.Current.ModContentVersion;
 				if (modContentVersion == null)
 					return false;
 
@@ -116,11 +122,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 				return modContentVersion.EndsWith(DayZVersion, StringComparison.OrdinalIgnoreCase);
 			}
-		}
-
-		public void NotifyGameVersionChanged()
-		{
-			PropertyHasChanged("IsSameArma2OAVersion", "IsSameDayZVersion", "IsSameArmaAndDayZVersion");
 		}
 
 		public int? CurrentPlayers
@@ -133,27 +134,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return GetSettingOrDefault("maxplayers").TryIntNullable(); }
 		}
 
-        public static Regex ServerTimeRegex = new Regex(@"((GmT|Utc)[\s]*(?<Offset>([+]|[-])[\s]?[\d]{1,2})?)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-		private ServerInfo _info;
-
 		public DateTime? ServerTime
 		{
 			get
 			{
-				var name = GetSettingOrDefault("hostname");
-				if(string.IsNullOrWhiteSpace(name))
+				string name = GetSettingOrDefault("hostname");
+				if (string.IsNullOrWhiteSpace(name))
 					return null;
 
-				var match = ServerTimeRegex.Match(name);
-				if(!match.Success)
+				Match match = ServerTimeRegex.Match(name);
+				if (!match.Success)
 					return null;
 
-				var offset = match.Groups["Offset"].Value.Replace(" ", "");
-                if (offset == "") offset = "0";
-				var offsetInt = int.Parse(offset);
+				string offset = match.Groups["Offset"].Value.Replace(" ", "");
+				if (offset == "") offset = "0";
+				int offsetInt = int.Parse(offset);
 
 				return DateTime.UtcNow
-							.AddHours(offsetInt);
+					.AddHours(offsetInt);
 			}
 		}
 
@@ -204,9 +202,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				if(LastException != null)
+				if (LastException != null)
 				{
-					return 10 * 1000;
+					return 10*1000;
 				}
 				return _ping;
 			}
@@ -233,15 +231,15 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		}
 
 
-        public string Mod
-        {
-            get { return _mod; }
-        }
+		public string Mod
+		{
+			get { return _mod; }
+		}
 
-        public string Password
-        {
-            get { return _password; }
-        }
+		public string Password
+		{
+			get { return _password; }
+		}
 
 		public int? Difficulty
 		{
@@ -250,9 +248,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public int FreeSlots
 		{
-			get 
-			{ 
-				if(MaxPlayers != null && CurrentPlayers != null)
+			get
+			{
+				if (MaxPlayers != null && CurrentPlayers != null)
 				{
 					return (int) (MaxPlayers - CurrentPlayers);
 				}
@@ -270,19 +268,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _port; }
 		}
 
-		public bool MatchesIpPort(string ipAddr, int port)
-		{
-			return (IpAddress.Equals(ipAddr.Trim(), StringComparison.OrdinalIgnoreCase) && Port == port);
-		}
-        
 		public string LastJoinedOn
 		{
 			get
 			{
-				var recent = UserSettings.Current.RecentServers
-								.OrderByDescending(x => x.On)
-								.FirstOrDefault(x => x.Server == this);
-				if(recent == null)
+				RecentServer recent = UserSettings.Current.RecentServers
+					.OrderByDescending(x => x.On)
+					.FirstOrDefault(x => x.Server == this);
+				if (recent == null)
 					return "Never";
 
 				return recent.Ago;
@@ -291,10 +284,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public string Notes
 		{
-			get
-			{
-				return UserSettings.Current.GetNotes(this);
-			}
+			get { return UserSettings.Current.GetNotes(this); }
 			set
 			{
 				UserSettings.Current.SetNotes(this, value);
@@ -303,12 +293,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private bool? _hasNotes;
 		public bool HasNotes
 		{
 			get
 			{
-				if(_hasNotes != null)
+				if (_hasNotes != null)
 					return (bool) _hasNotes;
 				_hasNotes = UserSettings.Current.HasNotes(this);
 				return (bool) _hasNotes;
@@ -319,8 +308,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			get
 			{
-				var serverTime = ServerTime;
-				if(serverTime == null)
+				DateTime? serverTime = ServerTime;
+				if (serverTime == null)
 					return null;
 
 				return serverTime.Value.Hour < 5 || serverTime.Value.Hour > 19;
@@ -332,26 +321,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return GetSettingOrDefault("password").TryInt() > 0; }
 		}
 
-		private Version _arma2Version;
 		public Version Arma2Version
 		{
 			get
 			{
-				if(_arma2Version == null)
+				if (_arma2Version == null)
 				{
-					var arma2VersionString = GetSettingOrDefault("gamever");
+					string arma2VersionString = GetSettingOrDefault("gamever");
 					Version.TryParse(arma2VersionString, out _arma2Version);
 				}
 				return _arma2Version;
 			}
 		}
 
-		private string _dayZVersion;
 		public string DayZVersion
 		{
 			get
 			{
-				if(_dayZVersion == null)
+				if (_dayZVersion == null)
 					_dayZVersion = GetDayZVersionString(Name);
 
 				return _dayZVersion;
@@ -367,6 +354,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+		public bool Equals(Server other)
+		{
+			if (other == null)
+				return false;
+			return (other.IpAddress == IpAddress
+			        && other.Port == Port);
+		}
+
+		public void NotifyGameVersionChanged()
+		{
+			PropertyHasChanged("IsSameArma2OAVersion", "IsSameDayZVersion", "IsSameArmaAndDayZVersion");
+		}
+
+		public bool MatchesIpPort(string ipAddr, int port)
+		{
+			return (IpAddress.Equals(ipAddr.Trim(), StringComparison.OrdinalIgnoreCase) && Port == port);
+		}
+
 		private string GetSettingOrDefault(string settingName)
 		{
 			if (Settings.ContainsKey(settingName))
@@ -376,31 +381,29 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return null;
 		}
 
-		public void Update(bool supressRefresh=false)
+		public void Update(bool supressRefresh = false)
 		{
 			try
 			{
 				IsUpdating = true;
-				var serverResult = _queryClient.Execute();
+				ServerQueryResult serverResult = _queryClient.Execute();
 				Execute.OnUiThread(() =>
-				                    	{
-											App.Events.Publish(new PlayersChangedEvent(Players, serverResult.Players));
-				                    		Players = new ObservableCollection<Player>(serverResult.Players.OrderBy(x => x.Name));
-				                    		LastException = null;
-				                    		Settings = serverResult.Settings;
-				                    		Ping = serverResult.Ping;
-											App.Events.Publish(new ServerUpdated(this, supressRefresh));
-				                    	});
+				{
+					Players = new ObservableCollection<Player>(serverResult.Players.OrderBy(x => x.Name));
+					LastException = null;
+					Settings = serverResult.Settings;
+					Ping = serverResult.Ping;
+					App.Events.Publish(new ServerUpdated(this, supressRefresh));
+				});
 			}
 			catch (Exception ex)
 			{
 				Execute.OnUiThread(() =>
-				                    	{
-											LastException = ex.Message;
-											PropertyHasChanged("Name", "Ping");
-											App.Events.Publish(new ServerUpdated(this, supressRefresh));
-				                    	});
-				
+				{
+					LastException = ex.Message;
+					PropertyHasChanged("Name", "Ping");
+					App.Events.Publish(new ServerUpdated(this, supressRefresh));
+				});
 			}
 			finally
 			{
@@ -410,12 +413,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static string CleanServerName(string name)
 		{
-			if(string.IsNullOrEmpty(name))
+			if (string.IsNullOrEmpty(name))
 			{
 				return name;
 			}
 
-			var cleanName = name.Trim();
+			string cleanName = name.Trim();
 
 			cleanName = Regex.Replace(cleanName, @"^DayZ\s*(Zombie){0,1}\s*(RPG){0,1}\s*-\s*", "", RegexOptions.IgnoreCase);
 
@@ -424,17 +427,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static string GetDayZVersionString(string name)
 		{
-			if(string.IsNullOrEmpty(name))
+			if (string.IsNullOrEmpty(name))
 			{
 				return null;
 			}
 
-			var match = Regex.Match(name, @"\d(\.\d){1,3}");
+			Match match = Regex.Match(name, @"\d(\.\d){1,3}");
 			if (!match.Success)
 				return null;
 
 			int strlen = match.Value.Length;
-			for (int i=match.Index+strlen; i<name.Length; i++)
+			for (int i = match.Index + strlen; i < name.Length; i++)
 			{
 				if (name[i] == '(' || name[i] == ')' || name[i] == ' ' || name[i] == '\t' || name[i] == '/')
 					break;
@@ -445,20 +448,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return name.Substring(match.Index, strlen);
 		}
 
-		public bool Equals(Server other)
-		{
-			if(other == null)
-				return false;
-			return (other.IpAddress == this.IpAddress
-			        && other.Port == this.Port);
-		}
-
 		public override int GetHashCode()
 		{
 			return Id.GetHashCode();
 		}
 
-		public void BeginUpdate(Action<Server> onComplete, bool supressRefresh=false)
+		public void BeginUpdate(Action<Server> onComplete, bool supressRefresh = false)
 		{
 			new Thread(() =>
 			{
@@ -470,9 +465,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					onComplete(this);
 				}
-			}, 1).Start();			
+			}, 1).Start();
 		}
-
-       
-    }
+	}
 }

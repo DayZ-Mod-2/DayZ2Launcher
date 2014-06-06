@@ -1,0 +1,133 @@
+//
+// SuggestPieceMessage.cs
+//
+// Authors:
+//   Alan McGovern alan.mcgovern@gmail.com
+//
+// Copyright (C) 2006 Alan McGovern
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
+
+using System.Text;
+
+namespace MonoTorrent.Client.Messages.FastPeer
+{
+	// FIXME: The only use for a SuggestPiece message is for when i load a piece into a Disk Cache and want to make use for it
+	public class SuggestPieceMessage : PeerMessage, IFastPeerMessage
+	{
+		internal static readonly byte MessageId = 0x0D;
+		private readonly int messageLength = 5;
+
+		#region Member Variables
+
+		private int pieceIndex;
+
+		/// <summary>
+		///     The index of the suggested piece to request
+		/// </summary>
+		public int PieceIndex
+		{
+			get { return pieceIndex; }
+		}
+
+		#endregion
+
+		#region Constructors
+
+		/// <summary>
+		///     Creates a new SuggestPiece message
+		/// </summary>
+		public SuggestPieceMessage()
+		{
+		}
+
+
+		/// <summary>
+		///     Creates a new SuggestPiece message
+		/// </summary>
+		/// <param name="pieceIndex">The suggested piece to download</param>
+		public SuggestPieceMessage(int pieceIndex)
+		{
+			this.pieceIndex = pieceIndex;
+		}
+
+		#endregion
+
+		#region Methods
+
+		public override int ByteLength
+		{
+			get { return messageLength + 4; }
+		}
+
+		public override int Encode(byte[] buffer, int offset)
+		{
+			if (!ClientEngine.SupportsFastPeer)
+				throw new ProtocolException("Message decoding not supported");
+
+			int written = offset;
+
+			written += Write(buffer, written, messageLength);
+			written += Write(buffer, written, MessageId);
+			written += Write(buffer, written, pieceIndex);
+
+			return CheckWritten(written - offset);
+		}
+
+		public override void Decode(byte[] buffer, int offset, int length)
+		{
+			if (!ClientEngine.SupportsFastPeer)
+				throw new ProtocolException("Message decoding not supported");
+
+			pieceIndex = ReadInt(buffer, ref offset);
+		}
+
+		#endregion
+
+		#region Overidden Methods
+
+		public override bool Equals(object obj)
+		{
+			var msg = obj as SuggestPieceMessage;
+			if (msg == null)
+				return false;
+
+			return pieceIndex == msg.pieceIndex;
+		}
+
+		public override int GetHashCode()
+		{
+			return pieceIndex.GetHashCode();
+		}
+
+		public override string ToString()
+		{
+			var sb = new StringBuilder(24);
+			sb.Append("Suggest Piece");
+			sb.Append(" Index: ");
+			sb.Append(pieceIndex);
+			return sb.ToString();
+		}
+
+		#endregion
+	}
+}

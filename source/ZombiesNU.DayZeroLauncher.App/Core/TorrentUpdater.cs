@@ -1,75 +1,171 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net.Sockets;
-using System.IO;
-using MonoTorrent.Common;
-using MonoTorrent.Client;
-using System.Net;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using Mono.Nat;
+using MonoTorrent;
 using MonoTorrent.BEncoding;
+using MonoTorrent.Client;
 using MonoTorrent.Client.Encryption;
 using MonoTorrent.Client.Tracker;
+using MonoTorrent.Common;
 using MonoTorrent.Dht;
 using MonoTorrent.Dht.Listeners;
-using System.ComponentModel;
-using Mono.Nat;
-
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
-    class TorrentUpdater
-    {
+	internal class TorrentUpdater
+	{
 		//The engine used for downloading, has to be static because we will only use one port
-        private static ClientEngine globalEngine = null;
-		private static int engineListenPort = 0;
-
 		public delegate void StatusUpdate(TorrentState currState, double currProgress);
+
+		private static ClientEngine globalEngine;
+		private static int engineListenPort;
+
 		public static StatusUpdate StatusCallbacks = (TorrentState currState, double currProgress) => { };
+		private static readonly HashSet<int> portsToMap = new HashSet<int>();
+		private static readonly HashSet<int> portsMapped = new HashSet<int>();
+		private static List<INatDevice> upnpDevices;
 
-        public static TorrentState CurrentState()
-        {
+		private readonly List<AddOnTorrent> addOnTorrents;
+
+		private readonly TorrentLauncher downloader;
+		private readonly bool errorMsgsOnly;
+		private readonly bool fullSystemCheck;
+		private readonly DayZUpdater updater;
+		private readonly string versionString;
+
+		public TorrentUpdater(string versionString, List<MetaAddon> addOns, bool fullSystemCheck, TorrentLauncher downloader,
+			DayZUpdater updater, bool errorMsgsOnly)
+		{
+			addOnTorrents = new List<AddOnTorrent>();
+			this.versionString = versionString;
+			this.fullSystemCheck = fullSystemCheck;
+			this.downloader = downloader;
+			this.updater = updater;
+			this.errorMsgsOnly = errorMsgsOnly;
+
+			string torrentsDir = null;
+			try
+			{
+				torrentsDir = Path.Combine(UserSettings.ContentMetaPath, versionString);
+				{
+					var dirInfo = new DirectoryInfo(torrentsDir);
+					if (!dirInfo.Exists)
+						dirInfo = Directory.CreateDirectory(torrentsDir);
+				}
+			}
+			catch (Exception ex)
+			{
+				updater.Status = "Error creating torrents directory";
+				downloader.Status = ex.Message;
+				downloader.IsRunning = false;
+
+				return;
+			}
+
+			foreach (MetaAddon addOn in addOns)
+			{
+				var newAddOn = new AddOnTorrent();
+				newAddOn.Meta = addOn;
+				newAddOn.torrentFileName = Path.Combine(torrentsDir,
+					newAddOn.Meta.Description + "-" + newAddOn.Meta.Version + ".torrent");
+				newAddOn.torrentSavePath = null; //will be filled in if successfull download
+				addOnTorrents.Add(newAddOn);
+			}
+
+			//delete .torrent files that do not match the ones we want
+			string[] allTorrents = Directory.GetFiles(torrentsDir, "*.torrent", SearchOption.TopDirectoryOnly);
+			foreach (string torrentPath in allTorrents)
+			{
+				if (
+					addOnTorrents.Count(
+						naot => { return naot.torrentFileName.Equals(torrentPath, StringComparison.InvariantCultureIgnoreCase); }) < 1)
+				{
+					//this is an unwanted torrent file
+					try
+					{
+						var fileInfo = new FileInfo(torrentPath);
+						if (fileInfo.IsReadOnly)
+						{
+							fileInfo.IsReadOnly = false;
+							fileInfo.Refresh();
+						}
+						fileInfo.Delete();
+					}
+					catch (Exception)
+					{
+					}
+				}
+			}
+
+			for (int i = 0; i < addOnTorrents.Count; i++)
+			{
+				int idxCopy = i;
+				AddOnTorrent newAddOn = addOnTorrents[i];
+				try
+				{
+					var wc = new HashWebClient();
+					wc.DownloadFileCompleted += (sender, args) => { TorrentDownloadComplete(sender, args, idxCopy); };
+					wc.BeginDownload(newAddOn.Meta.Torrent, newAddOn.torrentFileName);
+				}
+				catch (Exception ex)
+				{
+					updater.Status = "Error starting torrent file download";
+					downloader.Status = ex.Message;
+					downloader.IsRunning = false;
+					return;
+				}
+			}
+		}
+
+		public static TorrentState CurrentState()
+		{
 			if (globalEngine == null)
-                return TorrentState.Stopped;
+				return TorrentState.Stopped;
 
-			var engineTorrents = globalEngine.Torrents;
+			IList<TorrentManager> engineTorrents = globalEngine.Torrents;
 			if (engineTorrents == null || engineTorrents.Count < 1)
 				return TorrentState.Stopped;
 
 			if (engineTorrents.Count(m => m.State == TorrentState.Downloading) > 0)
-                return TorrentState.Downloading;
+				return TorrentState.Downloading;
 			if (engineTorrents.Count(m => m.State == TorrentState.Hashing) > 0)
-                return TorrentState.Hashing;
+				return TorrentState.Hashing;
 
-            return TorrentState.Stopped;
-        }
+			return TorrentState.Stopped;
+		}
 
-        public static int GetCurrentSpeed()
-        {
+		public static int GetCurrentSpeed()
+		{
 			if (globalEngine == null)
-                return 0;
+				return 0;
 
-			var engineTorrents = globalEngine.Torrents;
+			IList<TorrentManager> engineTorrents = globalEngine.Torrents;
 			if (engineTorrents == null || engineTorrents.Count < 1)
 				return 0;
 
-            int totalDownloadSpeed = 0;
-			foreach (var tm in engineTorrents)
-                totalDownloadSpeed += tm.Monitor.DownloadSpeed;
+			int totalDownloadSpeed = 0;
+			foreach (TorrentManager tm in engineTorrents)
+				totalDownloadSpeed += tm.Monitor.DownloadSpeed;
 
-            return totalDownloadSpeed / 1024;
-        }
+			return totalDownloadSpeed/1024;
+		}
 
-        public static double GetCurrentProgress()
-        {
-            double totalBytes = 0.0;
+		public static double GetCurrentProgress()
+		{
+			double totalBytes = 0.0;
 			double downloadedBytes = 0.0;
 			if (globalEngine == null)
-                return totalBytes;
+				return totalBytes;
 
-			var engineTorrents = globalEngine.Torrents;
+			IList<TorrentManager> engineTorrents = globalEngine.Torrents;
 			if (engineTorrents == null || engineTorrents.Count < 1)
 				return totalBytes;
 
@@ -77,21 +173,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				totalBytes += m.Torrent.Size;
 				if (m.Progress > 0)
-					downloadedBytes += ((double)(m.Torrent.Size)/100.0) * m.Progress;
+					downloadedBytes += (m.Torrent.Size/100.0)*m.Progress;
 			}
 
-			return downloadedBytes / totalBytes;
-        }
-
-		private class AddOnTorrent
-		{
-			public MetaAddon Meta;
-			public string torrentFileName;
-			public string torrentSavePath = null;
+			return downloadedBytes/totalBytes;
 		}
-		private List<AddOnTorrent> addOnTorrents;
 
-		private void TorrentDownloadComplete(Object sender, AsyncCompletedEventArgs args,int addOnIndex)
+		private void TorrentDownloadComplete(Object sender, AsyncCompletedEventArgs args, int addOnIndex)
 		{
 			string errMsg = null;
 			if (args.Cancelled)
@@ -117,108 +205,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		private string versionString;
-		private bool fullSystemCheck;
-		private TorrentLauncher downloader;
-		private DayZUpdater updater;
-		private bool errorMsgsOnly;
-
-        public TorrentUpdater(string versionString, List<MetaAddon> addOns, bool fullSystemCheck, TorrentLauncher downloader, DayZUpdater updater, bool errorMsgsOnly)
-        {
-			this.addOnTorrents = new List<AddOnTorrent>();
-			this.versionString = versionString;
-			this.fullSystemCheck = fullSystemCheck;
-			this.downloader = downloader;
-            this.updater = updater;
-			this.errorMsgsOnly = errorMsgsOnly;
-
-			string torrentsDir = null; 
-			try
-			{
-				torrentsDir = Path.Combine(UserSettings.ContentMetaPath, versionString);
-				{
-					var dirInfo = new DirectoryInfo(torrentsDir);
-					if (!dirInfo.Exists)
-						dirInfo = Directory.CreateDirectory(torrentsDir);
-				}
-			}
-			catch (Exception ex)
-			{
-				updater.Status = "Error creating torrents directory";
-				downloader.Status = ex.Message;
-				downloader.IsRunning = false;
-
-				return;
-			}			
-
-			foreach (var addOn in addOns)
-			{
-				var newAddOn = new AddOnTorrent();
-				newAddOn.Meta = addOn;
-				newAddOn.torrentFileName = Path.Combine(torrentsDir, newAddOn.Meta.Description + "-" + newAddOn.Meta.Version + ".torrent");
-				newAddOn.torrentSavePath = null; //will be filled in if successfull download
-				addOnTorrents.Add(newAddOn);
-			}
-
-			//delete .torrent files that do not match the ones we want
-			var allTorrents = Directory.GetFiles(torrentsDir, "*.torrent", SearchOption.TopDirectoryOnly);
-			foreach (string torrentPath in allTorrents)
-			{
-				if (addOnTorrents.Count(naot => { return naot.torrentFileName.Equals(torrentPath,StringComparison.InvariantCultureIgnoreCase); }) < 1)
-				{
-					//this is an unwanted torrent file
-					try
-					{
-						var fileInfo = new FileInfo(torrentPath);
-						if (fileInfo.IsReadOnly)
-						{
-							fileInfo.IsReadOnly = false;
-							fileInfo.Refresh();
-						}
-						fileInfo.Delete();
-					}
-					catch (Exception) { continue; }
-				}
-			}
-
-			for (int i = 0; i < addOnTorrents.Count; i++ )
-			{
-				int idxCopy = i;
-				var newAddOn = addOnTorrents[i];
-				try
-				{
-					HashWebClient wc = new HashWebClient();
-					wc.DownloadFileCompleted += (sender, args) => { this.TorrentDownloadComplete(sender, args, idxCopy); };
-					wc.BeginDownload(newAddOn.Meta.Torrent, newAddOn.torrentFileName);
-				}
-				catch (Exception ex)
-				{
-					updater.Status = "Error starting torrent file download";
-					downloader.Status = ex.Message;
-					downloader.IsRunning = false;
-					return;
-				}
-			}
-        }
-
-		static private string GetDhtNodesFileName()
+		private static string GetDhtNodesFileName()
 		{
 			return Path.Combine(UserSettings.TorrentJunkPath, "dht.nodes");
 		}
 
-		static private string GetFastResumeFileName(TorrentManager tm)
+		private static string GetFastResumeFileName(TorrentManager tm)
 		{
 			return Path.Combine(UserSettings.TorrentJunkPath, "fastresume_" + tm.InfoHash.ToHex() + ".benc");
 		}
 
 		private void StartTorrentsThread()
 		{
-			System.Threading.Tasks.Task.Factory.StartNew(() => RunTorrents());
+			Task.Factory.StartNew(() => RunTorrents());
 		}
 
-        private void RunTorrents()
-        {
-			var tOpts = UserSettings.Current.TorrentOptions;
+		private void RunTorrents()
+		{
+			TorrentOptions tOpts = UserSettings.Current.TorrentOptions;
 			if (globalEngine == null)
 			{
 				int listenPort = tOpts.ListeningPort;
@@ -227,13 +231,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				// Create the settings which the engine will use
 				// downloadsPath - this is the path where we will save all the files to
 				// port - this is the port we listen for connections on
-				EngineSettings engineSettings = new EngineSettings(mainDownloadsPath, listenPort);
+				var engineSettings = new EngineSettings(mainDownloadsPath, listenPort);
 				engineSettings.PreferEncryption = true;
 				engineSettings.AllowedEncryption = EncryptionTypes.All;
 				engineSettings.GlobalMaxConnections = tOpts.MaxDLConnsNormalized;
-				engineSettings.GlobalMaxDownloadSpeed = tOpts.MaxDLSpeed * 1024;
+				engineSettings.GlobalMaxDownloadSpeed = tOpts.MaxDLSpeed*1024;
 				engineSettings.GlobalMaxHalfOpenConnections = 10;
-				engineSettings.GlobalMaxUploadSpeed = tOpts.MaxULSpeed * 1024;
+				engineSettings.GlobalMaxUploadSpeed = tOpts.MaxULSpeed*1024;
 
 				// Create an instance of the engine.
 				globalEngine = new ClientEngine(engineSettings);
@@ -244,8 +248,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 				//create a DHT engine and register it with the main engine
 				{
-					DhtListener dhtListener = new DhtListener(new IPEndPoint(IPAddress.Any, listenPort));
-					DhtEngine dhtEngine = new DhtEngine(dhtListener);
+					var dhtListener = new DhtListener(new IPEndPoint(IPAddress.Any, listenPort));
+					var dhtEngine = new DhtEngine(dhtListener);
 					dhtListener.Start();
 
 					string dhtNodesFileName = "";
@@ -269,22 +273,30 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					// or an unhandled exception happens
 					Console.CancelKeyPress += delegate { EngineShutdown(); };
 					AppDomain.CurrentDomain.ProcessExit += delegate { EngineShutdown(); };
-					AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs e) { Console.WriteLine(e.ExceptionObject); EngineShutdown(); };
-					Thread.GetDomain().UnhandledException += delegate(object sender, UnhandledExceptionEventArgs e) { Console.WriteLine(e.ExceptionObject); EngineShutdown(); };
+					AppDomain.CurrentDomain.UnhandledException += delegate(object sender, UnhandledExceptionEventArgs e)
+					{
+						Console.WriteLine(e.ExceptionObject);
+						EngineShutdown();
+					};
+					Thread.GetDomain().UnhandledException += delegate(object sender, UnhandledExceptionEventArgs e)
+					{
+						Console.WriteLine(e.ExceptionObject);
+						EngineShutdown();
+					};
 				}
 			}
 			else
 				StopAllTorrents();
 
 			// Create the default settings which a torrent will have.
-			TorrentSettings torrentDefaults = new TorrentSettings(tOpts.NumULSlotsNormalized);
+			var torrentDefaults = new TorrentSettings(tOpts.NumULSlotsNormalized);
 			torrentDefaults.UseDht = true;
 			torrentDefaults.EnablePeerExchange = true;
 
-            // For each file in the torrents path that is a .torrent file, load it into the engine.
+			// For each file in the torrents path that is a .torrent file, load it into the engine.
 			var managers = new List<TorrentManager>();
-            foreach (var newAddOn in addOnTorrents)
-            {
+			foreach (AddOnTorrent newAddOn in addOnTorrents)
+			{
 				Torrent torrent = null;
 				try
 				{
@@ -302,17 +314,19 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					var fullFilePaths = new List<String>();
 					{
-						var torrentFiles = torrent.Files;
-						foreach (var theFile in torrentFiles)
-							fullFilePaths.Add(Path.Combine(newAddOn.torrentSavePath,theFile.Path));
+						TorrentFile[] torrentFiles = torrent.Files;
+						foreach (TorrentFile theFile in torrentFiles)
+							fullFilePaths.Add(Path.Combine(newAddOn.torrentSavePath, theFile.Path));
 					}
 					if (Directory.Exists(newAddOn.torrentSavePath))
 					{
-						var actualFilePaths = Directory.GetFiles(newAddOn.torrentSavePath, "*.*", SearchOption.AllDirectories);
-						foreach (var realPath in actualFilePaths)
+						string[] actualFilePaths = Directory.GetFiles(newAddOn.torrentSavePath, "*.*", SearchOption.AllDirectories);
+						foreach (string realPath in actualFilePaths)
 						{
 							var fileInfo = new FileInfo(realPath);
-							if (fullFilePaths.Count(path => { return path.Equals(fileInfo.FullName, StringComparison.InvariantCultureIgnoreCase); }) < 1)
+							if (
+								fullFilePaths.Count(
+									path => { return path.Equals(fileInfo.FullName, StringComparison.InvariantCultureIgnoreCase); }) < 1)
 							{
 								//this is an unwanted file
 								if (fileInfo.IsReadOnly)
@@ -323,7 +337,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 								fileInfo.Delete();
 							}
 						}
-					}					
+					}
 				}
 				catch (Exception ex)
 				{
@@ -337,12 +351,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				try
 				{
 					tm = new TorrentManager(torrent, globalEngine.Settings.SavePath, torrentDefaults, newAddOn.torrentSavePath);
-					if (!fullSystemCheck && !UserSettings.Current.TorrentOptions.DisableFastResume) //load the fast resume file for this torrent
+					if (!fullSystemCheck && !UserSettings.Current.TorrentOptions.DisableFastResume)
+						//load the fast resume file for this torrent
 					{
-						var fastResumeFilepath = GetFastResumeFileName(tm);
+						string fastResumeFilepath = GetFastResumeFileName(tm);
 						if (File.Exists(fastResumeFilepath))
 						{
-							var bencoded = BEncodedDictionary.Decode<BEncodedDictionary>(File.ReadAllBytes(fastResumeFilepath));
+							var bencoded = BEncodedValue.Decode<BEncodedDictionary>(File.ReadAllBytes(fastResumeFilepath));
 							tm.LoadFastResume(new FastResume(bencoded));
 						}
 					}
@@ -362,13 +377,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 
 			// If we loaded no torrents, just stop.
-            if (managers.Count < 1)
-            {
-                updater.Status = "Torrent engine error";
-                downloader.Status = "No torrents have been found";
-                downloader.IsRunning = false;
-                return;
-            }
+			if (managers.Count < 1)
+			{
+				updater.Status = "Torrent engine error";
+				downloader.Status = "No torrents have been found";
+				downloader.IsRunning = false;
+				return;
+			}
 
 			try
 			{
@@ -386,55 +401,63 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			// Before starting all the managers, clear out the fastresume data
 			// The torrents currently running already have it loaded, and will save it out on stop/finish
 			// So this only clears out fastresume for torrents we aren't currently running, which is what we want
-			var staleFastResume = Directory.EnumerateFiles(UserSettings.TorrentJunkPath, "fastresume_*.benc",SearchOption.TopDirectoryOnly);
-			foreach (var sfr in staleFastResume)
+			IEnumerable<string> staleFastResume = Directory.EnumerateFiles(UserSettings.TorrentJunkPath, "fastresume_*.benc",
+				SearchOption.TopDirectoryOnly);
+			foreach (string sfr in staleFastResume)
 			{
-				try { File.Delete(sfr); }
-				catch (Exception) { }
+				try
+				{
+					File.Delete(sfr);
+				}
+				catch (Exception)
+				{
+				}
 			}
 
-			foreach (var manager in managers)
+			foreach (TorrentManager manager in managers)
 			{
 				// Add this manager to the global torrent engine
 				globalEngine.Register(manager);
 
 				// Every time a new peer is added, this is fired.
-				manager.PeersFound += delegate(object o, PeersAddedEventArgs e) {};
+				manager.PeersFound += delegate { };
 				// Every time a piece is hashed, this is fired.
-                manager.PieceHashed += delegate(object o, PieceHashedEventArgs e) {};
+				manager.PieceHashed += delegate { };
 				// Every time the state changes (Stopped -> Seeding -> Downloading -> Hashing) this is fired
-                manager.TorrentStateChanged += OnTorrentStateChanged;
+				manager.TorrentStateChanged += OnTorrentStateChanged;
 				// Every time the tracker's state changes, this is fired
-                foreach (TrackerTier tier in manager.TrackerManager) {}
+				foreach (TrackerTier tier in manager.TrackerManager)
+				{
+				}
 
 				manager.Start();
 			}
 
 			// While the torrents are still running, print out some stats to the screen.
-            // Details for all the loaded torrent managers are shown.
-            int i = 0;
-            bool running = true;
-            StringBuilder sb = new StringBuilder(1024);
-            DateTime lastAnnounce = DateTime.Now;
-            bool firstRun = true;
-            while (running && globalEngine != null)
-            {
-				var engineTorrents = globalEngine.Torrents;
-                if (firstRun || lastAnnounce < DateTime.Now.AddMinutes(-1))
-                {
+			// Details for all the loaded torrent managers are shown.
+			int i = 0;
+			bool running = true;
+			var sb = new StringBuilder(1024);
+			DateTime lastAnnounce = DateTime.Now;
+			bool firstRun = true;
+			while (running && globalEngine != null)
+			{
+				IList<TorrentManager> engineTorrents = globalEngine.Torrents;
+				if (firstRun || lastAnnounce < DateTime.Now.AddMinutes(-1))
+				{
 					foreach (TorrentManager tm in engineTorrents)
-                        tm.TrackerManager.Announce();
+						tm.TrackerManager.Announce();
 
-                    lastAnnounce = DateTime.Now;
-                    firstRun = false;
-                }
+					lastAnnounce = DateTime.Now;
+					firstRun = false;
+				}
 
-                if ((i++) % 2 == 0)
-                {
-                    sb.Remove(0, sb.Length);
-					running = engineTorrents.Count( m => { return m.State != TorrentState.Stopped; }) > 0;
+				if ((i++)%2 == 0)
+				{
+					sb.Remove(0, sb.Length);
+					running = engineTorrents.Count(m => { return m.State != TorrentState.Stopped; }) > 0;
 
-					TorrentState totalState = TorrentState.Stopped;
+					var totalState = TorrentState.Stopped;
 					if (engineTorrents.Count(m => m.State == TorrentState.Hashing) > 0)
 						totalState = TorrentState.Hashing;
 					else if (engineTorrents.Count(m => m.State == TorrentState.Downloading) > 0)
@@ -442,94 +465,100 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					else if (engineTorrents.Count(m => m.State == TorrentState.Seeding) > 0)
 						totalState = TorrentState.Seeding;
 
-                    string status = "";
+					string status = "";
 					try
 					{
 						switch (totalState)
 						{
 							case TorrentState.Hashing:
+							{
+								double totalHashingBytes = 0;
+								double totalHashedBytes = 0;
+								foreach (TorrentManager m in engineTorrents)
 								{
-									double totalHashingBytes = 0;
-									double totalHashedBytes = 0;
-									foreach (TorrentManager m in engineTorrents)
-									{
-										totalHashingBytes += m.Torrent.Size;
-										if (m.State == TorrentState.Hashing)
-											totalHashedBytes += m.Torrent.Size * (m.Progress / 100);
-										else
-											totalHashedBytes += m.Torrent.Size;
-									}
-									double totalHashProgress = totalHashedBytes / totalHashingBytes;
-									status = String.Format("Checking files ({0:0.00}%)", totalHashProgress * 100);
-
-									StatusCallbacks(TorrentState.Hashing, totalHashProgress);
+									totalHashingBytes += m.Torrent.Size;
+									if (m.State == TorrentState.Hashing)
+										totalHashedBytes += m.Torrent.Size*(m.Progress/100);
+									else
+										totalHashedBytes += m.Torrent.Size;
 								}
+								double totalHashProgress = totalHashedBytes/totalHashingBytes;
+								status = String.Format("Checking files ({0:0.00}%)", totalHashProgress*100);
+
+								StatusCallbacks(TorrentState.Hashing, totalHashProgress);
+							}
 								break;
 							case TorrentState.Downloading:
+							{
+								double totalToDownload = 0;
+								double totalDownloaded = 0;
+								double totalDownloadSpeed = 0;
+								double totalUploadSpeed = 0;
+								int totalDownloadConns = 0;
+								int totalUploadConns = 0;
+								foreach (TorrentManager m in engineTorrents)
 								{
-									double totalToDownload = 0;
-									double totalDownloaded = 0;
-									double totalDownloadSpeed = 0;
-									double totalUploadSpeed = 0;
-									int totalDownloadConns = 0;
-									int totalUploadConns = 0;
-									foreach (TorrentManager m in engineTorrents)
-									{
-										totalToDownload += m.Torrent.Size;
-										totalDownloaded += m.Torrent.Size * (m.Progress / 100);
-										totalDownloadSpeed += m.Monitor.DownloadSpeed;
-										totalUploadSpeed += m.Monitor.UploadSpeed;
-										totalDownloadConns += m.OpenConnections;
-										totalUploadConns += m.UploadingTo;
-									}
-									double totalDownloadProgress = totalDownloaded / totalToDownload;
-									status = "Status: " + ((engineTorrents.Count(m => m.State == TorrentState.Downloading && m.GetPeers().Count > 0) > 0) ? "Downloading" : "Finding peers");
-									status += "\n" + String.Format("Progress: {0:0.00}%", totalDownloadProgress * 100);
-									status += "\n" + String.Format("Download({1}): {0:0.00} KiB/s", totalDownloadSpeed / 1024.0, totalDownloadConns);
-									status += "\n" + String.Format("Upload({1}): {0:0.00} KiB/s", totalUploadSpeed / 1024.0, totalUploadConns);
-
-									StatusCallbacks(TorrentState.Downloading, totalDownloadProgress);
+									totalToDownload += m.Torrent.Size;
+									totalDownloaded += m.Torrent.Size*(m.Progress/100);
+									totalDownloadSpeed += m.Monitor.DownloadSpeed;
+									totalUploadSpeed += m.Monitor.UploadSpeed;
+									totalDownloadConns += m.OpenConnections;
+									totalUploadConns += m.UploadingTo;
 								}
+								double totalDownloadProgress = totalDownloaded/totalToDownload;
+								status = "Status: " +
+								         ((engineTorrents.Count(m => m.State == TorrentState.Downloading && m.GetPeers().Count > 0) > 0)
+									         ? "Downloading"
+									         : "Finding peers");
+								status += "\n" + String.Format("Progress: {0:0.00}%", totalDownloadProgress*100);
+								status += "\n" + String.Format("Download({1}): {0:0.00} KiB/s", totalDownloadSpeed/1024.0, totalDownloadConns);
+								status += "\n" + String.Format("Upload({1}): {0:0.00} KiB/s", totalUploadSpeed/1024.0, totalUploadConns);
+
+								StatusCallbacks(TorrentState.Downloading, totalDownloadProgress);
+							}
 								break;
 							case TorrentState.Seeding:
+							{
+								double totalUploadSpeed = 0;
+								int totalUploadPeers = 0;
+								foreach (TorrentManager tm in engineTorrents)
 								{
-									double totalUploadSpeed = 0;
-									int totalUploadPeers = 0;
-									foreach (var tm in engineTorrents)
-									{
-										totalUploadSpeed += tm.Monitor.UploadSpeed;
-										totalUploadPeers += tm.UploadingTo;
-									}
-									status = String.Format("Seeding({1}): {0:0.00} KiB/s", totalUploadSpeed / 1024.0, totalUploadPeers);
-									StatusCallbacks(TorrentState.Seeding, 1);
-
-									if (UserSettings.Current.TorrentOptions.StopSeeding)
-										globalEngine.StopAll();
+									totalUploadSpeed += tm.Monitor.UploadSpeed;
+									totalUploadPeers += tm.UploadingTo;
 								}
+								status = String.Format("Seeding({1}): {0:0.00} KiB/s", totalUploadSpeed/1024.0, totalUploadPeers);
+								StatusCallbacks(TorrentState.Seeding, 1);
+
+								if (UserSettings.Current.TorrentOptions.StopSeeding)
+									globalEngine.StopAll();
+							}
 								break;
 							default:
 								status = totalState.ToString();
 								break;
 						}
 					}
-					catch (Exception ex) { status = ex.Message; }                    
+					catch (Exception ex)
+					{
+						status = ex.Message;
+					}
 
-                    if (downloader != null)
-                        downloader.Status = status;
-                }
+					if (downloader != null)
+						downloader.Status = status;
+				}
 
-                System.Threading.Thread.Sleep(50);
-            }
-        }
+				Thread.Sleep(50);
+			}
+		}
 
-        public void OnTorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
-        {
+		public void OnTorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
+		{
 			if (e.NewState == TorrentState.Stopped)
 			{
 				try
 				{
 					string resumeDataFileName = GetFastResumeFileName(e.TorrentManager);
-					using (var resumeFile = File.OpenWrite(resumeDataFileName))
+					using (FileStream resumeFile = File.OpenWrite(resumeDataFileName))
 					{
 						e.TorrentManager.SaveFastResume().Encode(resumeFile);
 						resumeFile.Flush();
@@ -538,25 +567,26 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				}
 				catch (Exception ex)
 				{
-					Console.WriteLine("Error saving fastresume info for {0}, reason: {1}", e.TorrentManager.InfoHash.ToHex(), ex.Message);
+					Console.WriteLine("Error saving fastresume info for {0}, reason: {1}", e.TorrentManager.InfoHash.ToHex(),
+						ex.Message);
 				}
 			}
 
 			if (e.NewState == TorrentState.Error || e.NewState == TorrentState.Stopped)
 			{
-				var tm = e.TorrentManager;
-				var engine = tm.Engine;
+				TorrentManager tm = e.TorrentManager;
+				ClientEngine engine = tm.Engine;
 				engine.Unregister(tm);
 			}
-            else if (e.TorrentManager.Progress == 100.0 && e.NewState == TorrentState.Seeding)
-            {
-				var tm = e.TorrentManager;
-				var engine = tm.Engine;
-				var engineTorrents = engine.Torrents;
+			else if (e.TorrentManager.Progress == 100.0 && e.NewState == TorrentState.Seeding)
+			{
+				TorrentManager tm = e.TorrentManager;
+				ClientEngine engine = tm.Engine;
+				IList<TorrentManager> engineTorrents = engine.Torrents;
 
-				bool allSeeding = engineTorrents.Count( m => { return (m.Progress < 100 || m.State != TorrentState.Seeding); } ) < 1;
-                if (allSeeding)
-                {
+				bool allSeeding = engineTorrents.Count(m => { return (m.Progress < 100 || m.State != TorrentState.Seeding); }) < 1;
+				if (allSeeding)
+				{
 					if (updater != null && !errorMsgsOnly)
 						updater.Status = DayZeroLauncherUpdater.STATUS_UPTODATE;
 
@@ -565,12 +595,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 					StatusCallbacks(TorrentState.Stopped, 1);
 				}
-            }
-        }
-
-		private static HashSet<int> portsToMap = new HashSet<int>();
-		private static HashSet<int> portsMapped = new HashSet<int>();
-		private static List<INatDevice> upnpDevices = null;
+			}
+		}
 
 		private static void InternalMapPort(INatDevice device, int port)
 		{
@@ -580,7 +606,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (i > 0)
 					proto = Protocol.Udp;
 
-				var mapping = device.GetSpecificMapping(proto, port);
+				Mapping mapping = device.GetSpecificMapping(proto, port);
 				if (mapping == null || mapping.IsExpired() || mapping.PrivatePort < 0 || mapping.PublicPort < 0)
 					device.CreatePortMap(new Mapping(proto, port, port));
 			}
@@ -594,7 +620,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				if (i > 0)
 					proto = Protocol.Udp;
 
-				var mapping = device.GetSpecificMapping(proto, port);
+				Mapping mapping = device.GetSpecificMapping(proto, port);
 				if (mapping != null && mapping.PrivatePort > 0 && mapping.PublicPort > 0)
 					device.DeletePortMap(new Mapping(proto, port, port));
 			}
@@ -602,7 +628,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static void UpnpDeviceFound(object sender, DeviceEventArgs args)
 		{
-			var device = args.Device;
+			INatDevice device = args.Device;
 			if (upnpDevices.Contains(device))
 				return;
 
@@ -617,7 +643,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static void UpnpDeviceLost(object sender, DeviceEventArgs args)
 		{
-			var device = args.Device;
+			INatDevice device = args.Device;
 			if (upnpDevices.Contains(device))
 			{
 				if (upnpDevices.Count == 1) //this is the last device
@@ -626,7 +652,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						portsToMap.Add(port);
 
 					portsMapped.Clear();
-				}				
+				}
 
 				upnpDevices.Remove(device);
 			}
@@ -682,7 +708,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						portsMapped.Add(portNumber);
 					}
 				}
-			}		
+			}
 
 			portsToMap.Add(portNumber);
 		}
@@ -690,7 +716,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		private static void EngineStoppedOnPort(int portNumber)
 		{
 			portsToMap.Remove(portNumber);
-			
+
 			if (portsMapped.Contains(portNumber) && upnpDevices != null)
 			{
 				foreach (INatDevice device in upnpDevices)
@@ -704,12 +730,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			if (globalEngine != null)
 			{
-				var tOpts = UserSettings.Current.TorrentOptions;
+				TorrentOptions tOpts = UserSettings.Current.TorrentOptions;
 				if (engineListenPort != tOpts.ListeningPort)
 				{
 					byte[] dhtNodesData = null;
 					{
-						var oldDhtEngine = globalEngine.DhtEngine;
+						IDhtEngine oldDhtEngine = globalEngine.DhtEngine;
 						if (oldDhtEngine != null)
 						{
 							dhtNodesData = oldDhtEngine.SaveNodes();
@@ -727,29 +753,29 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					engineListenPort = tOpts.ListeningPort;
 					globalEngine.ChangeListenEndpoint(new IPEndPoint(IPAddress.Any, engineListenPort));
 
-					DhtListener dhtListener = new DhtListener(new IPEndPoint(IPAddress.Any, engineListenPort));
-					DhtEngine dhtEngine = new DhtEngine(dhtListener);
+					var dhtListener = new DhtListener(new IPEndPoint(IPAddress.Any, engineListenPort));
+					var dhtEngine = new DhtEngine(dhtListener);
 					dhtEngine.Start(dhtNodesData);
 					globalEngine.RegisterDht(dhtEngine);
 
 					EngineStartedOnPort(engineListenPort);
 				}
 				else if (!portsMapped.Contains(engineListenPort) && !portsToMap.Contains(engineListenPort) &&
-							UserSettings.Current.TorrentOptions.EnableUpnp == true) //we just enabled upnp
+				         UserSettings.Current.TorrentOptions.EnableUpnp) //we just enabled upnp
 				{
 					EngineStartedOnPort(engineListenPort);
 				}
-				else if (UserSettings.Current.TorrentOptions.EnableUpnp == false) //we just disabled upnp
+				else if (!UserSettings.Current.TorrentOptions.EnableUpnp) //we just disabled upnp
 				{
 					EngineStoppedOnPort(engineListenPort);
 				}
 
-				var engSets = globalEngine.Settings;
+				EngineSettings engSets = globalEngine.Settings;
 				engSets.GlobalMaxConnections = tOpts.MaxDLConnsNormalized;
-				engSets.GlobalMaxDownloadSpeed = tOpts.MaxDLSpeed * 1024;
-				engSets.GlobalMaxUploadSpeed = tOpts.MaxULSpeed * 1024;
+				engSets.GlobalMaxDownloadSpeed = tOpts.MaxDLSpeed*1024;
+				engSets.GlobalMaxUploadSpeed = tOpts.MaxULSpeed*1024;
 
-				var engineTorrents = globalEngine.Torrents;
+				IList<TorrentManager> engineTorrents = globalEngine.Torrents;
 
 				foreach (TorrentManager tm in engineTorrents)
 					tm.Settings.UploadSlots = tOpts.NumULSlotsNormalized;
@@ -760,7 +786,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			if (globalEngine != null)
 			{
-				List<TorrentManager> runningTorrents = new List<TorrentManager>();
+				var runningTorrents = new List<TorrentManager>();
 				if (globalEngine.Torrents != null)
 				{
 					foreach (TorrentManager tm in globalEngine.Torrents)
@@ -789,19 +815,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 								numActiveTorrents++;
 							}
 						}
-						catch (ObjectDisposedException) { continue; }
+						catch (ObjectDisposedException)
+						{
+						}
 					}
 
 					if (numActiveTorrents < 1)
 						break;
-					else
-						Thread.Sleep(250);
+					Thread.Sleep(250);
 				}
 			}
 		}
 
-        private static void EngineShutdown()
-        {
+		private static void EngineShutdown()
+		{
 			if (globalEngine != null)
 			{
 				StopAllTorrents(true);
@@ -809,8 +836,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				engineListenPort = 0;
 
 				string dhtNodesFileName = "";
-				try 
-				{ 
+				try
+				{
 					dhtNodesFileName = GetDhtNodesFileName();
 					File.WriteAllBytes(dhtNodesFileName, globalEngine.DhtEngine.SaveNodes());
 				}
@@ -821,15 +848,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 				globalEngine.Dispose();
 				globalEngine = null;
-			}            
+			}
 
-            foreach (TraceListener lst in Debug.Listeners)
-            {
-                lst.Flush();
-                lst.Close();
-            }
-        }
+			foreach (TraceListener lst in Debug.Listeners)
+			{
+				lst.Flush();
+				lst.Close();
+			}
+		}
 
-
-    }
+		private class AddOnTorrent
+		{
+			public MetaAddon Meta;
+			public string torrentFileName;
+			public string torrentSavePath;
+		}
+	}
 }

@@ -11,15 +11,15 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 			string nullText = System.Convert.ToString(parameter);
 
 			var val = (int?) value;
-			if(val == null)
+			if (val == null)
 				return nullText;
-			if(val == 0)
+			if (val == 0)
 				return "Recruit";
-			if(val == 1)
+			if (val == 1)
 				return "Regular";
-			if(val == 2)
+			if (val == 2)
 				return "Veteran";
-			if(val == 3)
+			if (val == 3)
 				return "Expert";
 
 			return nullText;

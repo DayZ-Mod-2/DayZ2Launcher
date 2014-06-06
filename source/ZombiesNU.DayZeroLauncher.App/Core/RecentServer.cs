@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
@@ -7,10 +6,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	[DataContract]
 	public class RecentServer : BindableBase
 	{
-		[DataMember] private readonly DateTime _on;
 		[DataMember] private readonly string _ipAddress;
-		[DataMember] private readonly int _port;
 		[DataMember] private readonly string _name;
+		[DataMember] private readonly DateTime _on;
+		[DataMember] private readonly int _port;
+
+		private Server _server;
 
 		public RecentServer(Server server, DateTime on)
 		{
@@ -20,7 +21,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			_name = server.Name;
 		}
 
-		private Server _server;
 		public Server Server
 		{
 			get { return _server; }
@@ -31,7 +31,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		public DateTime On { get { return _on; }}
+		public DateTime On
+		{
+			get { return _on; }
+		}
 
 		public string Ago
 		{
@@ -53,6 +56,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return Server;
 		}
         */
+
 		public void RefreshAgo()
 		{
 			PropertyHasChanged("Ago");
@@ -64,10 +68,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static string Ago(DateTime date)
 		{
 			const int SECOND = 1;
-			const int MINUTE = 60 * SECOND;
-			const int HOUR = 60 * MINUTE;
-			const int DAY = 24 * HOUR;
-			const int MONTH = 30 * DAY;
+			const int MINUTE = 60*SECOND;
+			const int HOUR = 60*MINUTE;
+			const int DAY = 24*HOUR;
+			const int MONTH = 30*DAY;
 
 			var ts = new TimeSpan(DateTime.Now.Ticks - date.Ticks);
 			double delta = Math.Abs(ts.TotalSeconds);
@@ -75,46 +79,43 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			if (delta < 0)
 			{
-			  return "not yet";
+				return "not yet";
 			}
-			if (delta < 1 * MINUTE)
+			if (delta < 1*MINUTE)
 			{
-			  return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
+				return ts.Seconds == 1 ? "one second ago" : ts.Seconds + " seconds ago";
 			}
-			if (delta < 2 * MINUTE)
+			if (delta < 2*MINUTE)
 			{
-			  return "a minute ago";
+				return "a minute ago";
 			}
-			if (delta < 45 * MINUTE)
+			if (delta < 45*MINUTE)
 			{
-			  return ts.Minutes + " minutes ago";
+				return ts.Minutes + " minutes ago";
 			}
-			if (delta < 90 * MINUTE)
+			if (delta < 90*MINUTE)
 			{
-			  return "an hour ago";
+				return "an hour ago";
 			}
-			if (delta < 24 * HOUR)
+			if (delta < 24*HOUR)
 			{
-			  return ts.Hours + " hours ago";
+				return ts.Hours + " hours ago";
 			}
-			if (delta < 48 * HOUR)
+			if (delta < 48*HOUR)
 			{
-			  return "yesterday";
+				return "yesterday";
 			}
-			if (delta < 30 * DAY)
+			if (delta < 30*DAY)
 			{
-			  return ts.Days + " days ago";
+				return ts.Days + " days ago";
 			}
-			if (delta < 12 * MONTH)
+			if (delta < 12*MONTH)
 			{
-			  int months = Convert.ToInt32(Math.Floor((double)ts.Days / 30));
-			  return months <= 1 ? "one month ago" : months + " months ago";
+				int months = Convert.ToInt32(Math.Floor((double) ts.Days/30));
+				return months <= 1 ? "one month ago" : months + " months ago";
 			}
-			else
-			{
-			  int years = Convert.ToInt32(Math.Floor((double)ts.Days / 365));
-			  return years <= 1 ? "one year ago" : years + " years ago";
-			}			
+			int years = Convert.ToInt32(Math.Floor((double) ts.Days/365));
+			return years <= 1 ? "one year ago" : years + " years ago";
 		}
 	}
 }

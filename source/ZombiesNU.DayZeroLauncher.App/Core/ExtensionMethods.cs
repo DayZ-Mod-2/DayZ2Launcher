@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
@@ -10,7 +9,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static int TryInt(this string val)
 		{
 			int result;
-			if(int.TryParse(val, out result))
+			if (int.TryParse(val, out result))
 			{
 				return result;
 			}
@@ -20,7 +19,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static int? TryIntNullable(this string val)
 		{
 			int result;
-			if(int.TryParse(val, out result))
+			if (int.TryParse(val, out result))
 			{
 				return result;
 			}
@@ -30,7 +29,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static List<T> ToList<T>(this IEnumerable<T> items, Action<T> action)
 		{
 			List<T> list = items.ToList();
-			foreach(var item in list)
+			foreach (T item in list)
 			{
 				action(item);
 			}
@@ -44,14 +43,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static bool In(this string value, params string[] values)
 		{
-			if(string.IsNullOrEmpty(value))
+			if (string.IsNullOrEmpty(value))
 			{
 				return false;
 			}
 
-			foreach(var s in values)
+			foreach (string s in values)
 			{
-				if(value.Equals(s, StringComparison.OrdinalIgnoreCase))
+				if (value.Equals(s, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
 				}
@@ -61,13 +60,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static bool EndsWithAny(this string value, params string[] values)
 		{
-			if(string.IsNullOrEmpty(value))
+			if (string.IsNullOrEmpty(value))
 			{
 				return false;
 			}
-			foreach(var s in values)
+			foreach (string s in values)
 			{
-				if(value.EndsWith(s, StringComparison.OrdinalIgnoreCase))
+				if (value.EndsWith(s, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
 				}
@@ -77,7 +76,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public static bool SafeContainsIgnoreCase(this string value, string contains)
 		{
-			if(string.IsNullOrEmpty(value))
+			if (string.IsNullOrEmpty(value))
 				return false;
 
 			return value.IndexOf(contains, StringComparison.CurrentCultureIgnoreCase) > -1;

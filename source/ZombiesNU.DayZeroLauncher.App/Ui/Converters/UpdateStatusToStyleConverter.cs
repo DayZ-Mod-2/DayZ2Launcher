@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using System.Windows.Media;
 using zombiesnu.DayZeroLauncher.App.Core;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
@@ -14,7 +13,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 			string suffix = "Red";
 			if (value != null)
 			{
-				string realVal = (string)value;
+				var realVal = (string) value;
 
 				if (realVal.StartsWith(DayZeroLauncherUpdater.STATUS_CHECKINGFORUPDATES.Replace("...", String.Empty)))
 					suffix = "LightGreen";
@@ -28,9 +27,9 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 
 			string baseStyleName = "MetroTextButtonStyle";
 			if (parameter != null)
-				baseStyleName = (string)parameter;
+				baseStyleName = (string) parameter;
 
-			Style newStyle = (Style)Application.Current.TryFindResource(baseStyleName + suffix);
+			var newStyle = (Style) Application.Current.TryFindResource(baseStyleName + suffix);
 			return newStyle;
 		}
 

@@ -5,18 +5,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	[DataContract]
 	public class GameOptions : BindableBase
 	{
+		[DataMember] private string _AddonsDirectoryOverride;
 		[DataMember] private string _additionalStartupParameters;
-		[DataMember] private bool _launchUsingSteam;
-        [DataMember] private bool _arma2OASteamUpdate;
-		[DataMember] private bool _windowedMode;
-		[DataMember] private bool _multiGpu;
-        [DataMember] private bool _closeDayZeroLauncher;
 		[DataMember] private string _arma2DirectoryOverride;
+		[DataMember] private bool _arma2OASteamUpdate;
 		[DataMember] private string _arma2OaDirectoryOverride;
-        [DataMember] private string _AddonsDirectoryOverride;
+		[DataMember] private bool _closeDayZeroLauncher;
 		[DataMember] private string _customBranchName;
 		[DataMember] private string _customBranchPass;
+		[DataMember] private bool _launchUsingSteam;
+		[DataMember] private bool _multiGpu;
 		[DataMember] private bool _twentyFourHourTimeFormat;
+		[DataMember] private bool _windowedMode;
 
 		public string AdditionalStartupParameters
 		{
@@ -28,7 +28,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				UserSettings.Current.Save();
 			}
 		}
-		
+
 		public bool LaunchUsingSteam
 		{
 			get { return _launchUsingSteam; }
@@ -40,18 +40,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-        public string GUID
-        {
-            get { return GUIDCalculator.GetKey(); }
-        }
-
-        public bool Arma2OASteamUpdate
+		public string GUID
 		{
-            get { return _arma2OASteamUpdate; }
+			get { return GUIDCalculator.GetKey(); }
+		}
+
+		public bool Arma2OASteamUpdate
+		{
+			get { return _arma2OASteamUpdate; }
 			set
 			{
-                _arma2OASteamUpdate = value;
-                PropertyHasChanged("Arma2OASteamUpdate");
+				_arma2OASteamUpdate = value;
+				PropertyHasChanged("Arma2OASteamUpdate");
 				UserSettings.Current.Save();
 			}
 		}
@@ -78,16 +78,16 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-        public bool CloseDayZeroLauncher
-        {
-            get { return _closeDayZeroLauncher; }
-            set
-            {
-                _closeDayZeroLauncher = value;
-                PropertyHasChanged("CloseDayZeroLauncher");
-                UserSettings.Current.Save();
-            }
-        }
+		public bool CloseDayZeroLauncher
+		{
+			get { return _closeDayZeroLauncher; }
+			set
+			{
+				_closeDayZeroLauncher = value;
+				PropertyHasChanged("CloseDayZeroLauncher");
+				UserSettings.Current.Save();
+			}
+		}
 
 		public string Arma2DirectoryOverride
 		{
@@ -113,17 +113,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-        public string AddonsDirectoryOverride
-        {
-            get { return _AddonsDirectoryOverride; }
-            set
-            {
-                _AddonsDirectoryOverride = value;
+		public string AddonsDirectoryOverride
+		{
+			get { return _AddonsDirectoryOverride; }
+			set
+			{
+				_AddonsDirectoryOverride = value;
 				PropertyHasChanged("AddonsDirectoryOverride");
-                UserSettings.Current.Save();
+				UserSettings.Current.Save();
 				CalculatedGameSettings.Current.Update();
-            }
-        }
+			}
+		}
 
 		public string CustomBranchName
 		{
@@ -146,7 +146,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				UserSettings.Current.Save();
 			}
 		}
-		
+
 		public bool TwentyFourHourTimeFormat
 		{
 			get { return _twentyFourHourTimeFormat; }

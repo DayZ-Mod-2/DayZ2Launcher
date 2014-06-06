@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Caliburn.Micro;
-using zombiesnu.DayZeroLauncher.App.Core;
+﻿using zombiesnu.DayZeroLauncher.App.Core;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
 {

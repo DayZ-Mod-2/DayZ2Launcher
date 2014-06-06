@@ -130,7 +130,7 @@
       <HintPath>..\packages\Microsoft.Windows.Shell\Microsoft.Windows.Shell.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Nat">
-      <HintPath>..\packages\Mono.Nat.1.1.13\lib\Net40\Mono.Nat.dll</HintPath>
+      <HintPath>..\packages\MonoTorrent\Mono.Nat.dll</HintPath>
     </Reference>
     <Reference Include="MonoTorrent, Version=1.0.1.5, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -179,8 +179,8 @@
     <Compile Include="Core\Arma2Updater.cs" />
     <Compile Include="Core\CalculatedGameSettings.cs" />
     <Compile Include="Core\HttpUtility.cs" />
-    <Compile Include="Core\KeyValue.cs" />
-    <Compile Include="Core\StreamHelpers.cs" />
+    <Compile Include="SteamKit2\KeyValue.cs" />
+    <Compile Include="SteamKit2\StreamHelpers.cs" />
     <Compile Include="Core\TorrentOptions.cs" />
     <Compile Include="Core\GUIDCalculator.cs" />
     <Compile Include="Core\HashWebClient.cs" />
@@ -203,9 +203,6 @@
     <Compile Include="Ui\Converters\UpdateStatusToForegroundConverter.cs" />
     <Compile Include="Ui\LaunchProgress.xaml.cs">
       <DependentUpon>LaunchProgress.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\NotesControl.xaml.cs">
-      <DependentUpon>NotesControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Ui\Controls\PingControl.xaml.cs">
       <DependentUpon>PingControl.xaml</DependentUpon>
@@ -260,28 +257,10 @@
     <Compile Include="Ui\Converters\VersionMatchesToForegroundConverter.cs" />
     <Compile Include="Ui\Converters\ZeroToVisibilityConverter.cs" />
     <Compile Include="Ui\LaunchProgressViewModel.cs" />
-    <Compile Include="Ui\NotesView.xaml.cs">
-      <DependentUpon>NotesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\NotesViewModel.cs" />
     <Compile Include="Ui\Favorites\FavoritesView.xaml.cs">
       <DependentUpon>FavoritesView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Ui\Favorites\FavoritesViewModel.cs" />
-    <Compile Include="Ui\Friends\FriendsView.xaml.cs">
-      <DependentUpon>FriendsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Friends\FriendsViewModel.cs" />
-    <Compile Include="Ui\Friends\ListView.xaml.cs">
-      <DependentUpon>ListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Friends\ListViewModel.cs" />
-    <Compile Include="Ui\Friends\ManageView.xaml.cs">
-      <DependentUpon>ManageView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Friends\ManageViewModel.cs" />
-    <Compile Include="Ui\Friends\PlayersChangedEvent.cs" />
-    <Compile Include="Ui\Friends\RepublishFriendsRequest.cs" />
     <Compile Include="Core\ServerUpdated.cs" />
     <Compile Include="Ui\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -325,7 +304,6 @@
     <Compile Include="Core\Execute.cs" />
     <Compile Include="Core\ExtensionMethods.cs" />
     <Compile Include="Core\Filter.cs" />
-    <Compile Include="Core\Friend.cs" />
     <Compile Include="Core\GameLauncher.cs" />
     <Compile Include="Core\LocalMachineInfo.cs" />
     <Compile Include="Core\Player.cs" />
@@ -336,7 +314,6 @@
     <Compile Include="Core\ServerQueryClient.cs" />
     <Compile Include="Core\ServerQueryResult.cs" />
     <Compile Include="Core\ServerSetting.cs" />
-    <Compile Include="Core\SuperQueue.cs" />
     <Compile Include="Core\UserSettings.cs" />
     <Compile Include="Core\WindowSettings.cs" />
     <Page Include="Ui\Controls\InfoPopup.xaml">
@@ -348,10 +325,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Ui\LaunchProgress.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\NotesControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -399,25 +372,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Ui\Friends\FriendsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\Friends\ListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\Friends\ManageView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Ui\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\NotesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Ui\Recent\RecentView.xaml">
       <SubType>Designer</SubType>

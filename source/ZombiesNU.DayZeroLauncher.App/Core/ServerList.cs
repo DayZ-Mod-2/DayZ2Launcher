@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Net;
 using System.Threading;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Ui;
 using zombiesnu.DayZeroLauncher.App.Ui.Controls;
-using System.Net;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
 {
@@ -17,15 +14,17 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		IHandle<RefreshServerRequest>
 	{
 		private bool _downloadingServerList;
+		private bool _isRunningRefreshBatch;
 		private ObservableCollection<Server> _items;
 		private ObservableCollection<Server> _oldItems;
+
+		private ServerBatchRefresher _refreshAllBatch;
 
 		public ServerList()
 		{
 			Items = new ObservableCollection<Server>();
 		}
 
-		private ServerBatchRefresher _refreshAllBatch;
 		public ServerBatchRefresher RefreshAllBatch
 		{
 			get { return _refreshAllBatch; }
@@ -56,6 +55,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+		public void Handle(RefreshServerRequest message)
+		{
+			if (_isRunningRefreshBatch)
+				return;
+
+			_isRunningRefreshBatch = true;
+			App.Events.Publish(new RefreshingServersChange(true));
+			RefreshAllBatch = message.Batch;
+			RefreshAllBatch.RefreshAllComplete += RefreshAllBatchOnRefreshAllComplete;
+			RefreshAllBatch.RefreshAll();
+		}
+
 		public void GetAndUpdateAll()
 		{
 			GetAll(() => UpdateAll());
@@ -65,26 +76,25 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			DownloadingServerList = true;
 			new Thread(() =>
+			{
+				List<Server> servers = GetAllSync();
+				Execute.OnUiThread(() =>
 				{
-					var servers = GetAllSync();
-					Execute.OnUiThread(() =>
-						{
-							_oldItems = Items;
-							Items = new ObservableCollection<Server>(servers);
-							DownloadingServerList = false;
-							if (uiThreadOnComplete != null)
-								uiThreadOnComplete();
-						});
-
-				}).Start();
+					_oldItems = Items;
+					Items = new ObservableCollection<Server>(servers);
+					DownloadingServerList = false;
+					if (uiThreadOnComplete != null)
+						uiThreadOnComplete();
+				});
+			}).Start();
 		}
 
 		private List<Server> GetAllSync()
 		{
-            string list = "";
+			string list = "";
 			{
 				string serverListUrl = "https://zombies.nu/serverlist.txt";
-				var locator = CalculatedGameSettings.Current.Locator;
+				LocatorInfo locator = CalculatedGameSettings.Current.Locator;
 				if (locator != null && locator.ServerListUrl != null)
 					serverListUrl = locator.ServerListUrl;
 
@@ -92,8 +102,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					using (var wc = new WebClient())
 					{
-						try { list = wc.DownloadString(new Uri(serverListUrl)); }
-						catch (Exception) {}
+						try
+						{
+							list = wc.DownloadString(new Uri(serverListUrl));
+						}
+						catch (Exception)
+						{
+						}
 					}
 				}
 			}
@@ -101,44 +116,31 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (string.IsNullOrEmpty(list))
 				return new List<Server>(); //Empty list.. Too bad.
 
-            var fullList = list
-                .Split('\n').Select(line =>
+			List<Server> fullList = list
+				.Split('\n').Select(line =>
+				{
+					string[] serverInfo = line.Split(';');
+					var server = new Server("", 0, "", "");
+					if (serverInfo.Count() > 4)
 					{
-						var serverInfo = line.Split(';');
-						Server server = server = new Server("", 0, "", "");
-						if (serverInfo.Count() > 4)
-						{
-							server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4]);
-						}
+						server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4]);
+					}
 
-						server.Settings = new SortedDictionary<string, string>
-						{
-							{ "hostname", serverInfo[0]}
-						};
+					server.Settings = new SortedDictionary<string, string>
+					{
+						{"hostname", serverInfo[0]}
+					};
 
-						return server;
-					}).ToList();
+					return server;
+				}).ToList();
 
-            return fullList;
+			return fullList;
 		}
 
 		public void UpdateAll()
 		{
 			var batch = new ServerBatchRefresher("Refreshing all servers...", Items, _oldItems);
 			App.Events.Publish(new RefreshServerRequest(batch));
-		}
-
-		private bool _isRunningRefreshBatch;
-		public void Handle(RefreshServerRequest message)
-		{
-			if(_isRunningRefreshBatch)
-				return;
-
-			_isRunningRefreshBatch = true;
-			App.Events.Publish(new RefreshingServersChange(true));
-			RefreshAllBatch = message.Batch;
-			RefreshAllBatch.RefreshAllComplete += RefreshAllBatchOnRefreshAllComplete;
-			RefreshAllBatch.RefreshAll();
 		}
 
 		private void RefreshAllBatchOnRefreshAllComplete()
@@ -151,11 +153,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 	public class RefreshingServersChange
 	{
-		public bool IsRunning { get; set; }
-
 		public RefreshingServersChange(bool isRunning)
 		{
 			IsRunning = isRunning;
 		}
+
+		public bool IsRunning { get; set; }
 	}
 }

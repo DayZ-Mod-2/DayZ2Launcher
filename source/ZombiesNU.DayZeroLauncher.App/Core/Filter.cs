@@ -9,41 +9,28 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	[DataContract]
 	public class Filter : BindableBase
 	{
-		[DataMember] private long ?_maxPing;
-		[DataMember] private string _name;
-		[DataMember] private bool _hideEmpty;
-		[DataMember] private bool _hideFull;
-		[DataMember] private bool _supressPublish;
-		[DataMember] private string _timeOfDay;
-		[DataMember] private bool _hideUnresponsive;
-		[DataMember] private bool _hidePasswordProtected;
-		[DataMember] private bool _hideWrongArma2Version;
-		[DataMember] private bool _hideWrongDayZVersion;
-		[DataMember] private bool? _hasScores;
-		[DataMember] private bool? _hasDeathMessages;
 		[DataMember] private bool? _hasArmor;
+		[DataMember] private bool? _hasCrosshairs;
+		[DataMember] private bool? _hasDeathMessages;
+		[DataMember] private bool? _hasNameplates;
+		[DataMember] private bool? _hasScores;
 		[DataMember] private bool? _hasThirdPerson;
 		[DataMember] private bool? _hasTracers;
-		[DataMember] private bool? _hasNameplates;
-		[DataMember] private bool? _hasCrosshairs;
+		[DataMember] private bool _hideEmpty;
+		[DataMember] private bool _hideFull;
+		[DataMember] private bool _hidePasswordProtected;
+		[DataMember] private bool _hideUnresponsive;
+		[DataMember] private bool _hideWrongArma2Version;
+		[DataMember] private bool _hideWrongDayZVersion;
+		[DataMember] private long? _maxPing;
+		[DataMember] private string _name;
 		private Timer _publishTimer;
+		[DataMember] private bool _supressPublish;
+		[DataMember] private string _timeOfDay;
 
 		public Filter()
 		{
 			LoadDefaults();
-		}
-
-		public void LoadDefaults()
-		{
-			_supressPublish = true;
-			MaxPing = null;
-			Name = null;
-			HideEmpty = false;
-			HideUnresponsive = true;
-			HideFull = false;
-			TimeOfDay = "Any time of day";
-			HidePasswordProtected = true;
-			_supressPublish = false;
 		}
 
 		public long? MaxPing
@@ -51,7 +38,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			get { return _maxPing; }
 			set
 			{
-				if(value == 0)
+				if (value == 0)
 					_maxPing = null;
 				else
 					_maxPing = value;
@@ -235,15 +222,28 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
+		public void LoadDefaults()
+		{
+			_supressPublish = true;
+			MaxPing = null;
+			Name = null;
+			HideEmpty = false;
+			HideUnresponsive = true;
+			HideFull = false;
+			TimeOfDay = "Any time of day";
+			HidePasswordProtected = true;
+			_supressPublish = false;
+		}
+
 		public void PublishFilter()
 		{
-			if(_supressPublish)
+			if (_supressPublish)
 				return;
 
 			UserSettings.Current.Filter = this;
 			UserSettings.Current.Save();
 
-			if(_publishTimer == null)
+			if (_publishTimer == null)
 			{
 				_publishTimer = new Timer(300);
 				_publishTimer.Elapsed += PublishTimerOnElapsed;
@@ -251,130 +251,126 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			_publishTimer.Stop();
 			_publishTimer.Start();
-
 		}
 
 		private void PublishTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
 		{
 			_publishTimer.Stop();
-			Execute.OnUiThread(() =>
-			{
-				App.Events.Publish(new FilterUpdated(s => FilterHandler(s)));
-			});
+			Execute.OnUiThread(() => { App.Events.Publish(new FilterUpdated(s => FilterHandler(s))); });
 		}
 
 		private bool FilterHandler(Server s)
 		{
-			if(MaxPing != null && s.Ping > MaxPing)
+			if (MaxPing != null && s.Ping > MaxPing)
 				return false;
 
-			if(!string.IsNullOrWhiteSpace(Name))
+			if (!string.IsNullOrWhiteSpace(Name))
 			{
-				if(s.Name == null || s.Name.IndexOf(Name, StringComparison.CurrentCultureIgnoreCase) == -1)
+				if (s.Name == null || s.Name.IndexOf(Name, StringComparison.CurrentCultureIgnoreCase) == -1)
 					return false;
 			}
 
-			if(HideEmpty && s.CurrentPlayers == 0)
+			if (HideEmpty && s.CurrentPlayers == 0)
 				return false;
 
-			if(HideFull && s.FreeSlots == 0)
+			if (HideFull && s.FreeSlots == 0)
 				return false;
 
-			if(TimeOfDay == "Night only")
+			if (TimeOfDay == "Night only")
 			{
-				if(s.IsNight == null || s.IsNight == false)
+				if (s.IsNight == null || s.IsNight == false)
 					return false;
 			}
 
-			if(TimeOfDay == "Day only")
+			if (TimeOfDay == "Day only")
 			{
-				if(s.IsNight == null || s.IsNight == true)
-					return false;							
-			}
-
-			if(HasArmor != null)
-			{
-				if(HasArmor == true && !s.Info.Armor.Enabled)
-					return false;				
-				if(HasArmor == false && s.Info.Armor.Enabled)
+				if (s.IsNight == null || s.IsNight == true)
 					return false;
 			}
 
-			if(HasThirdPerson != null)
+			if (HasArmor != null)
 			{
-				if(HasThirdPerson == true && !s.Info.ThirdPerson.Enabled)
-					return false;				
-				if(HasThirdPerson == false && s.Info.ThirdPerson.Enabled)
+				if (HasArmor == true && !s.Info.Armor.Enabled)
+					return false;
+				if (HasArmor == false && s.Info.Armor.Enabled)
 					return false;
 			}
 
-			if(HasTracers != null)
+			if (HasThirdPerson != null)
 			{
-				if(HasTracers == true && !s.Info.Tracers.Enabled)
-					return false;				
-				if(HasTracers == false && s.Info.Tracers.Enabled)
+				if (HasThirdPerson == true && !s.Info.ThirdPerson.Enabled)
+					return false;
+				if (HasThirdPerson == false && s.Info.ThirdPerson.Enabled)
 					return false;
 			}
 
-			if(HasNameplates != null)
+			if (HasTracers != null)
 			{
-				if(HasNameplates == true && !s.Info.Nameplates.Enabled)
-					return false;				
-				if(HasNameplates == false && s.Info.Nameplates.Enabled)
+				if (HasTracers == true && !s.Info.Tracers.Enabled)
+					return false;
+				if (HasTracers == false && s.Info.Tracers.Enabled)
 					return false;
 			}
 
-			if(HasCrosshairs != null)
+			if (HasNameplates != null)
 			{
-				if(HasCrosshairs == true && !s.Info.Crosshairs.Enabled)
-					return false;				
-				if(HasCrosshairs == false && s.Info.Crosshairs.Enabled)
+				if (HasNameplates == true && !s.Info.Nameplates.Enabled)
+					return false;
+				if (HasNameplates == false && s.Info.Nameplates.Enabled)
 					return false;
 			}
 
-			if(HasDeathMessages != null)
+			if (HasCrosshairs != null)
 			{
-				if(HasDeathMessages == true && !s.Info.DeathMessages.Enabled)
-					return false;				
-				if(HasDeathMessages == false && s.Info.DeathMessages.Enabled)
+				if (HasCrosshairs == true && !s.Info.Crosshairs.Enabled)
+					return false;
+				if (HasCrosshairs == false && s.Info.Crosshairs.Enabled)
 					return false;
 			}
 
-			if(HasScores != null)
+			if (HasDeathMessages != null)
 			{
-				if(HasScores == true && !s.Info.Scores.Enabled)
-					return false;				
-				if(HasScores == false && s.Info.Scores.Enabled)
+				if (HasDeathMessages == true && !s.Info.DeathMessages.Enabled)
+					return false;
+				if (HasDeathMessages == false && s.Info.DeathMessages.Enabled)
 					return false;
 			}
 
-			if(HideUnresponsive && s.LastException != null)
+			if (HasScores != null)
 			{
-				return false;
+				if (HasScores == true && !s.Info.Scores.Enabled)
+					return false;
+				if (HasScores == false && s.Info.Scores.Enabled)
+					return false;
 			}
 
-			if(HidePasswordProtected && s.HasPassword)
+			if (HideUnresponsive && s.LastException != null)
 			{
 				return false;
 			}
 
-			if(HideWrongArma2Version)
+			if (HidePasswordProtected && s.HasPassword)
 			{
-				if(!s.IsSameArma2OAVersion)
+				return false;
+			}
+
+			if (HideWrongArma2Version)
+			{
+				if (!s.IsSameArma2OAVersion)
 				{
 					return false;
 				}
 			}
 
-			if(HideWrongDayZVersion)
+			if (HideWrongDayZVersion)
 			{
-				if(!s.IsSameDayZVersion)
+				if (!s.IsSameDayZVersion)
 				{
 					return false;
 				}
 			}
 
-			return true;			
+			return true;
 		}
 	}
 }

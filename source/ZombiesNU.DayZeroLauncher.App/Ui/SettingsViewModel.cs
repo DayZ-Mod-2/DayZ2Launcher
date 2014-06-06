@@ -1,9 +1,14 @@
-﻿using zombiesnu.DayZeroLauncher.App.Core;
+﻿using System;
+using System.Windows;
+using Ookii.Dialogs.Wpf;
+using zombiesnu.DayZeroLauncher.App.Core;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui
 {
 	public class SettingsViewModel : ViewModelBase
 	{
+		private bool _customBranchEnabled;
+		private string _customBranchName;
 		private bool _isVisible;
 
 		public SettingsViewModel()
@@ -20,12 +25,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 				CustomBranchEnabled = true;
 			}
 
-			this.PropertyChanged += (sender, args) =>
+			PropertyChanged += (sender, args) =>
 			{
 				//reconfigure TorrentEngine every time we close this panel, not just on clicking Done
 				if (args.PropertyName == "IsVisible")
 				{
-					if (this.IsVisible == false)
+					if (IsVisible == false)
 						TorrentUpdater.ReconfigureEngine();
 				}
 			};
@@ -43,55 +48,55 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-        public bool IncludeUS
-        {
-            get { return Settings.IncludeUS; }
-            set
-            {
-                Settings.IncludeUS = value;
-                PropertyHasChanged("IncludeUS");
-            }
-        }
+		public bool IncludeUS
+		{
+			get { return Settings.IncludeUS; }
+			set
+			{
+				Settings.IncludeUS = value;
+				PropertyHasChanged("IncludeUS");
+			}
+		}
 
-        public bool IncludeEU
-        {
-            get { return Settings.IncludeEU; }
-            set
-            {
-                Settings.IncludeEU = value;
-                PropertyHasChanged("IncludeEU");
-            }
-        }
+		public bool IncludeEU
+		{
+			get { return Settings.IncludeEU; }
+			set
+			{
+				Settings.IncludeEU = value;
+				PropertyHasChanged("IncludeEU");
+			}
+		}
 
-        public bool IncludeAU
-        {
-            get { return Settings.IncludeAU; }
-            set
-            {
-                Settings.IncludeAU = value;
-                PropertyHasChanged("IncludeAU");
-            }
-        }
+		public bool IncludeAU
+		{
+			get { return Settings.IncludeAU; }
+			set
+			{
+				Settings.IncludeAU = value;
+				PropertyHasChanged("IncludeAU");
+			}
+		}
 
-        public bool Arma2DirectoryOverride
-        {
-            get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride); }
-            set
-            {
-                if (value)
-                    Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
-                else
-                    Settings.GameOptions.Arma2DirectoryOverride = null;
+		public bool Arma2DirectoryOverride
+		{
+			get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride); }
+			set
+			{
+				if (value)
+					Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
+				else
+					Settings.GameOptions.Arma2DirectoryOverride = null;
 
-                PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
-            }
-        }
+				PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
+			}
+		}
 
 		public string Arma2Directory
 		{
 			get
 			{
-				if(!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride))
+				if (!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride))
 				{
 					return Settings.GameOptions.Arma2DirectoryOverride;
 				}
@@ -109,7 +114,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 		{
 			get
 			{
-				if(!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride))
+				if (!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride))
 				{
 					return Settings.GameOptions.Arma2OADirectoryOverride;
 				}
@@ -128,8 +133,9 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride); }
 			set
 			{
-				if(value)
-					Settings.GameOptions.Arma2OADirectoryOverride = LocalMachineInfo.Current.Arma2OAPath ?? "Replace with full Arma2 OA Path";
+				if (value)
+					Settings.GameOptions.Arma2OADirectoryOverride = LocalMachineInfo.Current.Arma2OAPath ??
+					                                                "Replace with full Arma2 OA Path";
 				else
 					Settings.GameOptions.Arma2OADirectoryOverride = null;
 
@@ -137,38 +143,37 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-        public string AddonsDirectory
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(Settings.GameOptions.AddonsDirectoryOverride))
-                {
-                    return Settings.GameOptions.AddonsDirectoryOverride;
-                }
-                return LocalMachineInfo.Current.Arma2OAPath;
-            }
-            set
-            {
-                Settings.GameOptions.AddonsDirectoryOverride = value;
+		public string AddonsDirectory
+		{
+			get
+			{
+				if (!string.IsNullOrWhiteSpace(Settings.GameOptions.AddonsDirectoryOverride))
+				{
+					return Settings.GameOptions.AddonsDirectoryOverride;
+				}
+				return LocalMachineInfo.Current.Arma2OAPath;
+			}
+			set
+			{
+				Settings.GameOptions.AddonsDirectoryOverride = value;
 				PropertyHasChanged("AddonsDirectory", "AddonsDirectoryOverride");
-            }
-        }
+			}
+		}
 
-        public bool AddonsDirectoryOverride
-        {
-            get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.AddonsDirectoryOverride); }
-            set
-            {
-                if (value)
+		public bool AddonsDirectoryOverride
+		{
+			get { return !string.IsNullOrWhiteSpace(Settings.GameOptions.AddonsDirectoryOverride); }
+			set
+			{
+				if (value)
 					Settings.GameOptions.AddonsDirectoryOverride = Settings.GameOptions.AddonsDirectoryOverride ?? Arma2OADirectory;
-                else
-                    Settings.GameOptions.AddonsDirectoryOverride = null;
+				else
+					Settings.GameOptions.AddonsDirectoryOverride = null;
 
 				PropertyHasChanged("AddonsDirectory", "AddonsDirectoryOverride");
-            }
-        }
+			}
+		}
 
-		private bool _customBranchEnabled;
 		public bool CustomBranchEnabled
 		{
 			get { return _customBranchEnabled; }
@@ -184,7 +189,6 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-		private string _customBranchName;
 		public string CustomBranchName
 		{
 			get { return _customBranchName; }
@@ -200,16 +204,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui
 			}
 		}
 
-		public string DisplayDirectoryPrompt(System.Windows.Window parentWindow, bool allowNewFolder, string previousPath, string description)
+		public string DisplayDirectoryPrompt(Window parentWindow, bool allowNewFolder, string previousPath, string description)
 		{
-			var folderDlg = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
+			var folderDlg = new VistaFolderBrowserDialog();
 
 			if (allowNewFolder)
 				folderDlg.ShowNewFolderButton = true;
 			else
 				folderDlg.ShowNewFolderButton = false;
 
-			folderDlg.RootFolder = System.Environment.SpecialFolder.ProgramFilesX86;
+			folderDlg.RootFolder = Environment.SpecialFolder.ProgramFilesX86;
 			if (previousPath != null)
 				folderDlg.SelectedPath = previousPath;
 

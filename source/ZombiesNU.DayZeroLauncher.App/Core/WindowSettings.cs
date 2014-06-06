@@ -7,11 +7,20 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	[DataContract]
 	public class WindowSettings
 	{
-		[DataMember] public double Top { get; set; } 
-		[DataMember] public double Left { get; set; } 
-		[DataMember] public double Height { get; set; } 
-		[DataMember] public double Width { get; set; }
-		[DataMember] public bool IsMaximized { get; set; }
+		[DataMember]
+		public double Top { get; set; }
+
+		[DataMember]
+		public double Left { get; set; }
+
+		[DataMember]
+		public double Height { get; set; }
+
+		[DataMember]
+		public double Width { get; set; }
+
+		[DataMember]
+		public bool IsMaximized { get; set; }
 
 		public static WindowSettings Create(MainWindow mainWindow)
 		{

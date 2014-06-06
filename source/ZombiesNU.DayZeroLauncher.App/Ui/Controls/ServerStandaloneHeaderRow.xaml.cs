@@ -1,28 +1,16 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
-using zombiesnu.DayZeroLauncher.App.Ui.Friends;
+using zombiesnu.DayZeroLauncher.App.Ui.Recent;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 {
 	/// <summary>
-	/// Interaction logic for ServerStandaloneHeaderRow.xaml
+	///     Interaction logic for ServerStandaloneHeaderRow.xaml
 	/// </summary>
-	public partial class ServerStandaloneHeaderRow : UserControl,
+	public partial class ServerStandaloneHeaderRow :
 		IHandle<RefreshingServersChange>
 	{
 		public ServerStandaloneHeaderRow()
@@ -31,38 +19,29 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			App.Events.Subscribe(this);
 		}
 
+		public void Handle(RefreshingServersChange message)
+		{
+			Execute.OnUiThread(() =>
+			{
+				RefreshAllButton.Visibility = message.IsRunning
+					? Visibility.Hidden
+					: Visibility.Visible;
+			}, Dispatcher);
+		}
+
 		private void RefreshAllServer(object sender, RoutedEventArgs e)
 		{
-			var friends = DataContext as Friends.ListViewModel;
-			if(friends != null)
-			{
-				var batch = new ServerBatchRefresher("Refreshing servers with friends...", friends.Servers.Cast<ListViewModel.ServerWithFriends>().Select(swf => swf.Server).ToList());
-				App.Events.Publish(new RefreshServerRequest(batch));
-				return;
-			}
-
-			var recent = DataContext as Recent.RecentViewModel;
-			if(recent != null)
+			var recent = DataContext as RecentViewModel;
+			if (recent != null)
 			{
 				var batch = new ServerBatchRefresher("Refreshing recent servers...", recent.Servers.Select(r => r.Server).ToList());
 				App.Events.Publish(new RefreshServerRequest(batch));
 			}
-
 		}
 
 		private void RefreshAllServersDoubleClick(object sender, MouseButtonEventArgs e)
 		{
 			e.Handled = true;
-		}
-
-		public void Handle(RefreshingServersChange message)
-		{
-			Execute.OnUiThread(() =>
-				{
-					RefreshAllButton.Visibility = message.IsRunning
-											? Visibility.Hidden
-											: Visibility.Visible;
-				}, Dispatcher);			
 		}
 	}
 }

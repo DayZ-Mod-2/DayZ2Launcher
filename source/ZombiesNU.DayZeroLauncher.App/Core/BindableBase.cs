@@ -8,17 +8,16 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	{
 		#region Implementation of INotifyPropertyChanged
 
+		public event PropertyChangedEventHandler PropertyChanged;
+
 		protected void PropertyHasChanged(params string[] names)
 		{
-			if(PropertyChanged != null)
+			if (PropertyChanged != null)
 			{
-				foreach(var name in names)
+				foreach (string name in names)
 					PropertyChanged(this, new PropertyChangedEventArgs(name));
 			}
-				
 		}
-
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		#endregion
 	}

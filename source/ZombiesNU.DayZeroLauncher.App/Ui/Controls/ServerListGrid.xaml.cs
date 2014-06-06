@@ -1,37 +1,26 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
-using MonoTorrent.Common;
 using zombiesnu.DayZeroLauncher.App.Ui.ServerList;
-using System.Collections.Specialized;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 {
 	/// <summary>
-	/// Interaction logic for ServerListGrid.xaml
+	///     Interaction logic for ServerListGrid.xaml
 	/// </summary>
 	public partial class ServerListGrid : UserControl,
 		IHandle<RefreshingServersChange>, IHandle<ServerListGrid.LaunchJoinServerEvent>
 	{
-		public class LaunchJoinServerEvent : MainWindow.LaunchRoutedCommand
-		{
-			public LaunchJoinServerEvent(string ipAddress, int port, NameValueCollection data, Window mainWnd, string queryString)
-				: base(data, mainWnd)
-			{
-				this.IpAddress = ipAddress;
-				this.Port = port;
-			}
-
-			public string IpAddress;
-			public int Port;
-		}
+		private LaunchJoinServerEvent _queuedJoinEvt;
 
 		public ServerListGrid()
 		{
@@ -39,32 +28,59 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			App.Events.Subscribe(this);
 		}
 
+		public void Handle(LaunchJoinServerEvent joinEvt)
+		{
+			Execute.OnUiThread(() =>
+			{
+				if (JoinFromEvent(joinEvt) == false) //defer for later when we know of this server
+					_queuedJoinEvt = joinEvt;
+			}, Dispatcher, DispatcherPriority.Input);
+		}
+
+		public void Handle(RefreshingServersChange message)
+		{
+			Execute.OnUiThread(() =>
+			{
+				DataGridColumn column = TheGrid.Columns[5];
+				Style originalStyle = column.HeaderStyle;
+				var newStyle = new Style(typeof (DataGridColumnHeader), originalStyle);
+				newStyle.Setters.Add(new Setter(VisibilityProperty, message.IsRunning ? Visibility.Hidden : Visibility.Visible));
+				column.HeaderStyle = newStyle;
+
+				if (_queuedJoinEvt != null && message.IsRunning == false) //maybe now we know of this server...
+				{
+					LaunchJoinServerEvent theEvt = _queuedJoinEvt;
+					_queuedJoinEvt = null; //dont try and connect to this server forever, though
+					JoinFromEvent(theEvt);
+				}
+			}, Dispatcher);
+		}
+
 		protected void JoinServer(Server server)
 		{
 			_queuedJoinEvt = null;
 
 			ServerListView listView = null;
-			FrameworkElement parent = (FrameworkElement)this.Parent;
+			var parent = (FrameworkElement) Parent;
 			do
 			{
 				if (parent is ServerListView)
 				{
-					listView = (ServerListView)parent;
+					listView = (ServerListView) parent;
 					break;
 				}
-				else
-					parent = (FrameworkElement)parent.Parent;
+				parent = (FrameworkElement) parent.Parent;
 			} while (parent != null);
 
-			listView.ViewModel().Launcher.JoinServer(MainWindow.GetWindow(this.Parent), server);
+			listView.ViewModel().Launcher.JoinServer(Window.GetWindow(Parent), server);
 		}
 
 		private void RowDoubleClick(object sender, MouseButtonEventArgs e)
 		{
 			var control = e.OriginalSource as FrameworkElement;
-			if(control != null)
+			if (control != null)
 			{
-				if(control.Name == "Refresh")
+				if (control.Name == "Refresh")
 				{
 					e.Handled = true;
 					return;
@@ -74,20 +90,20 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 			JoinServer(server);
 		}
 
-        void RowKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Return)
-                e.Handled = true;
-        }
+		private void RowKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Return)
+				e.Handled = true;
+		}
 
-        void RowKeyUp(object sender, KeyEventArgs e)
-        {
+		private void RowKeyUp(object sender, KeyEventArgs e)
+		{
 			if (e.Key == Key.Return)
 			{
-				var server = (Server)((Control)sender).DataContext;
+				var server = (Server) ((Control) sender).DataContext;
 				JoinServer(server);
 			}
-        }
+		}
 
 		private void RowLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
@@ -96,13 +112,13 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
 		private List<Server> GetServers()
 		{
-			return ((IEnumerable)TheGrid.DataContext)
-						.Cast<Server>().ToList();
+			return ((IEnumerable) TheGrid.DataContext)
+				.Cast<Server>().ToList();
 		}
 
 		private void RefreshAllServer(object sender, RoutedEventArgs e)
 		{
-			var servers = GetServers();
+			List<Server> servers = GetServers();
 			var batch = new ServerBatchRefresher("Refreshing some servers...", servers);
 			App.Events.Publish(new RefreshServerRequest(batch));
 		}
@@ -115,8 +131,14 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 		private bool JoinFromEvent(LaunchJoinServerEvent joinEvt)
 		{
 			List<Server> servers;
-			try { servers = GetServers(); }
-			catch (Exception) { servers = null; }
+			try
+			{
+				servers = GetServers();
+			}
+			catch (Exception)
+			{
+				servers = null;
+			}
 
 			Server foundServer = null;
 			if (servers != null)
@@ -124,51 +146,32 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 
 			if (foundServer == null)
 				return false;
-			else
+			JoinServer(foundServer);
+			return true;
+		}
+
+		public class LaunchJoinServerEvent : MainWindow.LaunchRoutedCommand
+		{
+			public string IpAddress;
+			public int Port;
+
+			public LaunchJoinServerEvent(string ipAddress, int port, NameValueCollection data, Window mainWnd, string queryString)
+				: base(data, mainWnd)
 			{
-				JoinServer(foundServer);
-				return true;
+				IpAddress = ipAddress;
+				Port = port;
 			}
-		}
-
-		private LaunchJoinServerEvent _queuedJoinEvt = null;
-		public void Handle(LaunchJoinServerEvent joinEvt)
-		{
-			Execute.OnUiThread(() =>
-				{
-					if (JoinFromEvent(joinEvt) == false) //defer for later when we know of this server
-						_queuedJoinEvt = joinEvt;
-				}, Dispatcher, System.Windows.Threading.DispatcherPriority.Input);			
-		}
-
-		public void Handle(RefreshingServersChange message)
-		{
-			Execute.OnUiThread(() =>
-				{
-					var column = TheGrid.Columns[5];
-					var originalStyle = column.HeaderStyle;
-					var newStyle = new Style(typeof(DataGridColumnHeader), originalStyle);
-					newStyle.Setters.Add(new Setter(VisibilityProperty, message.IsRunning ? Visibility.Hidden : Visibility.Visible));
-					column.HeaderStyle = newStyle;
-
-					if (_queuedJoinEvt != null && message.IsRunning == false) //maybe now we know of this server...
-					{
-						var theEvt = _queuedJoinEvt;
-						_queuedJoinEvt = null; //dont try and connect to this server forever, though
-						JoinFromEvent(theEvt);
-					}
-				}, Dispatcher);
 		}
 	}
 
 	public class RefreshServerRequest
 	{
-		public ServerBatchRefresher Batch { get; set; }
-
 		public RefreshServerRequest(ServerBatchRefresher batch)
 		{
 			Batch = batch;
 		}
+
+		public ServerBatchRefresher Batch { get; set; }
 	}
 
 	public class DataGridRowSelected

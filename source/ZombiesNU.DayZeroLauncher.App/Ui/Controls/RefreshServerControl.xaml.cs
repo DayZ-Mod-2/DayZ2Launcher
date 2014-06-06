@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using zombiesnu.DayZeroLauncher.App.Core;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 {
 	/// <summary>
-	/// Interaction logic for RefreshServerControl.xaml
+	///     Interaction logic for RefreshServerControl.xaml
 	/// </summary>
 	public partial class RefreshServerControl : UserControl
 	{
@@ -28,7 +18,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Controls
 		private void RefreshServer(object sender, RoutedEventArgs e)
 		{
 			var server = (Server) ((Control) sender).DataContext;
-			server.BeginUpdate(server1 => {}, supressRefresh:true);
+			server.BeginUpdate(server1 => { }, true);
 		}
 
 		private void RefreshServerDoubleClick(object sender, MouseButtonEventArgs e)

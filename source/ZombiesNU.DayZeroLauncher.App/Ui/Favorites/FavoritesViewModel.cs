@@ -4,15 +4,14 @@ using System.Linq;
 using System.Windows.Data;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
-using zombiesnu.DayZeroLauncher.App.Ui.Friends;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Favorites
 {
-	public class FavoritesViewModel : ViewModelBase, 
+	public class FavoritesViewModel : ViewModelBase,
 		IHandle<FavoritesUpdated>,
 		IHandle<ServerUpdated>
 	{
-		private ObservableCollection<Server> _rawServers = new ObservableCollection<Server>();
+		private readonly ObservableCollection<Server> _rawServers = new ObservableCollection<Server>();
 
 		public FavoritesViewModel()
 		{
@@ -21,7 +20,7 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Favorites
 			Servers = (ListCollectionView) CollectionViewSource.GetDefaultView(_rawServers);
 			Servers.SortDescriptions.Add(new SortDescription("Name", ListSortDirection.Ascending));
 
-		/*	foreach(var favorite in UserSettings.Current.Favorites)
+			/*	foreach(var favorite in UserSettings.Current.Favorites)
 			{
 				var server = favorite.CreateServer();
 //				server.BeginUpdate(s => { });
@@ -39,9 +38,9 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Favorites
 
 		public void Handle(FavoritesUpdated message)
 		{
-			if(UserSettings.Current.IsFavorite(message.Server))
+			if (UserSettings.Current.IsFavorite(message.Server))
 			{
-				if(_rawServers.Contains(message.Server))
+				if (_rawServers.Contains(message.Server))
 				{
 					_rawServers.Remove(message.Server);
 				}
@@ -49,30 +48,30 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Favorites
 			}
 			else
 			{
-				if(_rawServers.Contains(message.Server))
+				if (_rawServers.Contains(message.Server))
 					_rawServers.Remove(message.Server);
 			}
 			SyncTitle();
 		}
 
-		private void SyncTitle()
-		{
-			var count = _rawServers.Count;
-			if(count == 0)
-				Title = "favorites";
-			else
-				Title = string.Format("favorites({0})", count);
-		}
-
 		public void Handle(ServerUpdated message)
 		{
-			var matchingServer = _rawServers.FirstOrDefault(s => s.Equals(message.Server));
-			if(matchingServer != null)
+			Server matchingServer = _rawServers.FirstOrDefault(s => s.Equals(message.Server));
+			if (matchingServer != null)
 			{
 				_rawServers.Remove(matchingServer);
 				if (!message.IsRemoved)
 					_rawServers.Add(message.Server);
 			}
+		}
+
+		private void SyncTitle()
+		{
+			int count = _rawServers.Count;
+			if (count == 0)
+				Title = "favorites";
+			else
+				Title = string.Format("favorites({0})", count);
 		}
 	}
 }

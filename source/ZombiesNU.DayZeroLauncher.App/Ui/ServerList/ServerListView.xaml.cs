@@ -1,9 +1,10 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
 {
 	/// <summary>
-	/// Interaction logic for ServerListView.xaml
+	///     Interaction logic for ServerListView.xaml
 	/// </summary>
 	public partial class ServerListView : UserControl
 	{
@@ -12,16 +13,17 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.ServerList
 			InitializeComponent();
 		}
 
-		public ServerListViewModel ViewModel() { return (ServerListViewModel)DataContext; }
+		public ServerListViewModel ViewModel()
+		{
+			return (ServerListViewModel) DataContext;
+		}
 
-        private void ServerListGrid_Loaded(object sender, System.Windows.RoutedEventArgs e)
-        {
+		private void ServerListGrid_Loaded(object sender, RoutedEventArgs e)
+		{
+		}
 
-        }
-
-        private void ServerListGrid_Loaded_1(object sender, System.Windows.RoutedEventArgs e)
-        {
-
-        }
+		private void ServerListGrid_Loaded_1(object sender, RoutedEventArgs e)
+		{
+		}
 	}
 }

@@ -22,7 +22,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			lock (_locker)
 			{
-				foreach(var server in serverUpdates)
+				foreach (var server in serverUpdates)
 					_serverQueue.Enqueue(server);
 				Monitor.PulseAll(_locker);
 			}
@@ -31,33 +31,32 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public void Consume()
 		{
 			var t = new Thread(() =>
-			           	{
-			           		while (true)
-			           		{
-			           			Action<Action> server;
-			           			lock (_locker)
-			           			{
-			           				while (_serverQueue.Count == 0 || _runningCount >= (UserSettings.Current.AppOptions.LowPingRate ? 20 : 300))
-			           				{						
-			           					Monitor.Wait(_locker);
-			           				}
-			           				server = _serverQueue.Dequeue();
-			           				_runningCount++;
-			           			}
-								Thread.Sleep(new Random().Next(5, 17));
-			           			server(() =>
-			           				    {
-			           				        lock (_locker)
-			           				        {
-			           				            _runningCount--;
-												Monitor.PulseAll(_locker);
-			           				        }
-			           				    });
-			           		}
-			           	});
+			{
+				while (true)
+				{
+					Action<Action> server;
+					lock (_locker)
+					{
+						while (_serverQueue.Count == 0 || _runningCount >= (UserSettings.Current.AppOptions.LowPingRate ? 20 : 300))
+						{
+							Monitor.Wait(_locker);
+						}
+						server = _serverQueue.Dequeue();
+						_runningCount++;
+					}
+					Thread.Sleep(new Random().Next(5, 17));
+					server(() =>
+					{
+						lock (_locker)
+						{
+							_runningCount--;
+							Monitor.PulseAll(_locker);
+						}
+					});
+				}
+			});
 			t.IsBackground = true;
 			t.Start();
 		}
-
 	}
 }

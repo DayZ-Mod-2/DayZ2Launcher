@@ -3,21 +3,17 @@ using System.IO;
 using Newtonsoft.Json;
 
 namespace zombiesnu.DayZeroLauncher.App.Core
-{	public class LocatorInfo
+{
+	public class LocatorInfo
 	{
-		[JsonProperty("motd")]
-		public string MotdUrl = null;
-		[JsonProperty("servers")]
-		public string ServerListUrl = null;
+		[JsonProperty("installers")] public HashWebClient.RemoteFileInfo Installers = null;
+		[JsonProperty("mods")] public HashWebClient.RemoteFileInfo Mods = null;
+		[JsonProperty("motd")] public string MotdUrl = null;
 
-		[JsonProperty("patches")]
-		public HashWebClient.RemoteFileInfo Patches = null;
-		[JsonProperty("mods")]
-		public HashWebClient.RemoteFileInfo Mods = null;
-		[JsonProperty("installers")]
-		public HashWebClient.RemoteFileInfo Installers = null;
+		[JsonProperty("patches")] public HashWebClient.RemoteFileInfo Patches = null;
+		[JsonProperty("servers")] public string ServerListUrl = null;
 
-		static public LocatorInfo LoadFromString(string jsonText)
+		public static LocatorInfo LoadFromString(string jsonText)
 		{
 			return JsonConvert.DeserializeObject<LocatorInfo>(jsonText);
 		}
@@ -26,11 +22,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	public class CalculatedGameSettings : BindableBase
 	{
 		private static CalculatedGameSettings _current;
+
 		public static CalculatedGameSettings Current
 		{
 			get
 			{
-				if(_current == null)
+				if (_current == null)
 				{
 					_current = new CalculatedGameSettings();
 					_current.Update();
@@ -102,7 +99,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				ModContentVersion = File.ReadAllText(UserSettings.ContentCurrentTagFile).Trim();
 			}
-			catch (Exception) { ModContentVersion = null; }
+			catch (Exception)
+			{
+				ModContentVersion = null;
+			}
 
 			PropertyHasChanged("ModContentVersion");
 		}

@@ -20,9 +20,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public Server Server
 		{
-			get {
-				return _server;
-			}
+			get { return _server; }
 		}
 	}
 }

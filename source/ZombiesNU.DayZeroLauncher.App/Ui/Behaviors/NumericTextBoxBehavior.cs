@@ -1,45 +1,45 @@
-﻿using System.Windows.Controls;
-using System.Windows.Interactivity;
-using System.Windows.Input;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Globalization;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Interactivity;
 
 namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 {
 	/// <summary>
-	/// Apply this behavior to a TextBox to ensure that it only accepts numeric values.
-	/// The property <see cref="NumericTextBoxBehavior.AllowDecimal"/> controls whether or not
-	/// the input is an integer or not.
-	/// <para>
-	/// A common requirement is to constrain the number count that appears after the decimal place.
-	/// Setting <see cref="NumericTextBoxBehavior.DecimalLimit"/> specifies how many numbers appear here.
-	/// If this value is 0, no limit is applied.
-	/// </para>
+	///     Apply this behavior to a TextBox to ensure that it only accepts numeric values.
+	///     The property <see cref="NumericTextBoxBehavior.AllowDecimal" /> controls whether or not
+	///     the input is an integer or not.
+	///     <para>
+	///         A common requirement is to constrain the number count that appears after the decimal place.
+	///         Setting <see cref="NumericTextBoxBehavior.DecimalLimit" /> specifies how many numbers appear here.
+	///         If this value is 0, no limit is applied.
+	///     </para>
 	/// </summary>
 	/// <remarks>
-	/// In the view, this behavior is attached in the following way:
-	/// <code>
+	///     In the view, this behavior is attached in the following way:
+	///     <code>
 	/// <TextBox Text="{Binding Price}">
-	///   <i:Interaction.Behaviors>
-	///     <gl:NumericTextBoxBehavior AllowDecimal="False" />
-	///   </i:Interaction.Behaviors>
-	/// </TextBox>
+	///             <i:Interaction.Behaviors>
+	///                 <gl:NumericTextBoxBehavior AllowDecimal="False" />
+	///             </i:Interaction.Behaviors>
+	///         </TextBox>
 	/// </code>
-	/// <para>
-	/// Add references to System.Windows.Interactivity to the view to use
-	/// this behavior.
-	/// </para>
+	///     <para>
+	///         Add references to System.Windows.Interactivity to the view to use
+	///         this behavior.
+	///     </para>
 	/// </remarks>
-	public partial class NumericTextBoxBehavior : Behavior<TextBox>
+	public class NumericTextBoxBehavior : Behavior<TextBox>
 	{
 		private bool _allowDecimal = true;
-		private int _decimalLimit = 0;
+		private int _decimalLimit;
 		private bool _allowNegative = true;
 		private string _pattern = string.Empty;
 
 		/// <summary>
-		/// Initialize a new instance of <see cref="NumericTextBoxBehavior"/>.
+		///     Initialize a new instance of <see cref="NumericTextBoxBehavior" />.
 		/// </summary>
 		public NumericTextBoxBehavior()
 		{
@@ -49,14 +49,11 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 		}
 
 		/// <summary>
-		/// Get or set whether the input allows decimal characters.
+		///     Get or set whether the input allows decimal characters.
 		/// </summary>
 		public bool AllowDecimal
 		{
-			get
-			{
-				return _allowDecimal;
-			}
+			get { return _allowDecimal; }
 			set
 			{
 				if (_allowDecimal == value) return;
@@ -64,19 +61,17 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 				SetText();
 			}
 		}
+
 		/// <summary>
-		/// Get or set the maximum number of values to appear after
-		/// the decimal.
+		///     Get or set the maximum number of values to appear after
+		///     the decimal.
 		/// </summary>
 		/// <remarks>
-		/// If DecimalLimit is 0, then no limit is applied.
+		///     If DecimalLimit is 0, then no limit is applied.
 		/// </remarks>
 		public int DecimalLimit
 		{
-			get
-			{
-				return _decimalLimit;
-			}
+			get { return _decimalLimit; }
 			set
 			{
 				if (_decimalLimit == value) return;
@@ -84,15 +79,13 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 				SetText();
 			}
 		}
+
 		/// <summary>
-		/// Get or set whether negative numbers are allowed.
+		///     Get or set whether negative numbers are allowed.
 		/// </summary>
 		public bool AllowNegatives
 		{
-			get
-			{
-				return _allowNegative;
-			}
+			get { return _allowNegative; }
 			set
 			{
 				if (_allowNegative == value) return;
@@ -102,11 +95,12 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 		}
 
 		#region Overrides
+
 		protected override void OnAttached()
 		{
 			base.OnAttached();
 
-			AssociatedObject.PreviewTextInput += new TextCompositionEventHandler(AssociatedObject_PreviewTextInput);
+			AssociatedObject.PreviewTextInput += AssociatedObject_PreviewTextInput;
 #if !SILVERLIGHT
 			DataObject.AddPastingHandler(AssociatedObject, OnClipboardPaste);
 #endif
@@ -115,14 +109,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 		protected override void OnDetaching()
 		{
 			base.OnDetaching();
-			AssociatedObject.PreviewTextInput -= new TextCompositionEventHandler(AssociatedObject_PreviewTextInput);
+			AssociatedObject.PreviewTextInput -= AssociatedObject_PreviewTextInput;
 #if !SILVERLIGHT
 			DataObject.RemovePastingHandler(AssociatedObject, OnClipboardPaste);
 #endif
 		}
+
 		#endregion
 
 		#region Private methods
+
 		private void SetText()
 		{
 			_pattern = string.Empty;
@@ -131,8 +127,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 
 #if !SILVERLIGHT
 		/// <summary>
-		/// Handle paste operations into the textbox to ensure that the behavior
-		/// is consistent with directly typing into the TextBox.
+		///     Handle paste operations into the textbox to ensure that the behavior
+		///     is consistent with directly typing into the TextBox.
 		/// </summary>
 		/// <param name="sender">The TextBox sender.</param>
 		/// <param name="dopea">Paste event arguments.</param>
@@ -147,18 +143,18 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 #endif
 
 		/// <summary>
-		/// Preview the text input.
+		///     Preview the text input.
 		/// </summary>
 		/// <param name="sender">The TextBox sender.</param>
 		/// <param name="e">The composition event arguments.</param>
-		void AssociatedObject_PreviewTextInput(object sender, TextCompositionEventArgs e)
+		private void AssociatedObject_PreviewTextInput(object sender, TextCompositionEventArgs e)
 		{
 			e.Handled = !Validate(e.Text);
 		}
 
 		/// <summary>
-		/// Validate the contents of the textbox with the new content to see if it is
-		/// valid.
+		///     Validate the contents of the textbox with the new content to see if it is
+		///     valid.
 		/// </summary>
 		/// <param name="value">The text to validate.</param>
 		/// <returns>True if this is valid, false otherwise.</returns>
@@ -175,7 +171,8 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 				if (selStart > textBox.Text.Length)
 					selStart--;
 				pre = textBox.Text.Substring(0, selStart);
-				post = textBox.Text.Substring(selStart + textBox.SelectionLength, textBox.Text.Length - (selStart + textBox.SelectionLength));
+				post = textBox.Text.Substring(selStart + textBox.SelectionLength,
+					textBox.Text.Length - (selStart + textBox.SelectionLength));
 			}
 			else
 			{
@@ -226,17 +223,19 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Behaviors
 			if (DecimalLimit > 0)
 			{
 				pattern = string.Format(@"^({2}?)(\d*)([{0}]?)(\d{{0,{1}}})$",
-				  NumberFormatInfo.CurrentInfo.CurrencyDecimalSeparator,
-				  DecimalLimit,
-				  signPattern);
+					NumberFormatInfo.CurrentInfo.CurrencyDecimalSeparator,
+					DecimalLimit,
+					signPattern);
 			}
 			else
 			{
-				pattern = string.Format(@"^({1}?)(\d*)([{0}]?)(\d*)$", NumberFormatInfo.CurrentInfo.CurrencyDecimalSeparator, signPattern);
+				pattern = string.Format(@"^({1}?)(\d*)([{0}]?)(\d*)$", NumberFormatInfo.CurrentInfo.CurrencyDecimalSeparator,
+					signPattern);
 			}
 
 			return pattern;
 		}
+
 		#endregion
 	}
 }

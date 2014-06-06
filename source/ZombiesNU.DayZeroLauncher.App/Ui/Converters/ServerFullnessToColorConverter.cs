@@ -16,16 +16,16 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var server = (Server) value;
-			if(server == null)
+			if (server == null)
 				return null;
 
-			if(server.FreeSlots == 0)
+			if (server.FreeSlots == 0)
 				return Full;
-			if(server.FreeSlots < 5)
+			if (server.FreeSlots < 5)
 				return NearFull;
-			if(server.MaxPlayers - server.FreeSlots < 3)
+			if (server.MaxPlayers - server.FreeSlots < 3)
 				return Empty;
-			if(server.FreeSlots >= 5)
+			if (server.FreeSlots >= 5)
 				return SomeSpace;
 
 			return Empty;

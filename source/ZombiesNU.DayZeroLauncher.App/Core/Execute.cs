@@ -6,7 +6,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	public class Execute
 	{
-		public static void OnUiThread(Action action, Dispatcher disp = null, DispatcherPriority prio = DispatcherPriority.Background)
+		public static void OnUiThread(Action action, Dispatcher disp = null,
+			DispatcherPriority prio = DispatcherPriority.Background)
 		{
 			if (disp == null)
 			{
@@ -14,11 +15,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					disp = Application.Current.Dispatcher;
 			}
 
-			if(disp != null)
+			if (disp != null)
 				disp.BeginInvoke(action, prio);
 		}
 
-		public static void OnUiThreadSync(Action action, Dispatcher disp = null, DispatcherPriority prio = DispatcherPriority.Background)
+		public static void OnUiThreadSync(Action action, Dispatcher disp = null,
+			DispatcherPriority prio = DispatcherPriority.Background)
 		{
 			if (disp == null)
 			{
@@ -28,6 +30,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			if (disp != null)
 				disp.Invoke(action, prio);
-		} 
+		}
 	}
 }

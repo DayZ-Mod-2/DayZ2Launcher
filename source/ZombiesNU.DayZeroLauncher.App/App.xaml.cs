@@ -1,71 +1,47 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
+using System.Deployment.Application;
 using System.IO;
-using System.Reflection;
-using System.Threading;
+using System.IO.Pipes;
+using System.Security.Principal;
+using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 using Caliburn.Micro;
 using zombiesnu.DayZeroLauncher.App.Core;
-using zombiesnu.DayZeroLauncher.App.Ui.Controls;
-using Microsoft.Win32;
-using System.IO.Pipes;
-using System.Deployment.Application;
-using System.Text;
-using System.Collections.Generic;
 
 namespace zombiesnu.DayZeroLauncher.App
 {
 	public partial class App : Application
 	{
 		public static EventAggregator Events = new EventAggregator();
-
-		public sealed class LaunchCommandString
-		{
-			public LaunchCommandString(string queryString)
-			{
-				QueryString = queryString;
-			}
-
-			public string QueryString;
-		}
+		private static string[] _exeArguments;
+		private bool _isUncaughtUiThreadException;
 
 		private string _pipeName;
+
 		private void StartPipeServer()
 		{
-			var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 2, PipeTransmissionMode.Message, PipeOptions.Asynchronous);
-			pipeServer.BeginWaitForConnection(new AsyncCallback(NewPipeConnection), pipeServer);
-		}
-
-		private class ReadParams
-		{
-			public ReadParams(NamedPipeServerStream pipeSvr, MemoryStream msgStr, byte[] readBuffer)
-			{
-				this.PipeSvr = pipeSvr;
-				this.MessageStr = msgStr;
-				this.ReadBuffer = readBuffer;
-			}
-
-			public NamedPipeServerStream PipeSvr;
-			public MemoryStream MessageStr;
-			public byte[] ReadBuffer;
+			var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 2, PipeTransmissionMode.Message,
+				PipeOptions.Asynchronous);
+			pipeServer.BeginWaitForConnection(NewPipeConnection, pipeServer);
 		}
 
 		private void PipeReadCallback(IAsyncResult iar)
 		{
-			var details = (ReadParams)iar.AsyncState;
-			var pipeSvr = details.PipeSvr;
-			var memStr = details.MessageStr;
-			var readBuffer = details.ReadBuffer;
+			var details = (ReadParams) iar.AsyncState;
+			NamedPipeServerStream pipeSvr = details.PipeSvr;
+			MemoryStream memStr = details.MessageStr;
+			byte[] readBuffer = details.ReadBuffer;
 
-			var numBytes = pipeSvr.EndRead(iar);
+			int numBytes = pipeSvr.EndRead(iar);
 
 			if (numBytes > 0)
-				memStr.Write(readBuffer,0,numBytes);
+				memStr.Write(readBuffer, 0, numBytes);
 
 			if (pipeSvr.IsMessageComplete)
 			{
-				var memBytes = memStr.ToArray();
+				byte[] memBytes = memStr.ToArray();
 				memStr.Dispose();
 
 				string recvStr = Encoding.UTF8.GetString(memBytes, 0, memBytes.Length);
@@ -74,12 +50,12 @@ namespace zombiesnu.DayZeroLauncher.App
 				pipeSvr.Close();
 			}
 			else
-				pipeSvr.BeginRead(readBuffer,0,readBuffer.Length,new AsyncCallback(PipeReadCallback),details);
+				pipeSvr.BeginRead(readBuffer, 0, readBuffer.Length, PipeReadCallback, details);
 		}
 
 		private void NewPipeConnection(IAsyncResult iar)
 		{
-			var pipSvr = (NamedPipeServerStream)iar.AsyncState;
+			var pipSvr = (NamedPipeServerStream) iar.AsyncState;
 			try
 			{
 				pipSvr.EndWaitForConnection(iar);
@@ -87,14 +63,15 @@ namespace zombiesnu.DayZeroLauncher.App
 				var messageStr = new MemoryStream(4096);
 				var readBuffer = new byte[4096];
 				pipSvr.BeginRead(readBuffer, 0, readBuffer.Length,
-					new AsyncCallback(PipeReadCallback), new ReadParams(pipSvr, messageStr, readBuffer));
+					PipeReadCallback, new ReadParams(pipSvr, messageStr, readBuffer));
 
 				StartPipeServer();
 			}
-			catch (ObjectDisposedException) { return; } //happens if no connection happened
+			catch (ObjectDisposedException)
+			{
+			} //happens if no connection happened
 		}
 
-		private static string[] _exeArguments = null;
 		private static string QueryParamsFromArgs(string[] whichArgs)
 		{
 			var args = new List<string>();
@@ -109,22 +86,26 @@ namespace zombiesnu.DayZeroLauncher.App
 
 			return string.Join("&", args);
 		}
+
 		public static string GetQueryParams()
 		{
 			string queryString = null;
 			if (ApplicationDeployment.IsNetworkDeployed)
 			{
-				var actUri = ApplicationDeployment.CurrentDeployment.ActivationUri;
+				Uri actUri = ApplicationDeployment.CurrentDeployment.ActivationUri;
 				if (actUri != null)
 					queryString = actUri.Query;
 				else
 				{
 					try
 					{
-						var actData = AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData;
+						string[] actData = AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData;
 						queryString = QueryParamsFromArgs(actData);
 					}
-					catch (Exception) { queryString = null; }
+					catch (Exception)
+					{
+						queryString = null;
+					}
 				}
 			}
 			else
@@ -132,8 +113,7 @@ namespace zombiesnu.DayZeroLauncher.App
 
 			if (queryString == null)
 				return "";
-			else
-				return queryString;
+			return queryString;
 		}
 
 		protected override void OnStartup(StartupEventArgs e)
@@ -146,8 +126,8 @@ namespace zombiesnu.DayZeroLauncher.App
 			AppDomain.CurrentDomain.UnhandledException += UncaughtThreadException;
 			DispatcherUnhandledException += UncaughtUiThreadException;
 
-			using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent())
-				_pipeName = String.Format("DayZeroLauncher_{{{0}}}_Instance",identity.User.ToString());
+			using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+				_pipeName = String.Format("DayZeroLauncher_{{{0}}}_Instance", identity.User);
 
 			bool secondInstance = false;
 			using (var pipeConn = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out))
@@ -161,15 +141,17 @@ namespace zombiesnu.DayZeroLauncher.App
 					string queryString = GetQueryParams();
 					if (!string.IsNullOrEmpty(queryString))
 					{
-						var bytesToWrite = Encoding.UTF8.GetBytes(queryString);
+						byte[] bytesToWrite = Encoding.UTF8.GetBytes(queryString);
 						pipeConn.Write(bytesToWrite, 0, bytesToWrite.Length);
 						pipeConn.WaitForPipeDrain();
-					}					
+					}
 					secondInstance = true;
 
 					pipeConn.Close();
 				}
-				catch (TimeoutException) {}
+				catch (TimeoutException)
+				{
+				}
 			}
 
 			if (secondInstance) //already sent message to pipe
@@ -177,7 +159,7 @@ namespace zombiesnu.DayZeroLauncher.App
 				Shutdown();
 				return;
 			}
-			
+
 			//we are the only app, start the server
 			StartPipeServer();
 
@@ -187,11 +169,12 @@ namespace zombiesnu.DayZeroLauncher.App
 
 		private void UncaughtException(Exception ex)
 		{
-			MessageBox.Show("It wasn't your fault, but something went really wrong.\r\nThe application will now exit\r\nException Details:\r\n" + ex.ToString(),
-							"Unhandled exception", MessageBoxButton.OK, MessageBoxImage.Error);
+			MessageBox.Show(
+				"It wasn't your fault, but something went really wrong.\r\nThe application will now exit\r\nException Details:\r\n" +
+				ex,
+				"Unhandled exception", MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 
-		private bool _isUncaughtUiThreadException;
 		private void UncaughtUiThreadException(object sender, DispatcherUnhandledExceptionEventArgs e)
 		{
 			_isUncaughtUiThreadException = true;
@@ -200,8 +183,32 @@ namespace zombiesnu.DayZeroLauncher.App
 
 		private void UncaughtThreadException(object sender, UnhandledExceptionEventArgs e)
 		{
-			if(!_isUncaughtUiThreadException)
+			if (!_isUncaughtUiThreadException)
 				UncaughtException(e.ExceptionObject as Exception);
+		}
+
+		public sealed class LaunchCommandString
+		{
+			public string QueryString;
+
+			public LaunchCommandString(string queryString)
+			{
+				QueryString = queryString;
+			}
+		}
+
+		private class ReadParams
+		{
+			public readonly MemoryStream MessageStr;
+			public readonly NamedPipeServerStream PipeSvr;
+			public readonly byte[] ReadBuffer;
+
+			public ReadParams(NamedPipeServerStream pipeSvr, MemoryStream msgStr, byte[] readBuffer)
+			{
+				PipeSvr = pipeSvr;
+				MessageStr = msgStr;
+				ReadBuffer = readBuffer;
+			}
 		}
 	}
 }

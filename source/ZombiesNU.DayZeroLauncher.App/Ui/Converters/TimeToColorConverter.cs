@@ -13,10 +13,10 @@ namespace zombiesnu.DayZeroLauncher.App.Ui.Converters
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			var dateTime = value as DateTime?;
-			if(value == null)
+			if (value == null)
 				return Day;
 
-			if(dateTime.Value.Hour < 5 || dateTime.Value.Hour > 19)
+			if (dateTime.Value.Hour < 5 || dateTime.Value.Hour > 19)
 			{
 				return Night;
 			}
