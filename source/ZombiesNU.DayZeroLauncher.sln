@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App", "ZombiesNU.DayZeroLauncher.App\App.csproj", "{84CB1B33-1E5C-4F82-B299-A406B85282ED}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -15,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoTorrent.Dht", "MonoTorrent.Dht\MonoTorrent.Dht.csproj", "{7A2A7E73-FD43-4171-AA34-DA413D35459E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mono.Nat", "Mono.Nat\Mono.Nat.csproj", "{F5D74163-145F-47BF-83DC-D0E07249C6CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SSQLib", "SSQLib\SSQLib.csproj", "{3F273B18-3C15-420B-BD8F-DED3E4E52996}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +91,21 @@ Global
 		{F5D74163-145F-47BF-83DC-D0E07249C6CA}.Stats|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F5D74163-145F-47BF-83DC-D0E07249C6CA}.Stats|Mixed Platforms.Build.0 = Release|Any CPU
 		{F5D74163-145F-47BF-83DC-D0E07249C6CA}.Stats|x86.ActiveCfg = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|x86.ActiveCfg = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Any CPU.ActiveCfg = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Any CPU.Build.0 = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Mixed Platforms.Build.0 = Release|Any CPU
+		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
