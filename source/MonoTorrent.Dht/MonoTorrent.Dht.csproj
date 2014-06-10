@@ -131,6 +131,6 @@
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>"$(WindowsSDK80Path)bin\x64\signtool.exe" sign /sha1 "AC26C0934EAD5F626AE6A0F92B295591DFA8A22B" /t "http://timestamp.verisign.com/scripts/timestamp.dll" "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>"$(WindowsSDK80Path)bin\x64\signtool.exe" sign /sha1 "$(SignCertificate)" /t "http://timestamp.verisign.com/scripts/timestamp.dll" "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>
