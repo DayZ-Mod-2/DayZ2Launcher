@@ -430,10 +430,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					if (Settings.ContainsKey("hostname"))
 					{
 						string oldHostname = Settings["hostname"];
-						string shortHostname = serverResult.Settings["hostname"];
+						string newHostname = serverResult.Settings["hostname"];
 
-						if (shortHostname.Length < oldHostname.Length)
-							serverResult.Settings["hostname"] = shortHostname + oldHostname.Substring(shortHostname.Length);
+						if (newHostname.Length == (64-1)) //it probably got cut off
+						{
+							if (newHostname.Length < oldHostname.Length)
+								serverResult.Settings["hostname"] = newHostname + oldHostname.Substring(newHostname.Length);
+						}						
 					}
 
 					Settings = serverResult.Settings;				
