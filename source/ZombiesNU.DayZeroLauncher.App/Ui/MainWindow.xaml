@@ -328,7 +328,7 @@
 							<Setter Property="Margin" Value="0" />
 							<Style.Triggers>
 								<Trigger Property="IsSelected" Value="True">
-									<Setter Property="Foreground" Value="#5A97F2" />
+									<Setter Property="Foreground" Value="#DED9A2" />
 								</Trigger>
 								<Trigger Property="IsSelected" Value="False">
 									<Setter Property="Foreground" Value="#999" />

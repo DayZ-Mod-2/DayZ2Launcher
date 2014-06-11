@@ -107,10 +107,10 @@
 			</Setter>
 			<Style.Triggers>
 				<Trigger Property="SortDirection" Value="Ascending">
-					<Setter Property="Foreground" Value="#5A97F2" />
+					<Setter Property="Foreground" Value="#DED9A2" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-					<Setter Property="Foreground" Value="#5A97F2" />
+					<Setter Property="Foreground" Value="#DED9A2" />
 				</Trigger>
 				<MultiTrigger>
 					<MultiTrigger.Conditions>
@@ -141,10 +141,10 @@
 			</Setter>
 			<Style.Triggers>
 				<Trigger Property="SortDirection" Value="Ascending">
-					<Setter Property="Foreground" Value="#5A97F2" />
+					<Setter Property="Foreground" Value="#DED9A2" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-					<Setter Property="Foreground" Value="#5A97F2" />
+					<Setter Property="Foreground" Value="#DED9A2" />
 				</Trigger>
 				<MultiTrigger>
 					<MultiTrigger.Conditions>
@@ -182,10 +182,10 @@
 					<Setter Property="Foreground" Value="#FFF" />
 				</MultiTrigger>
 				<Trigger Property="SortDirection" Value="Ascending">
-					<Setter Property="Foreground" Value="#5A97F2" />
+					<Setter Property="Foreground" Value="#DED9A2" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-					<Setter Property="Foreground" Value="#5A97F2" />
+					<Setter Property="Foreground" Value="#DED9A2" />
 				</Trigger>
 			</Style.Triggers>
 		</Style>
