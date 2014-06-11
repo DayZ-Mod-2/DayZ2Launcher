@@ -29,19 +29,67 @@ namespace SSQLib
     /// </summary>
     public class SSQL
     {
+		private readonly IPEndPoint _ipEnd = null;
+		private uint _challenge = 0xFFFFFFFF;
+
         /// <summary>
         /// Generates an SSQL object with default values
         /// </summary>
-        public SSQL()
+		/// <param name="ip_end">The IPEndPoint object storing the IP address and port of the server</param>
+		public SSQL(IPEndPoint ip_end)
         {
-
+			_ipEnd = ip_end;
         }
+
+		private static ushort ReadUint16(byte[] buf, ref uint i)
+		{
+			ushort outVal = System.BitConverter.ToUInt16(buf, (int)i);
+			i += sizeof(ushort); //move over the bytes we just read
+			return outVal;
+		}
+
+		private static int ReadInt32(byte[] buf, ref uint i)
+		{
+			int outVal = System.BitConverter.ToInt32(buf, (int)i);
+			i += sizeof(int); //move over the bytes we just read
+			return outVal;
+		}
+
+		private static uint ReadUint32(byte[] buf, ref uint i)
+		{
+			uint outVal = System.BitConverter.ToUInt32(buf, (int)i);
+			i += sizeof(uint); //move over the bytes we just read
+			return outVal;
+		}
+
+		private static ulong ReadUint64(byte[] buf, ref uint i)
+		{
+			ulong outVal = System.BitConverter.ToUInt64(buf, (int)i);
+			i += sizeof(ulong); //move over the bytes we just read
+			return outVal;
+		}
+
+		private static float ReadFloat(byte[] buf, ref uint i)
+		{
+			float outVal = System.BitConverter.ToSingle(buf, (int)i);
+			i += sizeof(float); //move over the bytes we just read
+			return outVal;
+		}
+
+		private static string ReadString(byte[] buf, ref uint i)
+		{
+			var startPos = i;
+			while (buf[i] != 0x00) { i++; }
+			var length = (i++) - startPos; //++ to move over the null terminator
+
+			return Encoding.UTF8.GetString(buf, (int)startPos, (int)length);
+		}
+
         /// <summary>
         /// Pings the specified Source server to retreive information about it such as the server name, max players, current number of players, etc.
         /// </summary>
-        /// <param name="ip_end">The IPEndPoint object containing the IP address and port of the server</param>
         /// <returns>Information about the server or throws an SSQLServerException if it could not be retreived</returns>
-        public ServerInfo Server(IPEndPoint ip_end)
+        public ServerInfo Server()
         {
             //Create a new empty server info object
             ServerInfo info = new ServerInfo();
@@ -56,15 +104,17 @@ namespace SSQLib
             try
             {
                 //Attempt to get the server info
-                buf = SocketUtils.getInfo(ip_end, requestPacket);
+				buf = SocketUtils.getInfo(_ipEnd, requestPacket);
             }
             catch(SSQLServerException e)
             {
                 throw e;
             }
 
-            //Start past the first four bytes which are all 0xff
-            int i = 4;
+			//Record the IP the packet came from
+			info.IP = _ipEnd.Address.ToString();
+
+            uint i = 0;
 
             //Make sure the first character is an I
             if (buf[i++] != 'I') return null;
@@ -72,65 +122,20 @@ namespace SSQLib
             //Make sure the returned version is above 0x07
             if (buf[i++] < 0x07) return null;
 
-            StringBuilder srvName = new StringBuilder();
-
-            //Retrieve the server name
-            while (buf[i] != 0x00)
-            {
-                srvName.Append((char)buf[i]);
-                i++;
-            }
-
-            //Move to the next byte
-            i++;
-
             //Set the name of the server
-            info.Name = srvName.ToString();
+			info.Name = ReadString(buf,ref i);
 
-            StringBuilder mapName = new StringBuilder();
-
-            //Retrieve the map name
-            while (buf[i] != 0x00)
-            {
-                mapName.Append((char)buf[i]);
-                i++;
-            }
-
-            //Move to the next byte
-            i++;
-
-            info.Map = mapName.ToString();
-
-            StringBuilder gameName = new StringBuilder();
+			//Set the name of the map
+            info.Map = ReadString(buf, ref i);
 
             //Get the short name for the game
-            while (buf[i] != 0x00)
-            {
-                gameName.Append((char)buf[i]);
-                i++;
-            }
-
-            //Move to the next byte
-            i++;
-
-            StringBuilder gameFriendly = new StringBuilder();
+			info.Folder = ReadString(buf, ref i);
 
             //Get the friendly game description
-            while (buf[i] != 0x00)
-            {
-                gameFriendly.Append((char)buf[i]);
-                i++;
-            }
+			info.Game = ReadString(buf, ref i);
 
-            //Move to the next byte
-            i++;
-
-            info.Game = gameFriendly.ToString() + " (" + gameName.ToString() + ")";
-
-            short appID = (short)System.BitConverter.ToInt16(buf, i);
-
-            //Skip the next 2 bytes
-            i += 2;
+			//read the appId of the game
+			var appID = ReadUint16(buf, ref i);
 
             //Store the app id
             info.AppID = appID.ToString();
@@ -145,20 +150,20 @@ namespace SSQLib
             info.BotCount = buf[i++].ToString();
 
             //Get the dedicated server type
-            if ((char)buf[i] == 'l')
+            if (buf[i] == 'l')
                 info.Dedicated = ServerInfo.DedicatedType.LISTEN;
-            else if ((char)buf[i] == 'd')
+            else if (buf[i] == 'd')
                 info.Dedicated = ServerInfo.DedicatedType.DEDICATED;
-            else if ((char)buf[i] == 'p')
+            else if (buf[i] == 'p')
                 info.Dedicated = ServerInfo.DedicatedType.SOURCETV;
 
             //Move to the next byte
             i++;
 
             //Get the OS type
-            if ((char)buf[i] == 'l')
+            if (buf[i] == 'l')
                 info.OS = ServerInfo.OSType.LINUX;
-            else if ((char)buf[i] == 'w')
+            else if (buf[i] == 'w')
                 info.OS = ServerInfo.OSType.WINDOWS;
 
             //Move to the next byte
@@ -170,89 +175,111 @@ namespace SSQLib
             //Check for VAC
             if (buf[i++] == 0x01) info.VAC = true;
 
-            StringBuilder versionInfo = new StringBuilder();
+			//Get the game version
+			info.Version = ReadString(buf, ref i);
 
-            //Get the game version
-            while (buf[i] != 0x00)
-            {
-                versionInfo.Append((char)buf[i]);
-                i++;
-            }
+			//get EDF
+			uint edf = buf[i++];
 
-            //Move to the next byte
-            i++;
+			if ((edf & 0x80) != 0) //has port number
+			{
+				ushort portNumber = ReadUint16(buf, ref i);
+				info.Port = portNumber.ToString();
+			}
 
-            //Set the version
-            info.Version = versionInfo.ToString();
+			if ((edf & 0x10) != 0) //has server SteamId
+			{
+				ulong serverSteamId = ReadUint64(buf, ref i);
+				info.SteamID = serverSteamId.ToString();
+			}
+
+			if ((edf & 0x40) != 0) //has spectator port number and name
+			{
+				//we currently arent storing these anywhere as they aren't needed
+
+				ushort sourceTvPort = ReadUint16(buf, ref i);
+				string sourceTvName = ReadString(buf, ref i);				
+			}
+
+			if ((edf & 0x20) != 0) //has keywords
+			{
+				info.Keywords = ReadString(buf, ref i);
+			}
+
+			if ((edf & 0x01) != 0) //has higher precision GameID
+			{
+				ulong gameId = ReadUint64(buf, ref i);
+				ulong preciseAppId = gameId & 0xFFFFFF; //lower 24-bits contain the appId
+				info.AppID = preciseAppId.ToString();
+			}
+
+			//should be at the end of the packet now
 
             return info;
         }
 
+		private byte[] PerformBigRequest(byte opcode)
+		{
+			//Create a request packet
+			byte[] rqstBytes = new byte[9];
+			rqstBytes[0] = (byte)0xff;
+			rqstBytes[1] = (byte)0xff;
+			rqstBytes[2] = (byte)0xff;
+			rqstBytes[3] = (byte)0xff;
+			rqstBytes[4] = (byte)opcode;
+			rqstBytes[5] = (byte)((_challenge >> 0) & 0xFF);
+			rqstBytes[6] = (byte)((_challenge >> 8) & 0xFF);
+			rqstBytes[7] = (byte)((_challenge >> 16) & 0xFF);
+			rqstBytes[8] = (byte)((_challenge >> 24) & 0xFF);
+
+			byte[] buf = null;
+			try
+			{
+				//Attempt to get the response
+				buf = SocketUtils.getInfo(_ipEnd, rqstBytes);
+			}
+			catch (SSQLServerException e)
+			{
+				throw e;
+			}
+
+			uint i = 0;
+			if (buf[i] == 'A') //if we need to resend the request with new challenge
+			{
+				i++; //move over the A
+				_challenge = ReadUint32(buf, ref i); //read the challenge we got
+
+				//put the challenge into the request
+				rqstBytes[5] = (byte)((_challenge >> 0) & 0xFF);
+				rqstBytes[6] = (byte)((_challenge >> 8) & 0xFF);
+				rqstBytes[7] = (byte)((_challenge >> 16) & 0xFF);
+				rqstBytes[8] = (byte)((_challenge >> 24) & 0xFF);
+
+				try
+				{
+					//Get the actual response
+					buf = SocketUtils.getInfo(_ipEnd, rqstBytes);
+				}
+				catch (SSQLServerException e)
+				{
+					throw e;
+				}
+			}
+
+			return buf;
+		}
+
         /// <summary>
         /// Retreives information about the players on a Source server
         /// </summary>
-        /// <param name="ip_end">The IPEndPoint object storing the IP address and port of the server</param>
-        /// <returns>An ArrayList of PlayerInfo or throws an SSQLServerException if the server could not be reached</returns>
-        public ArrayList Players(IPEndPoint ip_end)
+        /// <returns>A List of PlayerInfo or throws an SSQLServerException if the server could not be reached</returns>
+        public List<PlayerInfo> Players()
         {
-            //Create a new array list to store the player array
-            ArrayList players = new ArrayList();
+            //Create a new list to store the player array
+            var players = new List<PlayerInfo>();
 
-            //Create a new buffer to receive packets
-            byte[] buf = null;
-
-            //Create a challenge packet
-            byte[] challenge = new byte[9];
-            challenge[0] = (byte)0xff;
-            challenge[1] = (byte)0xff;
-            challenge[2] = (byte)0xff;
-            challenge[3] = (byte)0xff;
-            challenge[4] = (byte)0x55;
-            challenge[5] = (byte)0x00;
-            challenge[6] = (byte)0x00;
-            challenge[7] = (byte)0x00;
-            challenge[8] = (byte)0x00;
-
-            try
-            {
-                //Attempt to get the challenge response
-                buf = SocketUtils.getInfo(ip_end, challenge);
-            }
-            catch (SSQLServerException e)
-            {
-                throw e;
-            }
-
-            int i = 4;            
-
-            //Make sure the response starts with A
-            if (buf[i++] != 'A') return null;
-
-            //Create the new request with the challenge number
-            byte[] requestPlayer = new byte[9];
-
-            requestPlayer[0] = (byte)0xff;
-            requestPlayer[1] = (byte)0xff;
-            requestPlayer[2] = (byte)0xff;
-            requestPlayer[3] = (byte)0xff;
-            requestPlayer[4] = (byte)0x55;
-            requestPlayer[5] = buf[i++];
-            requestPlayer[6] = buf[i++];
-            requestPlayer[7] = buf[i++];
-            requestPlayer[8] = buf[i++];
-
-            try
-            {
-                //Attempt to get the players response
-                buf = SocketUtils.getInfo(ip_end, requestPlayer);
-            }
-            catch (SSQLServerException)
-            {
-                return null;
-            }
-
-            //Start past 0xffffffff
-            i = 4;
+			byte[] buf = PerformBigRequest((byte)'U');
+			uint i = 0;
 
             //Make sure the response starts with D
             if (buf[i++] != 'D') return null;
@@ -269,31 +296,13 @@ namespace SSQLib
                 //Set the index of the player (Does not work in L4D2, always returns 0)
                 newPlayer.Index = buf[i++];
 
-                //Create a new player name
-                StringBuilder playerName = new StringBuilder();
+                newPlayer.Name = ReadString(buf, ref i);
 
-                //Loop through and store the player's name
-                while (buf[i] != 0x00)
-                {
-                    playerName.Append((char)buf[i++]);
-                }
-
-                //Move past the end of the string
-                i++;
-
-                newPlayer.Name = playerName.ToString();
-
-                //Get the kills and store them in the player info
-                newPlayer.Kills = (int)(buf[i] & 255) | ((buf[i + 1] & 255) << 8) | ((buf[i + 2] & 255) << 16) | ((buf[i + 3] & 255) << 24);
-
-                //Move to the next item
-                i += 5;
+                //Get the score and store them in the player info
+                newPlayer.Score = ReadInt32(buf, ref i);
 
                 //Get the time connected as a float and store it in the player info
-                newPlayer.Time = (float)((int)(buf[i] & 255) | ((buf[i + 1] & 255) << 8));
-
-                //Move past the float
-                i += 3;
+                newPlayer.Time = ReadFloat(buf, ref i);
 
                 //Add the player to the list
                 players.Add(newPlayer);
@@ -302,5 +311,36 @@ namespace SSQLib
             //Return the list of players
             return players;
         }
+
+		/// <summary>
+		/// Retreives information about the rules on a Source server
+		/// </summary>
+		/// <returns>A Dictionary of string,string or throws an SSQLServerException if the server could not be reached</returns>
+		public Dictionary<string,string> Rules()
+		{
+			//Create a new dict to store the rules into
+			Dictionary<string, string> rules = new Dictionary<string, string>();
+
+			byte[] buf = PerformBigRequest((byte)'V');
+			uint i = 0;
+
+			//Make sure the response starts with E
+			if (buf[i++] != 'E') return null;
+
+			//Get the amount of rules
+			ushort numRules = ReadUint16(buf, ref i);
+
+			//Loop through each rule and add it to the dict
+			for (int ii = 0; ii < numRules; ii++)
+			{
+				string k = ReadString(buf, ref i);
+				string v = ReadString(buf, ref i);
+
+				rules.Add(k, v);
+			}
+
+			//Return the rules
+			return rules;
+		}
     }
 }

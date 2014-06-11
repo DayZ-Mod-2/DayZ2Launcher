@@ -29,11 +29,7 @@ namespace SSQLib
     {
         private string name = "";
         private int index = -9999;
-        private int kills = -9999;
-        private int deaths = -9999;
         private int score = -9999;
-        private int ping = -9999;
-        private int rate = -9999;
         private float time = 0.0f;
 
         /// <summary>
@@ -58,36 +54,6 @@ namespace SSQLib
         }
 
         /// <summary>
-        /// The amount of kills the player has (default: -9999)
-        /// </summary>
-        public int Kills
-        {
-            get { 
-                return this.kills; 
-            }
-
-            set { 
-                this.kills = value; 
-            }
-        }
-
-        /// <summary>
-        /// The amount of deaths the player has (default: -9999)
-        /// </summary>
-        public int Deaths
-        {
-            get
-            {
-                return this.deaths;
-            }
-
-            set
-            {
-                this.deaths = value;
-            }
-        }
-
-        /// <summary>
         /// The score of the player (default: -9999)
         /// </summary>
         public int Score
@@ -100,38 +66,6 @@ namespace SSQLib
             set
             {
                 this.score = value;
-            }
-        }
-
-        /// <summary>
-        /// The ping of the player (default: -9999)
-        /// </summary>
-        public int Ping
-        {
-            get
-            {
-                return this.ping;
-            }
-
-            set
-            {
-                this.ping = value;
-            }
-        }
-
-        /// <summary>
-        /// The rate(?) of the player (default: -9999)
-        /// </summary>
-        public int Rate
-        {
-            get
-            {
-                return this.rate;
-            }
-
-            set
-            {
-                this.rate = value;
             }
         }
 

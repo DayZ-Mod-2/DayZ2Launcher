@@ -30,10 +30,13 @@ namespace SSQLib
         private string name = "";
         private string ip = "";
         private string port = "";
+		private string steamId = "";
         private string game = "";
+		private string folder = "";
         private string gameVersion = "";
         private string appID = "";
         private string map = "";
+		private string keywords = "";
         private string playerCount = "";
         private string botCount = "";
         private string maxPlayers = "";
@@ -96,8 +99,24 @@ namespace SSQLib
             }
         }
 
+		/// <summary>
+		/// The SteamID of the account running the server
+		/// </summary>
+		public string SteamID
+		{
+			get
+			{
+				return this.steamId;
+			}
+
+			set
+			{
+				this.steamId = value;
+			}
+		}
+
         /// <summary>
-        /// The game being played on the server (i.e. Team Fortress (tf))
+        /// The friendly name of the game being played on the server
         /// </summary>
         public string Game
         {
@@ -111,6 +130,22 @@ namespace SSQLib
                 this.game = value;
             }
         }
+
+		/// <summary>
+		/// The folder name of the game/mod being played on the server
+		/// </summary>
+		public string Folder
+		{
+			get
+			{
+				return this.folder;
+			}
+
+			set
+			{
+				this.folder = value;
+			}
+		}
 
         /// <summary>
         /// The game version running on the server
@@ -143,6 +178,22 @@ namespace SSQLib
                 this.map = value;
             }
         }
+
+		/// <summary>
+		/// Keyword description of the game played on the server
+		/// </summary>
+		public string Keywords
+		{
+			get
+			{
+				return this.keywords;
+			}
+
+			set
+			{
+				this.keywords = value;
+			}
+		}
 
         /// <summary>
         /// The current player count on the server
