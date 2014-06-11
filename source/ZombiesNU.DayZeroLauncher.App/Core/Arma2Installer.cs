@@ -56,15 +56,15 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				}
 				catch (ArgumentException aex)
 				{
-					bool overridenPath = string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
+					bool overridenPath = !string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
 
 					Execute.OnUiThreadSync(() =>
 					{
 						var popup = new InfoPopup("Invalid path", MainWindow.GetWindow(view));
 						popup.Headline.Content = "Game could not be found";
 						popup.SetMessage(overridenPath
-							? "Invalid game override path, please enter a new game path or remove it"
-							: "Game could not located via the registry, please enter an override path");
+							? "Please verify your game override paths."
+							: "Complete install by starting game from Steam.");
 
 						popup.Show();
 					}, null, DispatcherPriority.Input);
