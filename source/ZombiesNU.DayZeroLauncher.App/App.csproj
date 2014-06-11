@@ -112,7 +112,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>AC26C0934EAD5F626AE6A0F92B295591DFA8A22B</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>05737E3850657E7B58B6464C2E959374A4091C28</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>
@@ -455,7 +455,12 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\SSQLib\SSQLib.csproj">
+      <Project>{3f273b18-3c15-420b-bd8f-ded3e4e52996}</Project>
+      <Name>SSQLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.  -->

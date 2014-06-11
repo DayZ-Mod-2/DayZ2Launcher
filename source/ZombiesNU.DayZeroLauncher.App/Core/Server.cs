@@ -13,9 +13,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 		private readonly string _ipAddress;
+		private readonly int _queryPort;
 		private readonly string _mod;
 		private readonly string _password;
-		private readonly int _port;
+		private int _port; //can be updated by queryClient
 		private readonly ServerQueryClient _queryClient;
 		public string LastException;
 		private Version _arma2Version;
@@ -29,22 +30,24 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		private ObservableCollection<Player> _players;
 		private SortedDictionary<string, string> _settings;
 
-		public Server(string ipAddress, int port, string password, string mod)
+		public Server(string ipAddress, int port, string password, string mod, int queryPort)
 		{
 			_ipAddress = ipAddress;
+			_queryPort = queryPort;
 			_port = port;
 			_password = password;
 			_mod = mod;
 
-			_queryClient = new ServerQueryClient(this, ipAddress, port);
+			_queryClient = new ServerQueryClient(this, ipAddress, queryPort);
 			Settings = new SortedDictionary<string, string>();
 			Players = new ObservableCollection<Player>();
 			Info = new ServerInfo(null, null);
 		}
 
+		//unique id for hashing and putting in sets (that doesn't change)
 		public string Id
 		{
-			get { return _ipAddress + _port; }
+			get { return "[" + _ipAddress + "]" + ":" + _queryPort; }
 		}
 
 		public string Name

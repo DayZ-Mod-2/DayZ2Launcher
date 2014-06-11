@@ -120,10 +120,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				.Split('\n').Select(line =>
 				{
 					string[] serverInfo = line.Split(';');
-					var server = new Server("", 0, "", "");
-					if (serverInfo.Count() > 4)
+					var server = new Server("", 0, "", "",0);
+					if (serverInfo.Count() > 5)
 					{
-						server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4]);
+						server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4], serverInfo[5].TryInt());
 					}
 
 					server.Settings = new SortedDictionary<string, string>
