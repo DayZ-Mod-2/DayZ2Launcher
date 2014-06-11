@@ -47,7 +47,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			if (steamBeta)
 			{
 				const int appId = 33930;
-				string gameName = "Arma 2: Operation Arrowhead Beta";
+				string gameName = "ArmA 2: Operation Arrowhead";
 				DirectoryInfo armaPath = null;
 
 				try
@@ -93,7 +93,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 									{
 										steamPid = (int)steamKey.GetValue("SteamPID", "");
 										steamKey.Close();
-								}
+									}
 								}
 								catch (Exception)
 								{
@@ -125,8 +125,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 										var popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
 										popup.Headline.Content = "Game update using Steam";
 										popup.SetMessage(gameName + " might be corrupted.\n" +
-										                 "Please validate your client files manually.\n" +
-										                 "Or by clicking on the following link:");
+										                 "Please click the following link to validate:");
 										popup.SetLink("steam://validate/" + appId.ToString() + "/", "Update " + gameName);
 										popup.Closed += (sender, args) => view.CheckForUpdates();
 										popup.Show();
@@ -147,8 +146,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 										{
 											var popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
 											popup.Headline.Content = "Game update using Steam";
-											popup.SetMessage(gameName + " branch switched to BETA.\n" +
-											                 "Please restart Steam to download update.");
+											popup.SetMessage(gameName + " switched to BETA.\n" +
+											                 "Please click the following link to validate:");
+											popup.SetLink("steam://validate/" + appId + "/", "Update " + gameName);
 											popup.Closed += (sender, args) => view.CheckForUpdates();
 											popup.Show();
 										}, null, DispatcherPriority.Input);
