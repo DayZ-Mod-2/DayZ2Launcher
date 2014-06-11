@@ -265,7 +265,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					pathInfo = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
 				}
-				catch (ArgumentException aex)
+				catch (ArgumentException)
 				{
 					bool overridenPath = string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
 
