@@ -2,9 +2,11 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using SharpCompress.Common;
 using SharpCompress.Reader;
 using SteamKit2;
@@ -79,22 +81,34 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						if (File.Exists(fullManifestPath))
 						{
 							// Kill Steam so we can edit the game configuration.
-							Process[] processes = Process.GetProcessesByName("Steam");
-
-							foreach (Process process in processes)
+							using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
 							{
-								// #YOLO
+								var perm = RegistryKeyPermissionCheck.Default;
+								var rights = RegistryRights.QueryValues;
+								Int32 steamPid;
+
 								try
 								{
-									process.Kill();
-									process.WaitForExit();
+									using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
+									{
+										steamPid = (int)steamKey.GetValue("SteamPID", "");
+										steamKey.Close();
 								}
-								catch
+								}
+								catch (Exception)
 								{
-									MessageBox.Show("Unable to shut down steam to start patching.",
+									MessageBox.Show("Unable to find Steam Process ID.",
 										"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 									return;
+								} //no steam key found
+
+								try
+								{
+									Process steam = Process.GetProcessById(steamPid);
+									steam.Kill();
+									steam.WaitForExit();
 								}
+								catch (Exception) {}
 							}
 
 							var acfKeys = new KeyValue();
