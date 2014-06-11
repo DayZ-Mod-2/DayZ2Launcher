@@ -123,7 +123,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					var server = new Server("", 0, "", "",0);
 					if (serverInfo.Count() > 5)
 					{
-						server = new Server(serverInfo[1], serverInfo[2].TryInt(), serverInfo[3], serverInfo[4], serverInfo[5].TryInt());
+						string queryHostname = serverInfo[1];
+						ushort joinPort = (ushort)serverInfo[2].TryInt();
+						string password = serverInfo[3];
+						string mod = serverInfo[4];
+						ushort queryPort = (ushort)serverInfo[5].TryInt();
+
+						server = new Server(queryHostname, joinPort, password, mod, queryPort);
 					}
 
 					server.Settings = new SortedDictionary<string, string>

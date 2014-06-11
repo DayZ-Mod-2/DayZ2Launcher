@@ -16,8 +16,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public RecentServer(Server server, DateTime on)
 		{
 			_on = @on;
-			_ipAddress = server.IpAddress;
-			_port = server.Port;
+			_ipAddress = server.QueryHost;
+			_port = server.QueryPort;
 			_name = server.Name;
 		}
 
@@ -43,7 +43,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public bool Matches(Server server)
 		{
-			return server.IpAddress == _ipAddress && server.Port == _port;
+			return server.QueryHost == _ipAddress && server.QueryPort == _port;
 		}
 
 		/*public Server CreateServer()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 
@@ -12,11 +13,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static Regex ServerTimeRegex = new Regex(@"((GmT|Utc)[\s]*(?<Offset>([+]|[-])[\s]?[\d]{1,2})?)",
 			RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-		private readonly string _ipAddress;
-		private readonly int _queryPort;
+		private readonly string _queryHost;
+		private readonly ushort _queryPort;
 		private readonly string _mod;
 		private readonly string _password;
-		private int _port; //can be updated by queryClient
+		private IPAddress _joinIpAddress; //can be updated by queryClient
+		private ushort _joinPort; //can be updated by queryClient
 		private readonly ServerQueryClient _queryClient;
 		public string LastException;
 		private Version _arma2Version;
@@ -30,15 +32,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		private ObservableCollection<Player> _players;
 		private SortedDictionary<string, string> _settings;
 
-		public Server(string ipAddress, int port, string password, string mod, int queryPort)
+		public Server(string hostname, ushort port, string password, string mod, ushort queryPort)
 		{
-			_ipAddress = ipAddress;
+			_queryHost = hostname;
 			_queryPort = queryPort;
-			_port = port;
+
+			_joinIpAddress = null;
+			_joinPort = port;
+
 			_password = password;
 			_mod = mod;
 
-			_queryClient = new ServerQueryClient(this, ipAddress, queryPort);
+			_queryClient = new ServerQueryClient(this, _queryHost, _queryPort);
 			Settings = new SortedDictionary<string, string>();
 			Players = new ObservableCollection<Player>();
 			Info = new ServerInfo(null, null);
@@ -47,7 +52,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		//unique id for hashing and putting in sets (that doesn't change)
 		public string Id
 		{
-			get { return "[" + _ipAddress + "]" + ":" + _queryPort; }
+			get { return "[" + QueryHost + "]" + ":" + QueryPort; }
 		}
 
 		public string Name
@@ -56,13 +61,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			{
 				if (string.IsNullOrEmpty(_name))
 				{
-					_name = CleanServerName(HostName);
+					_name = CleanServerName(ServerName);
 				}
 				return _name;
 			}
 		}
 
-		public string HostName
+		public string ServerName
 		{
 			get
 			{
@@ -228,11 +233,33 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		public string IpAddress
+		public IPAddress JoinAddress
 		{
-			get { return _ipAddress; }
+			get 
+			{
+				if (_joinIpAddress == null)
+					_joinIpAddress = Dns.GetHostAddresses(QueryHost)[0];
+
+				return _joinIpAddress;
+			}
+			set { _joinIpAddress = value; }
 		}
 
+		public ushort JoinPort
+		{
+			get { return _joinPort;	}
+			set { _joinPort = value; }
+		}
+
+		public string QueryHost
+		{
+			get { return _queryHost; }
+		}
+
+		public ushort QueryPort
+		{
+			get { return _queryPort; }
+		}
 
 		public string Mod
 		{
@@ -264,11 +291,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public bool IsEmpty
 		{
 			get { return CurrentPlayers == null || CurrentPlayers == 0; }
-		}
-
-		public int Port
-		{
-			get { return _port; }
 		}
 
 		public string LastJoinedOn
@@ -361,8 +383,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		{
 			if (other == null)
 				return false;
-			return (other.IpAddress == IpAddress
-			        && other.Port == Port);
+
+			if (other.QueryPort != QueryPort)
+				return false;
+
+			return other.QueryHost.Equals(QueryHost, StringComparison.OrdinalIgnoreCase);
 		}
 
 		public void NotifyGameVersionChanged()
@@ -372,7 +397,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public bool MatchesIpPort(string ipAddr, int port)
 		{
-			return (IpAddress.Equals(ipAddr.Trim(), StringComparison.OrdinalIgnoreCase) && Port == port);
+			if (JoinPort != port)
+				return false;
+
+			IPAddress ourIpAddress = Dns.GetHostAddresses(ipAddr.Trim())[0];
+			return JoinAddress.Equals(ourIpAddress);
 		}
 
 		private string GetSettingOrDefault(string settingName)
@@ -392,6 +421,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				ServerQueryResult serverResult = _queryClient.Execute();
 				Execute.OnUiThread(() =>
 				{
+					JoinAddress = serverResult.IP;
+					JoinPort = serverResult.Port;
 					Players = new ObservableCollection<Player>(serverResult.Players.OrderBy(x => x.Name));
 					LastException = null;
 					Settings = serverResult.Settings;

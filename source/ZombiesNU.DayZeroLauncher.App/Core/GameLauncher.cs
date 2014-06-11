@@ -337,8 +337,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			arguments.Append(" -noSplash -noFilePatching");
 			if (server != null)
 			{
-				arguments.Append(" -connect=" + server.IpAddress);
-				arguments.Append(" -port=" + server.Port);
+				arguments.Append(" -connect=" + server.JoinAddress.ToString());
+				arguments.Append(" -port=" + server.JoinPort.ToString());
 				if (!string.IsNullOrWhiteSpace(server.Password))
 					arguments.Append(" -password=" + server.Password);
 			}

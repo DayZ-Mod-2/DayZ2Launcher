@@ -500,7 +500,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		private static string GetNoteFileName(Server server)
 		{
-			return Path.Combine(NotesPath, string.Format("{0}_{1}.txt", server.IpAddress.Replace(".", "_"), server.Port));
+			return Path.Combine(NotesPath, string.Format("{0}_{1}.txt", server.QueryHost.Replace(".", "_"), server.QueryPort));
 		}
 
 		public bool HasNotes(Server server)

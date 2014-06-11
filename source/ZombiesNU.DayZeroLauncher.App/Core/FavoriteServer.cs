@@ -11,14 +11,14 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public FavoriteServer(Server server)
 		{
-			_ipAddress = server.IpAddress;
-			_port = server.Port;
+			_ipAddress = server.QueryHost;
+			_port = server.QueryPort;
 			_name = server.Name;
 		}
 
 		public bool Matches(Server server)
 		{
-			return server.IpAddress == _ipAddress && server.Port == _port;
+			return server.QueryHost == _ipAddress && server.QueryPort == _port;
 		}
 
 		/*

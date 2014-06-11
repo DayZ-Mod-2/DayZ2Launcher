@@ -11,7 +11,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public string Hash
 		{
-			get { return _server.IpAddress + Name; }
+			get { return _server.Id + "(" + Name + ")"; }
 		}
 
 		public string Name { get; set; }

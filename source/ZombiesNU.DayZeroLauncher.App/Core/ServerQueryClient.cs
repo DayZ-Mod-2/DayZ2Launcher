@@ -12,22 +12,23 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 	public class ServerQueryClient
 	{
 		private readonly Server _server;
-		private readonly string _ipAddress;
-		private readonly int _queryport;		
+		private readonly string _queryHost;
+		private readonly ushort _queryPort;		
 
-		public ServerQueryClient(Server server, string ipAddress, int queryPort)
+		public ServerQueryClient(Server server, string _querHost, ushort queryPort)
 		{
 			_server = server;
-			_ipAddress = ipAddress;
-			_queryport = queryPort;
+			_queryHost = _querHost;
+			_queryPort = queryPort;
 		}
 
 		public ServerQueryResult Execute()
 		{
-			var ipaddress = Dns.GetHostAddresses(_ipAddress)[0];
+			var ipaddress = Dns.GetHostAddresses(_queryHost)[0];
+			var ipendpoint = new IPEndPoint(ipaddress, _queryPort);
 
 			var pingTimer = new Stopwatch();
-			var infoRetriever = new SSQLib.SSQL(new IPEndPoint(ipaddress, _queryport));		
+			var infoRetriever = new SSQLib.SSQL(ipendpoint);		
 
 			pingTimer.Start();
 			var serverInfo = infoRetriever.Server();
@@ -158,6 +159,8 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			return new ServerQueryResult
 			{
+				IP = IPAddress.Parse(serverInfo.IP),
+				Port = ushort.Parse(serverInfo.Port),
 				Settings = settings,
 				Players = players,
 				Ping = pingTimer.ElapsedMilliseconds
