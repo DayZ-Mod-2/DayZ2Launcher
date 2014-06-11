@@ -425,7 +425,18 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					JoinPort = serverResult.Port;
 					Players = new ObservableCollection<Player>(serverResult.Players.OrderBy(x => x.Name));
 					LastException = null;
-					Settings = serverResult.Settings;
+
+					//Ugly hack to go around 63 char limit, remove when fixed
+					if (Settings.ContainsKey("hostname"))
+					{
+						string oldHostname = Settings["hostname"];
+						string shortHostname = serverResult.Settings["hostname"];
+
+						if (shortHostname.Length < oldHostname.Length)
+							serverResult.Settings["hostname"] = shortHostname + oldHostname.Substring(shortHostname.Length);
+					}
+
+					Settings = serverResult.Settings;				
 					Ping = serverResult.Ping;
 					App.Events.Publish(new ServerUpdated(this, supressRefresh));
 				});
