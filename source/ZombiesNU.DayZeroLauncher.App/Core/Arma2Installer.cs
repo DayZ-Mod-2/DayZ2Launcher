@@ -85,13 +85,13 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							{
 								var perm = RegistryKeyPermissionCheck.Default;
 								var rights = RegistryRights.QueryValues;
-								Int32 steamPid;
+								int steamPid;
 
 								try
 								{
 									using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
 									{
-										steamPid = (int)steamKey.GetValue("SteamPID", "");
+										steamPid = (int)steamKey.GetValue("SteamPID");
 										steamKey.Close();
 									}
 								}
@@ -100,23 +100,31 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 									MessageBox.Show("Unable to find Steam Process ID.",
 										"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 									return;
-								} //no steam key found
+								} //no steam pid key found
 
-								try
+								if (steamPid != null)
 								{
-									Process steam = Process.GetProcessById(steamPid);
-									steam.Kill();
-									steam.WaitForExit();
+									try
+									{
+										Process steam = Process.GetProcessById(steamPid);
+										steam.Kill();
+										steam.WaitForExit();
+									}
+									catch (Exception) { }									
 								}
-								catch (Exception) {}
+
+								Thread.Sleep(250);
 							}
 
 							var acfKeys = new KeyValue();
-							var reader = new StreamReader(fullManifestPath);
-							var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
-							reader.Close();
-							KeyValue currentBuild = acfKeys.Children.FirstOrDefault(k => k.Name == "buildid");
-							if (!String.IsNullOrEmpty(currentBuild.Value))
+							using (var reader = new StreamReader(fullManifestPath))
+							{
+								var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
+								acfReader.Close();
+							}
+
+							KeyValue currentBuild = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("buildid", StringComparison.OrdinalIgnoreCase));
+							if (currentBuild != null)
 							{
 								if (Equals(currentBuild.Value, steamBuild))
 								{
@@ -133,26 +141,40 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 								}
 								else
 								{
-									KeyValue gameState = acfKeys.Children.FirstOrDefault(k => k.Name == "StateFlags");
-									if (!String.IsNullOrEmpty(gameState.Value))
+									KeyValue gameState = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("StateFlags", StringComparison.OrdinalIgnoreCase));
+									if (gameState == null)
 									{
-										currentBuild.Value = steamBuild;
-										gameState.Value = "2";
-										acfKeys.SaveToFile(fullManifestPath, false);
-
-										Thread.Sleep(1000);
-
-										Execute.OnUiThreadSync(() =>
-										{
-											var popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
-											popup.Headline.Content = "Game update using Steam";
-											popup.SetMessage(gameName + " switched to BETA.\n" +
-											                 "Please click the following link to validate:");
-											popup.SetLink("steam://validate/" + appId + "/", "Update " + gameName);
-											popup.Closed += (sender, args) => view.CheckForUpdates();
-											popup.Show();
-										}, null, DispatcherPriority.Input);
+										gameState = new KeyValue("StateFlags");
+										acfKeys.Children.Add(gameState);
 									}
+									KeyValue autoUpdate = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("AutoUpdateBehavior", StringComparison.OrdinalIgnoreCase));
+									if (autoUpdate == null)
+									{
+										autoUpdate = new KeyValue("AutoUpdateBehavior");
+										acfKeys.Children.Add(autoUpdate);
+									}
+
+									currentBuild.Value = steamBuild;
+									gameState.Value = "2"; // Needs updating.
+									autoUpdate.Value = "1"; // No auto update.
+
+									KeyValue userConfig = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("UserConfig", StringComparison.OrdinalIgnoreCase));
+									if (userConfig != null)
+									{
+										KeyValue betaKey = userConfig.Children.FirstOrDefault(k => k.Name.Equals("BetaKey", StringComparison.OrdinalIgnoreCase));
+										if (betaKey == null)
+										{
+											betaKey = new KeyValue("BetaKey");
+											userConfig.Children.Add(betaKey);
+										}
+
+										betaKey.Value = "beta";
+									}
+
+									acfKeys.SaveToFile(fullManifestPath, false);
+									Thread.Sleep(250);
+
+									Process.Start("explorer.exe", @"steam://run/" + appId + "/");
 								}
 							}
 							else
@@ -186,7 +208,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
 						"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-					return;
 				}
 			}
 			else
