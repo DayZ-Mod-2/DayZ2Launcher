@@ -102,7 +102,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 									return;
 								} //no steam pid key found
 
-								if (steamPid != null)
+								if (steamPid != 0)
 								{
 									try
 									{
