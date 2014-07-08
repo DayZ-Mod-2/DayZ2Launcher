@@ -31,12 +31,12 @@
     <ProductName>DayZero Launcher</ProductName>
     <PublisherName>ZOMBIES.NU</PublisherName>
     <SuiteName>DayZero</SuiteName>
-    <MinimumRequiredVersion>1.4.2.53</MinimumRequiredVersion>
+    <MinimumRequiredVersion>1.4.3.55</MinimumRequiredVersion>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>runnow.html</WebPage>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>53</ApplicationRevision>
-    <ApplicationVersion>1.4.2.53</ApplicationVersion>
+    <ApplicationRevision>62</ApplicationRevision>
+    <ApplicationVersion>1.4.5.62</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
