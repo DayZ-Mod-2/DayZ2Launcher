@@ -87,6 +87,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					{
 						SteamPath = (string) steamKey.GetValue("InstallPath", "");
 						steamKey.Close();
+						steamKey.Dispose();
 					}
 				}
 				catch (Exception)
