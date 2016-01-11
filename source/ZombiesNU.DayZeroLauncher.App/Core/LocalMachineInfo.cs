@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Deployment.Application;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 using Microsoft.Win32;
+using SteamKit2;
 
 // ReSharper disable InconsistentNaming
 
@@ -178,9 +180,112 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						}
 					}
 				}
-				catch (Exception) //no bohemia key found
+				catch (Exception)
 				{
 					Arma2Path = "";
+					Arma2OAPath = "";
+				}
+				// Try to find out game paths using steam.
+				if (!string.IsNullOrWhiteSpace(SteamPath))
+				{
+					string steamAppsDir = Path.Combine(SteamPath,"SteamApps");
+					string defaultLibraryDir = Path.Combine(steamAppsDir,"common");
+
+					if (string.IsNullOrWhiteSpace(Arma2Path))
+					{
+						const int appId = 33910; // ArmA2
+						string manifestName = "appmanifest_" + appId.ToString() + ".acf";
+						string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
+
+						try
+						{
+							var acfKeys = new KeyValue();
+							using (var reader = new StreamReader(fullManifestPath))
+							{
+								var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
+								acfReader.Close();
+							}
+							// Look for "appinstalldir" in the manifest file...
+							KeyValue userConfig = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("UserConfig", StringComparison.OrdinalIgnoreCase));
+							if (userConfig != null)
+							{
+								KeyValue appInstallDir = userConfig.Children.FirstOrDefault(k => k.Name.Equals("appinstalldir", StringComparison.OrdinalIgnoreCase));
+								if (appInstallDir != null)
+								{
+									if (Directory.Exists(appInstallDir.Value))
+									{
+										Arma2Path = appInstallDir.Value;
+									}
+								}
+							}
+							// If we can't find the full path, let's try to construct it...
+							if (string.IsNullOrWhiteSpace(Arma2Path))
+							{
+								KeyValue installDir = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("installdir", StringComparison.OrdinalIgnoreCase));
+								string constructedArmaPath = Path.Combine(defaultLibraryDir, installDir.Value);
+								if (Directory.Exists(constructedArmaPath))
+								{
+									Arma2Path = constructedArmaPath;
+								}
+							}
+						}
+						catch (Exception)
+						{
+							Arma2Path = "";
+						}
+					}
+
+					if (string.IsNullOrWhiteSpace(Arma2OAPath))
+					{
+						const int appId = 33930; // ArmA2OA
+						string manifestName = "appmanifest_" + appId.ToString() + ".acf";
+						string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
+
+						try
+						{
+							var acfKeys = new KeyValue();
+							using (var reader = new StreamReader(fullManifestPath))
+							{
+								var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
+								acfReader.Close();
+							}
+							// Look for "appinstalldir" in the manifest file...
+							KeyValue userConfig = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("UserConfig", StringComparison.OrdinalIgnoreCase));
+							if (userConfig != null)
+							{
+								KeyValue appInstallDir = userConfig.Children.FirstOrDefault(k => k.Name.Equals("appinstalldir", StringComparison.OrdinalIgnoreCase));
+								if (appInstallDir != null)
+								{
+									if (Directory.Exists(appInstallDir.Value))
+									{
+										Arma2OAPath = appInstallDir.Value;
+									}
+								}
+							}
+							// If we can't find the full path, let's try to construct it...
+							if (string.IsNullOrWhiteSpace(Arma2OAPath))
+							{
+								KeyValue installDir = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("installdir", StringComparison.OrdinalIgnoreCase));
+								string constructedArmaPath = Path.Combine(defaultLibraryDir, installDir.Value);
+								if (Directory.Exists(constructedArmaPath))
+								{
+									Arma2OAPath = constructedArmaPath;
+								}
+							}
+						}
+						catch (Exception)
+						{
+							Arma2OAPath = "";
+						}
+					}
+				}
+				// Well, crap...
+				if (string.IsNullOrWhiteSpace(Arma2Path))
+				{
+					Arma2Path = "";
+				}
+				if (string.IsNullOrWhiteSpace(Arma2OAPath))
+				{
 					Arma2OAPath = "";
 				}
 			}
