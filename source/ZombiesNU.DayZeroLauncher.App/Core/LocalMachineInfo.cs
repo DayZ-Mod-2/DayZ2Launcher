@@ -150,6 +150,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						} // No ArmA2OA key found.
 
 						bohemiaKey.Close();
+						bohemiaKey.Dispose();
 					}
 
 					// Try and figure out one's path based on the other...
