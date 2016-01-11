@@ -85,15 +85,23 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				{
 					using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
 					{
-						SteamPath = (string) steamKey.GetValue("InstallPath", "");
+						string possibleSteamPath = (string) steamKey.GetValue("InstallPath", "");
 						steamKey.Close();
 						steamKey.Dispose();
+						if (Directory.Exists(possibleSteamPath))
+						{
+							SteamPath = possibleSteamPath;
+						}
+						else
+						{
+							SteamPath = "";
+						}
 					}
 				}
 				catch (Exception)
 				{
 					SteamPath = "";
-				} //no steam key found
+				} // No Steam..? We need steam!
 
 				try
 				{
@@ -102,38 +110,58 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						try
 						{
 							RegistryKey arma2Key = bohemiaKey.OpenSubKey("ArmA 2", perm, rights);
-							Arma2Path = (string) arma2Key.GetValue("main", "");
+							string possibleArma2Path = (string)arma2Key.GetValue("main", "");
 							arma2Key.Close();
 							arma2Key.Dispose();
+							if (Directory.Exists(possibleArma2Path))
+							{
+								Arma2Path = possibleArma2Path;
+							}
+							else
+							{
+								Arma2Path = "";
+							}
 						}
 						catch (Exception)
 						{
 							Arma2Path = "";
-						} //no arma2 key found
+						} // No ArmA2 key found. Not started?
 
 						try
 						{
 							RegistryKey oaKey = bohemiaKey.OpenSubKey("ArmA 2 OA", perm, rights);
-							Arma2OAPath = (string) oaKey.GetValue("main", "");
+							string possibleArma2OAPath = (string)oaKey.GetValue("main", "");
 							oaKey.Close();
 							oaKey.Dispose();
+							if (Directory.Exists(possibleArma2OAPath))
+							{
+								Arma2OAPath = possibleArma2OAPath;
+							}
+							else
+							{
+								Arma2OAPath = "";
+							}
 						}
 						catch (Exception)
 						{
 							Arma2OAPath = "";
-						} //no arma2oa key found
+						} // No ArmA2OA key found.
 
 						bohemiaKey.Close();
 					}
 
-					//Try and figure out one's path based on the other
+					// Try and figure out one's path based on the other...
 					if (string.IsNullOrWhiteSpace(Arma2Path)
 					    && !string.IsNullOrWhiteSpace(Arma2OAPath))
 					{
 						var pathInfo = new DirectoryInfo(Arma2OAPath);
 						if (pathInfo.Parent != null)
 						{
-							Arma2Path = Path.Combine(pathInfo.Parent.FullName, "arma 2");
+							string possibleArma2Path = Path.Combine(pathInfo.Parent.FullName, "arma 2");
+							if (Directory.Exists(possibleArma2Path))
+							{
+								Arma2Path = possibleArma2Path;
+							}
 						}
 					}
 					if (!string.IsNullOrWhiteSpace(Arma2Path)
@@ -142,7 +170,11 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						var pathInfo = new DirectoryInfo(Arma2Path);
 						if (pathInfo.Parent != null)
 						{
-							Arma2OAPath = Path.Combine(pathInfo.Parent.FullName, "arma 2 operation arrowhead");
+							string possibleArma2OAPath = Path.Combine(pathInfo.Parent.FullName, "arma 2 operation arrowhead");
+							if (Directory.Exists(possibleArma2OAPath))
+							{
+								Arma2OAPath = possibleArma2OAPath;
+							}
 						}
 					}
 				}
