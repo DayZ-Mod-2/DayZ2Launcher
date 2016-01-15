@@ -172,8 +172,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 					if (string.IsNullOrWhiteSpace(Arma2Path))
 					{
-						const int appId = 33910; // ArmA2
-						const string manifestName = "appmanifest_33910.acf";
+						const string manifestName = "appmanifest_33910.acf"; // ArmA2
 						string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
 
 						if (File.Exists(fullManifestPath))
@@ -215,8 +214,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 					if (string.IsNullOrWhiteSpace(Arma2OAPath))
 					{
-						const int appId = 33930; // ArmA2OA
-						const string manifestName = "appmanifest_33930.acf";
+						const string manifestName = "appmanifest_33930.acf"; // ArmA2OA
 						string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
 
 						if (File.Exists(fullManifestPath))
