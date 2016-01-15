@@ -8,7 +8,6 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 {
 	internal class GUIDCalculator
 	{
-		private const int appId = 33930;
 		private const string Arma2AppManifestFile = "appmanifest_33930.acf";
 
 		private static string MD5Hex(byte[] bytes)
