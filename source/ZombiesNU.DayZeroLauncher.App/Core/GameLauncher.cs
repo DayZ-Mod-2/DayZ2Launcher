@@ -260,64 +260,37 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					return false;
 				}
 
-				int appId = 33930;
+				DirectoryInfo steamPath;
+				const int appId = 33930; // ArmA2OA
+				const string manifestName = "appmanifest_33930.acf";
 
-				DirectoryInfo pathInfo = null;
+				steamPath = new DirectoryInfo(LocalMachineInfo.Current.SteamPath);
+				string steamAppsDir = Path.Combine(steamPath.FullName, "SteamApps");
+				string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
 
-				try
+				if (!File.Exists(fullManifestPath))
 				{
-					pathInfo = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
-				}
-				catch (ArgumentException)
-				{
-					bool overridenPath = string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
-
 					Execute.OnUiThreadSync(() =>
 					{
-						var popup = new InfoPopup("Invalid Path To Arma2: OA", parentWnd);
-						popup.Headline.Content = "Game path could not be located";
-						popup.SetMessage(overridenPath
-							? "Invalid Game override path, please enter a new game path or remove it"
-							: "Game could not located via the registry, please enter an override path");
-
+						var popup = new InfoPopup("User intervention required", parentWnd);
+						popup.Headline.Content = "Game couldn't be launched";
+						popup.SetMessage("According to Steam,\n" +
+								            gameName + " is not installed.\n" +
+								            "Please install it from the Library tab.\n" +
+								            "Or by clicking on the following link:");
+						popup.SetLink("steam://install/" + appId + "/", "Install " + gameName);
 						popup.Show();
 					}, null, DispatcherPriority.Input);
 
 					return false;
 				}
 
-				for (pathInfo = pathInfo.Parent; pathInfo != null; pathInfo = pathInfo.Parent)
-				{
-					if (pathInfo.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
-					{
-						string manifestName = "appmanifest_" + appId + ".acf";
-						string fullManifestPath = Path.Combine(pathInfo.FullName, manifestName);
-						if (!File.Exists(fullManifestPath))
-						{
-							Execute.OnUiThreadSync(() =>
-							{
-								var popup = new InfoPopup("User intervention required", parentWnd);
-								popup.Headline.Content = "Game couldn't be launched";
-								popup.SetMessage("According to Steam,\n" +
-								                 gameName + " is not installed.\n" +
-								                 "Please install it from the Library tab.\n" +
-								                 "Or by clicking on the following link:");
-								popup.SetLink("steam://install/" + appId + "/", "Install " + gameName);
-								popup.Show();
-							}, null, DispatcherPriority.Input);
-
-							return false;
-						}
-						break;
-					}
-				}
-				if (pathInfo == null)
+				if (string.IsNullOrWhiteSpace(steamPath.FullName))
 				{
 					MessageBox.Show("Steam launch impossible, '" + gameName + "' isn't located inside a SteamLibrary folder.",
 						"Game launch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 					return false;
 				}
-				pathInfo = null;
 
 				arguments.Append(" -applaunch " + appId);
 			}

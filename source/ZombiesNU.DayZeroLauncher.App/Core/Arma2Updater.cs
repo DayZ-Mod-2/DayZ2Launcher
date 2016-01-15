@@ -137,8 +137,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 		public void InstallLatestVersion(UpdatesView view)
 		{
-			Installer.DownloadAndInstall(_latestServerVersion.Version, _latestServerVersion.Archive,
-				_latestServerVersion.SteamBeta, _latestServerVersion.SteamBuild, view);
+			Installer.DownloadAndInstall(_latestServerVersion.Version, _latestServerVersion.SteamBeta, _latestServerVersion.SteamBuild, view);
 		}
 
 		private void SetLatestServerVersion(PatchesMeta.PatchInfo newPatchInfo)
@@ -166,10 +165,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			public class PatchInfo
 			{
-				[JsonProperty("archive")] public readonly HashWebClient.RemoteFileInfo Archive = null;
-
 				[JsonProperty("steambeta")] public bool SteamBeta = false;
-
 				[JsonProperty("steambuild")] public string SteamBuild = "";
 				[JsonProperty("version")] public int Version = 0;
 			}

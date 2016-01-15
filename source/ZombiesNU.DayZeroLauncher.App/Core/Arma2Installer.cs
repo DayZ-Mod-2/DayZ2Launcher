@@ -7,8 +7,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
 using Microsoft.Win32;
-using SharpCompress.Common;
-using SharpCompress.Reader;
 using SteamKit2;
 using zombiesnu.DayZeroLauncher.App.Ui;
 using zombiesnu.DayZeroLauncher.App.Ui.Controls;
@@ -41,269 +39,173 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			}
 		}
 
-		public void DownloadAndInstall(int revision, HashWebClient.RemoteFileInfo archiveInfo, bool steamBeta,
+		public void DownloadAndInstall(int revision, bool steamBeta,
 			string steamBuild, UpdatesView view)
 		{
-			if (steamBeta)
+			const int appId = 33930;
+			string gameName = "ArmA 2: Operation Arrowhead";
+			DirectoryInfo steamPath;
+
+			try
 			{
-				const int appId = 33930;
-				string gameName = "ArmA 2: Operation Arrowhead";
-				DirectoryInfo armaPath = null;
-
-				try
+				steamPath = new DirectoryInfo(LocalMachineInfo.Current.SteamPath);
+			}
+			catch (ArgumentException)
+			{
+				Execute.OnUiThreadSync(() =>
 				{
-					armaPath = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
-				}
-				catch (ArgumentException)
-				{
-					bool overridenPath = !string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
+					var popup = new InfoPopup("Invalid path", MainWindow.GetWindow(view));
+					popup.Headline.Content = "Steam could not be found";
+					popup.SetMessage("Are you sure you have Steam installed?");
+					popup.Show();
+				}, null, DispatcherPriority.Input);
 
-					Execute.OnUiThreadSync(() =>
+				return;
+			}
+
+			if (steamPath.Exists)
+			{
+				string steamAppsDir = Path.Combine(steamPath.FullName, "SteamApps");
+				string manifestName = "appmanifest_33930.acf";
+
+				string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
+
+				if (File.Exists(fullManifestPath))
+				{
+					// Kill Steam so we can edit the game configuration.
+					using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
 					{
-						var popup = new InfoPopup("Invalid path", MainWindow.GetWindow(view));
-						popup.Headline.Content = "Game could not be found";
-						popup.SetMessage(overridenPath
-							? "Please verify your game override paths."
-							: "Complete install by starting game from Steam.");
+						var perm = RegistryKeyPermissionCheck.Default;
+						var rights = RegistryRights.QueryValues;
+						int steamPid;
 
-						popup.Show();
-					}, null, DispatcherPriority.Input);
-
-					return;
-				}
-
-				for (armaPath = armaPath.Parent; armaPath != null; armaPath = armaPath.Parent)
-				{
-					if (armaPath.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
-					{
-						string manifestName = "appmanifest_" + appId.ToString() + ".acf";
-						string fullManifestPath = Path.Combine(armaPath.FullName, manifestName);
-						if (File.Exists(fullManifestPath))
+						try
 						{
-							// Kill Steam so we can edit the game configuration.
-							using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+							using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
 							{
-								var perm = RegistryKeyPermissionCheck.Default;
-								var rights = RegistryRights.QueryValues;
-								int steamPid;
-
-								try
-								{
-									using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
-									{
-										steamPid = (int)steamKey.GetValue("SteamPID");
-										steamKey.Close();
-									}
-								}
-								catch (Exception)
-								{
-									MessageBox.Show("Unable to find Steam Process ID.",
-										"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-									return;
-								} //no steam pid key found
-
-								if (steamPid != 0)
-								{
-									try
-									{
-										Process steam = Process.GetProcessById(steamPid);
-										steam.Kill();
-										steam.WaitForExit();
-									}
-									catch (Exception) { }									
-								}
-
-								Thread.Sleep(250);
+								steamPid = (int)steamKey.GetValue("SteamPID");
+								steamKey.Close();
+								steamKey.Dispose();
 							}
-
-							var acfKeys = new KeyValue();
-							using (var reader = new StreamReader(fullManifestPath))
-							{
-								var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
-								acfReader.Close();
-							}
-
-							KeyValue currentBuild = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("buildid", StringComparison.OrdinalIgnoreCase));
-							if (currentBuild != null)
-							{
-								if (Equals(currentBuild.Value, steamBuild))
-								{
-									Execute.OnUiThreadSync(() =>
-									{
-										var popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
-										popup.Headline.Content = "Game update using Steam";
-										popup.SetMessage(gameName + " might be corrupted.\n" +
-										                 "Please click the following link to validate:");
-										popup.SetLink("steam://validate/" + appId.ToString() + "/", "Update " + gameName);
-										popup.Closed += (sender, args) => view.CheckForUpdates();
-										popup.Show();
-									}, null, DispatcherPriority.Input);
-								}
-								else
-								{
-									KeyValue gameState = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("StateFlags", StringComparison.OrdinalIgnoreCase));
-									if (gameState == null)
-									{
-										gameState = new KeyValue("StateFlags");
-										acfKeys.Children.Add(gameState);
-									}
-									KeyValue autoUpdate = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("AutoUpdateBehavior", StringComparison.OrdinalIgnoreCase));
-									if (autoUpdate == null)
-									{
-										autoUpdate = new KeyValue("AutoUpdateBehavior");
-										acfKeys.Children.Add(autoUpdate);
-									}
-
-									currentBuild.Value = steamBuild;
-									gameState.Value = "2"; // Needs updating.
-									autoUpdate.Value = "1"; // No auto update.
-
-									KeyValue userConfig = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("UserConfig", StringComparison.OrdinalIgnoreCase));
-									if (userConfig != null)
-									{
-										KeyValue betaKey = userConfig.Children.FirstOrDefault(k => k.Name.Equals("BetaKey", StringComparison.OrdinalIgnoreCase));
-										if (betaKey == null)
-										{
-											betaKey = new KeyValue("BetaKey");
-											userConfig.Children.Add(betaKey);
-										}
-
-										betaKey.Value = "beta";
-									}
-
-									acfKeys.SaveToFile(fullManifestPath, false);
-									Thread.Sleep(250);
-
-									Process.Start("explorer.exe", @"steam://run/" + appId + "/");
-								}
-							}
-							else
-							{
-								MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
-									"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-								return;
-							}
-
-							return;
 						}
-						else
+						catch (Exception)
+						{
+							MessageBox.Show("Unable to find Steam Process ID.",
+								"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+							return;
+						} //no steam pid key found
+
+						if (steamPid != 0)
+						{
+							try
+							{
+								Process steam = Process.GetProcessById(steamPid);
+								steam.Kill();
+								steam.WaitForExit();
+							}
+							catch (Exception) { }									
+						}
+
+						Thread.Sleep(250);
+					}
+
+					var acfKeys = new KeyValue();
+					using (var reader = new StreamReader(fullManifestPath))
+					{
+						var acfReader = new KVTextReader(acfKeys, reader.BaseStream);
+						acfReader.Close();
+					}
+
+					KeyValue currentBuild = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("buildid", StringComparison.OrdinalIgnoreCase));
+					if (currentBuild != null)
+					{
+						if (Equals(currentBuild.Value, steamBuild))
 						{
 							Execute.OnUiThreadSync(() =>
 							{
 								var popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
 								popup.Headline.Content = "Game update using Steam";
-								popup.SetMessage(gameName + " is not installed.\n" +
-								                 "Please install it from the Library tab.\n" +
-								                 "Or by clicking on the following link:");
-								popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
+								popup.SetMessage(gameName + " might be corrupted.\n" +
+										            "Please click the following link to validate:");
+								popup.SetLink("steam://validate/" + appId.ToString() + "/", "Update " + gameName);
 								popup.Closed += (sender, args) => view.CheckForUpdates();
 								popup.Show();
 							}, null, DispatcherPriority.Input);
+						}
+						else
+						{
+							KeyValue gameState = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("StateFlags", StringComparison.OrdinalIgnoreCase));
+							if (gameState == null)
+							{
+								gameState = new KeyValue("StateFlags");
+								acfKeys.Children.Add(gameState);
+							}
+							KeyValue autoUpdate = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("AutoUpdateBehavior", StringComparison.OrdinalIgnoreCase));
+							if (autoUpdate != null)
+							{
+								autoUpdate.Value = "0"; // Auto update.
+							}
 
-							return;
+							currentBuild.Value = steamBuild;
+							gameState.Value = "2"; // Needs updating.
+
+							KeyValue userConfig = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("UserConfig", StringComparison.OrdinalIgnoreCase));
+							if (userConfig != null)
+							{
+								KeyValue betaKey = userConfig.Children.FirstOrDefault(k => k.Name.Equals("BetaKey", StringComparison.OrdinalIgnoreCase));
+								if (betaKey == null)
+								{
+									betaKey = new KeyValue("BetaKey");
+									userConfig.Children.Add(betaKey);
+								}
+
+								if (steamBeta)
+								{
+									betaKey.Value = "beta";
+								}
+								else
+								{
+									betaKey.Value = "";
+								}
+							}
+
+							acfKeys.SaveToFile(fullManifestPath, false);
+							Thread.Sleep(250);
+
+							Process.Start("explorer.exe", @"steam://run/" + appId + "/");
 						}
 					}
+					else
+					{
+						MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
+							"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+						return;
+					}
+
+					return;
 				}
-				if (armaPath == null)
+				else
 				{
-					MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
-						"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+					Execute.OnUiThreadSync(() =>
+					{
+						var popup = new InfoPopup("User intervention required", MainWindow.GetWindow(view));
+						popup.Headline.Content = "Game update using Steam";
+						popup.SetMessage(gameName + " is not installed.\n" +
+								            "Please install it from the Library tab.\n" +
+								            "Or by clicking on the following link:");
+						popup.SetLink("steam://install/" + appId.ToString() + "/", "Install " + gameName);
+						popup.Closed += (sender, args) => view.CheckForUpdates();
+						popup.Show();
+					}, null, DispatcherPriority.Input);
+
+					return;
 				}
 			}
 			else
 			{
-				DownloadAndInstall(revision, archiveInfo);
+				MessageBox.Show("Patching failed, '" + gameName + "' is not located inside a SteamLibrary folder.",
+					"Patch error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
 			}
-		}
-
-		public void DownloadAndInstall(int revision, HashWebClient.RemoteFileInfo archiveInfo)
-		{
-			IsRunning = true;
-			Status = "Getting file info...";
-
-			string extractedFolderLocation = Path.Combine(UserSettings.PatchesPath, revision.ToString());
-			string zipFileLocation = extractedFolderLocation + ".zip";
-
-			var wc = new HashWebClient();
-			wc.DownloadProgressChanged +=
-				(sender, args) => { Status = string.Format("Downloading... {0}%", args.ProgressPercentage); };
-			wc.DownloadFileCompleted += (sender, args) =>
-			{
-				if (args.Error != null)
-				{
-					Status = "Error: " + args.Error.Message;
-					IsRunning = false;
-					return;
-				}
-				ExtractFile(zipFileLocation, extractedFolderLocation);
-			};
-			wc.BeginDownload(archiveInfo, zipFileLocation);
-		}
-
-		private void ExtractFile(string zipFilename, string outputFolder)
-		{
-			new Thread(() =>
-			{
-				try
-				{
-					Status = DayZeroLauncherUpdater.STATUS_EXTRACTING;
-					Directory.CreateDirectory(outputFolder);
-					using (FileStream stream = File.OpenRead(zipFilename))
-					{
-						using (IReader reader = ReaderFactory.Open(stream))
-						{
-							while (reader.MoveToNextEntry())
-							{
-								if (reader.Entry.IsDirectory)
-									continue;
-
-								string fileName = Path.GetFileName(reader.Entry.FilePath);
-								if (string.IsNullOrEmpty(fileName))
-									continue;
-
-
-								reader.WriteEntryToDirectory(outputFolder, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
-								if (fileName.EndsWith(".exe"))
-								{
-									var p = new Process
-									{
-										StartInfo =
-										{
-											CreateNoWindow = false,
-											UseShellExecute = true,
-											WorkingDirectory = outputFolder,
-											FileName = Path.Combine(outputFolder, fileName)
-										}
-									};
-									p.Start();
-									Status = DayZeroLauncherUpdater.STATUS_INSTALLING;
-									p.WaitForExit();
-								}
-							}
-						}
-					}
-
-					Status = DayZeroLauncherUpdater.STATUS_INSTALLCOMPLETE;
-					Execute.OnUiThreadSync(() => CalculatedGameSettings.Current.Update(), null, DispatcherPriority.Input);
-				}
-				catch (Exception)
-				{
-					Status = "Could not complete";
-					IsRunning = false;
-				}
-
-				try
-				{
-					Directory.Delete(outputFolder, true);
-				}
-				catch (Exception)
-				{
-					Status = "Could not complete";
-					IsRunning = false;
-				}
-
-				IsRunning = false;
-			}).Start();
 		}
 	}
 }
