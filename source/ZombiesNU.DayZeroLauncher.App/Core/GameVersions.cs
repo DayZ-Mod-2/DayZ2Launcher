@@ -50,9 +50,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 	public class GameVersion
 	{
-		public string DirPath = null;
-		public string ExePath = null;
-		public Version ExeVersion = null;
+		public string DirPath;
+		public string ExePath;
+		public Version ExeVersion;
 
 		public GameVersion(string gameDir)
 		{
