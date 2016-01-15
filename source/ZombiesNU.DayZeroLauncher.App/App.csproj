@@ -112,7 +112,7 @@
     <GenerateManifests>true</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>AC26C0934EAD5F626AE6A0F92B295591DFA8A22B</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>186DF29D81512FADDF279C5F8CF0EFF2C223CAF9</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestKeyFile>
