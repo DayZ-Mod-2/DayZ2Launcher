@@ -30,14 +30,12 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			DirectoryInfo steamConfig;
 			string result = "";
 
-			steamConfig = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
-			for (steamConfig = steamConfig.Parent; steamConfig != null; steamConfig = steamConfig.Parent)
+			steamConfig = new DirectoryInfo(LocalMachineInfo.Current.SteamPath);
+			string steamAppsDir = Path.Combine(steamConfig.FullName, "SteamApps");
+
+			if (Directory.Exists(steamAppsDir))
 			{
-				if (steamConfig.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
-				{
-					result = steamConfig.FullName;
-					break;
-				}
+				result = steamAppsDir;
 			}
 			return result;
 		}
