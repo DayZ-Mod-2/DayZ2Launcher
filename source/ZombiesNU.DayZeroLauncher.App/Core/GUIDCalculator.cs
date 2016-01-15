@@ -79,9 +79,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						result = MD5Hex(parts);
 					}
 				}
-				catch (Exception)
-				{
-				}
+				catch (Exception) {}
 			}
 			return result;
 		}
