@@ -231,14 +231,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					throw new NullReferenceException();
 
 				exePath = bestVer.ExePath;
-				if (bestVer.Equals(versions.Beta))
-				{
-					gameName = "Arma 2: Operation Arrowhead Beta";
-				}
-				else
-				{
-					gameName = "Arma 2: Operation Arrowhead";
-				}
+				gameName = "Arma 2: Operation Arrowhead";
 
 				if (bestVer.BuildNo >= 125402) // Beta where BE launcher was introduced.
 				{
