@@ -83,9 +83,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				var perm = RegistryKeyPermissionCheck.Default;
 				var rights = RegistryRights.QueryValues;
 
-				try
+				using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
 				{
-					using (RegistryKey steamKey = baseKey.OpenSubKey("SOFTWARE\\Valve\\Steam", perm, rights))
+					if (steamKey != null)
 					{
 						string possibleSteamPath = (string) steamKey.GetValue("InstallPath", "");
 						steamKey.Close();
@@ -94,24 +94,21 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 						{
 							SteamPath = possibleSteamPath;
 						}
-						else
-						{
-							SteamPath = "";
-						}
 					}
 				}
-				catch (Exception)
+
+				if (string.IsNullOrWhiteSpace(SteamPath))
 				{
 					SteamPath = "";
-				} // No Steam..? We need steam!
+				}
 
-				try
+				using (RegistryKey bohemiaKey = baseKey.OpenSubKey("SOFTWARE\\Bohemia Interactive Studio", perm, rights))
 				{
-					using (RegistryKey bohemiaKey = baseKey.OpenSubKey("SOFTWARE\\Bohemia Interactive Studio", perm, rights))
+					if (bohemiaKey != null)
 					{
-						try
+						RegistryKey arma2Key = bohemiaKey.OpenSubKey("ArmA 2", perm, rights);
+						if (arma2Key != null)
 						{
-							RegistryKey arma2Key = bohemiaKey.OpenSubKey("ArmA 2", perm, rights);
 							string possibleArma2Path = (string)arma2Key.GetValue("main", "");
 							arma2Key.Close();
 							arma2Key.Dispose();
@@ -119,75 +116,56 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							{
 								Arma2Path = possibleArma2Path;
 							}
-							else
-							{
-								Arma2Path = "";
-							}
 						}
-						catch (Exception)
-						{
-							Arma2Path = "";
-						} // No ArmA2 key found. Not started?
 
-						try
+						RegistryKey oaKey = bohemiaKey.OpenSubKey("ArmA 2 OA", perm, rights);
+						if (oaKey != null)
 						{
-							RegistryKey oaKey = bohemiaKey.OpenSubKey("ArmA 2 OA", perm, rights);
-							string possibleArma2OAPath = (string)oaKey.GetValue("main", "");
+							string possibleArma2OAPath = (string) oaKey.GetValue("main", "");
 							oaKey.Close();
 							oaKey.Dispose();
 							if (Directory.Exists(possibleArma2OAPath))
 							{
 								Arma2OAPath = possibleArma2OAPath;
 							}
-							else
-							{
-								Arma2OAPath = "";
-							}
 						}
-						catch (Exception)
-						{
-							Arma2OAPath = "";
-						} // No ArmA2OA key found.
 
 						bohemiaKey.Close();
 						bohemiaKey.Dispose();
 					}
+				}
 
-					// Try and figure out one's path based on the other...
-					if (string.IsNullOrWhiteSpace(Arma2Path)
-					    && !string.IsNullOrWhiteSpace(Arma2OAPath))
-					{
-						var pathInfo = new DirectoryInfo(Arma2OAPath);
-						if (pathInfo.Parent != null)
-						{
-							string possibleArma2Path = Path.Combine(pathInfo.Parent.FullName, "arma 2");
-							if (Directory.Exists(possibleArma2Path))
-							{
-								Arma2Path = possibleArma2Path;
-							}
-						}
-					}
-					if (!string.IsNullOrWhiteSpace(Arma2Path)
-					    && string.IsNullOrWhiteSpace(Arma2OAPath))
-					{
-						var pathInfo = new DirectoryInfo(Arma2Path);
-						if (pathInfo.Parent != null)
-						{
-							string possibleArma2OAPath = Path.Combine(pathInfo.Parent.FullName, "arma 2 operation arrowhead");
-							if (Directory.Exists(possibleArma2OAPath))
-							{
-								Arma2OAPath = possibleArma2OAPath;
-							}
-						}
-					}
-				}
-				catch (Exception)
+				// Try and figure out one's path based on the other...
+				if (string.IsNullOrWhiteSpace(Arma2Path)
+					&& !string.IsNullOrWhiteSpace(Arma2OAPath))
 				{
-					Arma2Path = "";
-					Arma2OAPath = "";
+					var pathInfo = new DirectoryInfo(Arma2OAPath);
+					if (pathInfo.Parent != null)
+					{
+						string possibleArma2Path = Path.Combine(pathInfo.Parent.FullName, "arma 2");
+						if (Directory.Exists(possibleArma2Path))
+						{
+							Arma2Path = possibleArma2Path;
+						}
+					}
 				}
+
+				if (!string.IsNullOrWhiteSpace(Arma2Path)
+					&& string.IsNullOrWhiteSpace(Arma2OAPath))
+				{
+					var pathInfo = new DirectoryInfo(Arma2Path);
+					if (pathInfo.Parent != null)
+					{
+						string possibleArma2OAPath = Path.Combine(pathInfo.Parent.FullName, "arma 2 operation arrowhead");
+						if (Directory.Exists(possibleArma2OAPath))
+						{
+							Arma2OAPath = possibleArma2OAPath;
+						}
+					}
+				}
+
 				// Try to find out game paths using steam.
-				if (!string.IsNullOrWhiteSpace(SteamPath))
+				if (!string.IsNullOrWhiteSpace(SteamPath) && (string.IsNullOrWhiteSpace(Arma2Path) || string.IsNullOrWhiteSpace(Arma2OAPath)))
 				{
 					string steamAppsDir = Path.Combine(SteamPath,"SteamApps");
 					string defaultLibraryDir = Path.Combine(steamAppsDir,"common");
@@ -195,10 +173,10 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 					if (string.IsNullOrWhiteSpace(Arma2Path))
 					{
 						const int appId = 33910; // ArmA2
-						string manifestName = "appmanifest_" + appId.ToString() + ".acf";
+						const string manifestName = "appmanifest_33910.acf";
 						string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
 
-						try
+						if (File.Exists(fullManifestPath))
 						{
 							var acfKeys = new KeyValue();
 							using (var reader = new StreamReader(fullManifestPath))
@@ -223,26 +201,25 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							if (string.IsNullOrWhiteSpace(Arma2Path))
 							{
 								KeyValue installDir = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("installdir", StringComparison.OrdinalIgnoreCase));
-								string constructedArmaPath = Path.Combine(defaultLibraryDir, installDir.Value);
-								if (Directory.Exists(constructedArmaPath))
+								if (installDir != null)
 								{
-									Arma2Path = constructedArmaPath;
+									string constructedArmaPath = Path.Combine(defaultLibraryDir, installDir.Value);
+									if (Directory.Exists(constructedArmaPath))
+									{
+										Arma2Path = constructedArmaPath;
+									}
 								}
 							}
-						}
-						catch (Exception)
-						{
-							Arma2Path = "";
 						}
 					}
 
 					if (string.IsNullOrWhiteSpace(Arma2OAPath))
 					{
 						const int appId = 33930; // ArmA2OA
-						string manifestName = "appmanifest_" + appId.ToString() + ".acf";
+						const string manifestName = "appmanifest_33930.acf";
 						string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
 
-						try
+						if (File.Exists(fullManifestPath))
 						{
 							var acfKeys = new KeyValue();
 							using (var reader = new StreamReader(fullManifestPath))
@@ -267,16 +244,15 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 							if (string.IsNullOrWhiteSpace(Arma2OAPath))
 							{
 								KeyValue installDir = acfKeys.Children.FirstOrDefault(k => k.Name.Equals("installdir", StringComparison.OrdinalIgnoreCase));
-								string constructedArmaPath = Path.Combine(defaultLibraryDir, installDir.Value);
-								if (Directory.Exists(constructedArmaPath))
+								if (installDir != null)
 								{
-									Arma2OAPath = constructedArmaPath;
+									string constructedArmaPath = Path.Combine(defaultLibraryDir, installDir.Value);
+									if (Directory.Exists(constructedArmaPath))
+									{
+										Arma2OAPath = constructedArmaPath;
+									}
 								}
 							}
-						}
-						catch (Exception)
-						{
-							Arma2OAPath = "";
 						}
 					}
 				}
