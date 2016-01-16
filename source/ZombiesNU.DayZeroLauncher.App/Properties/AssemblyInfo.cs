@@ -3,9 +3,9 @@ using System.Resources;
 
 [assembly: AssemblyCompany("ZOMBIES.NU")]
 [assembly: AssemblyProduct("DayZero Launcher")]
-[assembly: AssemblyInformationalVersion("1.4.5")]
+[assembly: AssemblyInformationalVersion("1.5.1")]
 [assembly: AssemblyCopyright("Copyright 2013-2016 ZOMBIES.NU")]
 [assembly: AssemblyTitle("DayZero Launcher")]
-[assembly: AssemblyVersion("1.4.5.62")]
-[assembly: AssemblyFileVersion("1.4.5.62")]
+[assembly: AssemblyVersion("1.5.1.261")]
+[assembly: AssemblyFileVersion("1.5.1.261")]
 [assembly: NeutralResourcesLanguage("")]
