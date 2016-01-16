@@ -167,7 +167,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				// Try to find out game paths using steam.
 				if (!string.IsNullOrWhiteSpace(SteamPath) && (string.IsNullOrWhiteSpace(Arma2Path) || string.IsNullOrWhiteSpace(Arma2OAPath)))
 				{
-					string steamAppsDir = Path.Combine(SteamPath,"SteamApps");
+					string steamAppsDir = Path.Combine(SteamPath,"steamapps");
 					string defaultLibraryDir = Path.Combine(steamAppsDir,"common");
 
 					if (string.IsNullOrWhiteSpace(Arma2Path))

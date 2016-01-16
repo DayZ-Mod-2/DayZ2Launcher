@@ -24,17 +24,35 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 			return str;
 		}
 
-		private static string GetSteamAppsFolderPath()
+		private static string GetManifestPath()
 		{
 			DirectoryInfo steamConfig;
 			string result = "";
 
 			steamConfig = new DirectoryInfo(LocalMachineInfo.Current.SteamPath);
-			string steamAppsDir = Path.Combine(steamConfig.FullName, "SteamApps");
+			string steamAppsDir = Path.Combine(steamConfig.FullName, "steamapps");
+			string manifestFile = Path.Combine(steamAppsDir, Arma2AppManifestFile);
 
-			if (Directory.Exists(steamAppsDir))
+			if (File.Exists(manifestFile))
 			{
-				result = steamAppsDir;
+				result = manifestFile;
+			}
+			else
+			{
+				// Is the game located in an alternative library folder..?
+				steamConfig = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
+				for (steamConfig = steamConfig.Parent; steamConfig != null; steamConfig = steamConfig.Parent)
+				{
+					if (steamConfig.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
+					{
+						manifestFile = Path.Combine(steamConfig.FullName, Arma2AppManifestFile);
+						if (File.Exists(manifestFile))
+						{
+							result = manifestFile;
+						}
+						break;
+					}
+				}
 			}
 			return result;
 		}
@@ -51,10 +69,9 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 		public static string GetKey()
 		{
 			string result = "Could not calculate GUID.";
-			string steamAppsPath = GetSteamAppsFolderPath();
-			string fullManifestPath = Path.Combine(steamAppsPath, Arma2AppManifestFile);
+			string fullManifestPath = GetManifestPath();
 
-			if (!String.IsNullOrEmpty(fullManifestPath) && File.Exists(fullManifestPath))
+			if (!String.IsNullOrEmpty(fullManifestPath))
 			{
 				try
 				{

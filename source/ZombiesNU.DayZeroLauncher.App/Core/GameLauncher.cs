@@ -268,6 +268,44 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 				string steamAppsDir = Path.Combine(steamPath.FullName, "SteamApps");
 				string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
 
+				// We did not find the manifest in the default steam library folder...
+				if (!File.Exists(fullManifestPath))
+				{
+					// Try to calculate the
+					DirectoryInfo pathInfo;
+					
+					try
+					{
+						pathInfo = new DirectoryInfo(CalculatedGameSettings.Current.Arma2OAPath);
+					}
+					catch (ArgumentException aex)
+					{
+						bool overridenPath = string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride);
+
+						Execute.OnUiThreadSync(() =>
+						{
+							var popup = new InfoPopup("Invalid Path To Arma2: OA", parentWnd);
+							popup.Headline.Content = "Game path could not be located";
+							popup.SetMessage(overridenPath
+								? "Invalid Game override path, please enter a new game path or remove it"
+								: "Game could not located via the registry, please enter an override path");
+
+							popup.Show();
+						}, null, DispatcherPriority.Input);
+
+						return false;
+					}
+
+					for (pathInfo = pathInfo.Parent; pathInfo != null; pathInfo = pathInfo.Parent)
+					{
+						if (pathInfo.Name.Equals("steamapps", StringComparison.OrdinalIgnoreCase))
+						{
+							fullManifestPath = Path.Combine(pathInfo.FullName, manifestName);
+							break;
+						}
+					}
+				}
+
 				if (!File.Exists(fullManifestPath))
 				{
 					Execute.OnUiThreadSync(() =>

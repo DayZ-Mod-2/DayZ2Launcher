@@ -65,7 +65,7 @@ namespace zombiesnu.DayZeroLauncher.App.Core
 
 			if (steamPath.Exists)
 			{
-				string steamAppsDir = Path.Combine(steamPath.FullName, "SteamApps");
+				string steamAppsDir = Path.Combine(steamPath.FullName, "steamapps");
 				string manifestName = "appmanifest_33930.acf";
 
 				string fullManifestPath = Path.Combine(steamAppsDir, manifestName);
