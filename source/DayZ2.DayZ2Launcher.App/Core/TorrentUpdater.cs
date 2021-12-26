@@ -668,7 +668,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             {
                 upnpDevices = new List<INatDevice>();
                 NatUtility.DeviceFound += UpnpDeviceFound;
-                NatUtility.DeviceLost += UpnpDeviceLost;
+                // NatUtility.DeviceLost += UpnpDeviceLost;
 
                 NatUtility.StartDiscovery();
             }
@@ -680,7 +680,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             {
                 NatUtility.StopDiscovery();
                 NatUtility.DeviceFound -= UpnpDeviceFound;
-                NatUtility.DeviceLost -= UpnpDeviceLost;
+                // NatUtility.DeviceLost -= UpnpDeviceLost;
 
                 foreach (INatDevice device in upnpDevices)
                 {
