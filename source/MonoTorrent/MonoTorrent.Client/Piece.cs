@@ -32,152 +32,152 @@ using System.Collections;
 
 namespace MonoTorrent.Client
 {
-	public class Piece : IComparable<Piece>
-	{
-		internal const int BlockSize = (1 << 14); // 16kB
+    public class Piece : IComparable<Piece>
+    {
+        internal const int BlockSize = (1 << 14); // 16kB
 
-		#region Member Variables
+        #region Member Variables
 
-		private readonly int index;
-		private Block[] blocks;
-		private int totalReceived;
-		private int totalRequested;
-		private int totalWritten;
+        private readonly int index;
+        private Block[] blocks;
+        private int totalReceived;
+        private int totalRequested;
+        private int totalWritten;
 
-		#endregion MemberVariables
+        #endregion MemberVariables
 
-		#region Fields
+        #region Fields
 
-		public Block this[int index]
-		{
-			get { return blocks[index]; }
-		}
+        public Block this[int index]
+        {
+            get { return blocks[index]; }
+        }
 
-		internal Block[] Blocks
-		{
-			get { return blocks; }
-		}
+        internal Block[] Blocks
+        {
+            get { return blocks; }
+        }
 
-		public bool AllBlocksRequested
-		{
-			get { return totalRequested == BlockCount; }
-		}
+        public bool AllBlocksRequested
+        {
+            get { return totalRequested == BlockCount; }
+        }
 
-		public bool AllBlocksReceived
-		{
-			get { return totalReceived == BlockCount; }
-		}
+        public bool AllBlocksReceived
+        {
+            get { return totalReceived == BlockCount; }
+        }
 
-		public bool AllBlocksWritten
-		{
-			get { return totalWritten == BlockCount; }
-		}
+        public bool AllBlocksWritten
+        {
+            get { return totalWritten == BlockCount; }
+        }
 
-		public int BlockCount
-		{
-			get { return blocks.Length; }
-		}
+        public int BlockCount
+        {
+            get { return blocks.Length; }
+        }
 
-		public int Index
-		{
-			get { return index; }
-		}
+        public int Index
+        {
+            get { return index; }
+        }
 
-		public bool NoBlocksRequested
-		{
-			get { return totalRequested == 0; }
-		}
+        public bool NoBlocksRequested
+        {
+            get { return totalRequested == 0; }
+        }
 
-		public int TotalReceived
-		{
-			get { return totalReceived; }
-			internal set { totalReceived = value; }
-		}
+        public int TotalReceived
+        {
+            get { return totalReceived; }
+            internal set { totalReceived = value; }
+        }
 
-		public int TotalRequested
-		{
-			get { return totalRequested; }
-			internal set { totalRequested = value; }
-		}
+        public int TotalRequested
+        {
+            get { return totalRequested; }
+            internal set { totalRequested = value; }
+        }
 
-		public int TotalWritten
-		{
-			get { return totalWritten; }
-			internal set { totalWritten = value; }
-		}
+        public int TotalWritten
+        {
+            get { return totalWritten; }
+            internal set { totalWritten = value; }
+        }
 
-		#endregion Fields
+        #endregion Fields
 
-		#region Constructors
+        #region Constructors
 
-		internal Piece(int pieceIndex, int pieceLength, long torrentSize)
-		{
-			index = pieceIndex;
+        internal Piece(int pieceIndex, int pieceLength, long torrentSize)
+        {
+            index = pieceIndex;
 
-			// Request last piece. Special logic needed
-			if ((torrentSize - (long) pieceIndex*pieceLength) < pieceLength)
-				LastPiece(pieceIndex, pieceLength, torrentSize);
+            // Request last piece. Special logic needed
+            if ((torrentSize - (long)pieceIndex * pieceLength) < pieceLength)
+                LastPiece(pieceIndex, pieceLength, torrentSize);
 
-			else
-			{
-				var numberOfPieces = (int) Math.Ceiling(((double) pieceLength/BlockSize));
+            else
+            {
+                var numberOfPieces = (int)Math.Ceiling(((double)pieceLength / BlockSize));
 
-				blocks = new Block[numberOfPieces];
+                blocks = new Block[numberOfPieces];
 
-				for (int i = 0; i < numberOfPieces; i++)
-					blocks[i] = new Block(this, i*BlockSize, BlockSize);
+                for (int i = 0; i < numberOfPieces; i++)
+                    blocks[i] = new Block(this, i * BlockSize, BlockSize);
 
-				if ((pieceLength%BlockSize) != 0) // I don't think this would ever happen. But just in case
-					blocks[blocks.Length - 1] = new Block(this, blocks[blocks.Length - 1].StartOffset,
-						pieceLength - blocks[blocks.Length - 1].StartOffset);
-			}
-		}
+                if ((pieceLength % BlockSize) != 0) // I don't think this would ever happen. But just in case
+                    blocks[blocks.Length - 1] = new Block(this, blocks[blocks.Length - 1].StartOffset,
+                        pieceLength - blocks[blocks.Length - 1].StartOffset);
+            }
+        }
 
-		private void LastPiece(int pieceIndex, int pieceLength, long torrentSize)
-		{
-			var bytesRemaining = (int) (torrentSize - ((long) pieceIndex*pieceLength));
-			int numberOfBlocks = bytesRemaining/BlockSize;
-			if (bytesRemaining%BlockSize != 0)
-				numberOfBlocks++;
+        private void LastPiece(int pieceIndex, int pieceLength, long torrentSize)
+        {
+            var bytesRemaining = (int)(torrentSize - ((long)pieceIndex * pieceLength));
+            int numberOfBlocks = bytesRemaining / BlockSize;
+            if (bytesRemaining % BlockSize != 0)
+                numberOfBlocks++;
 
-			blocks = new Block[numberOfBlocks];
+            blocks = new Block[numberOfBlocks];
 
-			int i = 0;
-			while (bytesRemaining - BlockSize > 0)
-			{
-				blocks[i] = new Block(this, i*BlockSize, BlockSize);
-				bytesRemaining -= BlockSize;
-				i++;
-			}
+            int i = 0;
+            while (bytesRemaining - BlockSize > 0)
+            {
+                blocks[i] = new Block(this, i * BlockSize, BlockSize);
+                bytesRemaining -= BlockSize;
+                i++;
+            }
 
-			blocks[i] = new Block(this, i*BlockSize, bytesRemaining);
-		}
+            blocks[i] = new Block(this, i * BlockSize, bytesRemaining);
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		public int CompareTo(Piece other)
-		{
-			return other == null ? 1 : Index.CompareTo(other.Index);
-		}
+        public int CompareTo(Piece other)
+        {
+            return other == null ? 1 : Index.CompareTo(other.Index);
+        }
 
-		public override bool Equals(object obj)
-		{
-			var p = obj as Piece;
-			return (p == null) ? false : index.Equals(p.index);
-		}
+        public override bool Equals(object obj)
+        {
+            var p = obj as Piece;
+            return (p == null) ? false : index.Equals(p.index);
+        }
 
-		public IEnumerator GetEnumerator()
-		{
-			return blocks.GetEnumerator();
-		}
+        public IEnumerator GetEnumerator()
+        {
+            return blocks.GetEnumerator();
+        }
 
-		public override int GetHashCode()
-		{
-			return index;
-		}
+        public override int GetHashCode()
+        {
+            return index;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

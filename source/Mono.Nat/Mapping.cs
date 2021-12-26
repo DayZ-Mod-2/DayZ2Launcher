@@ -30,97 +30,97 @@ using System;
 
 namespace Mono.Nat
 {
-	public class Mapping
-	{
-		private string description;
-		private DateTime expiration;
-		private int lifetime;
-		private int privatePort;
-		private Protocol protocol;
-		private int publicPort;
+    public class Mapping
+    {
+        private string description;
+        private DateTime expiration;
+        private int lifetime;
+        private int privatePort;
+        private Protocol protocol;
+        private int publicPort;
 
 
-		public Mapping(Protocol protocol, int privatePort, int publicPort)
-			: this(protocol, privatePort, publicPort, 0)
-		{
-		}
+        public Mapping(Protocol protocol, int privatePort, int publicPort)
+            : this(protocol, privatePort, publicPort, 0)
+        {
+        }
 
-		public Mapping(Protocol protocol, int privatePort, int publicPort, int lifetime)
-		{
-			this.protocol = protocol;
-			this.privatePort = privatePort;
-			this.publicPort = publicPort;
-			this.lifetime = lifetime;
+        public Mapping(Protocol protocol, int privatePort, int publicPort, int lifetime)
+        {
+            this.protocol = protocol;
+            this.privatePort = privatePort;
+            this.publicPort = publicPort;
+            this.lifetime = lifetime;
 
-			if (lifetime == int.MaxValue)
-				expiration = DateTime.MaxValue;
-			else if (lifetime == 0)
-				expiration = DateTime.Now;
-			else
-				expiration = DateTime.Now.AddSeconds(lifetime);
-		}
+            if (lifetime == int.MaxValue)
+                expiration = DateTime.MaxValue;
+            else if (lifetime == 0)
+                expiration = DateTime.Now;
+            else
+                expiration = DateTime.Now.AddSeconds(lifetime);
+        }
 
-		public string Description
-		{
-			get { return description; }
-			set { description = value; }
-		}
+        public string Description
+        {
+            get { return description; }
+            set { description = value; }
+        }
 
-		public Protocol Protocol
-		{
-			get { return protocol; }
-			internal set { protocol = value; }
-		}
+        public Protocol Protocol
+        {
+            get { return protocol; }
+            internal set { protocol = value; }
+        }
 
-		public int PrivatePort
-		{
-			get { return privatePort; }
-			internal set { privatePort = value; }
-		}
+        public int PrivatePort
+        {
+            get { return privatePort; }
+            internal set { privatePort = value; }
+        }
 
-		public int PublicPort
-		{
-			get { return publicPort; }
-			internal set { publicPort = value; }
-		}
+        public int PublicPort
+        {
+            get { return publicPort; }
+            internal set { publicPort = value; }
+        }
 
-		public int Lifetime
-		{
-			get { return lifetime; }
-			internal set { lifetime = value; }
-		}
+        public int Lifetime
+        {
+            get { return lifetime; }
+            internal set { lifetime = value; }
+        }
 
-		public DateTime Expiration
-		{
-			get { return expiration; }
-			internal set { expiration = value; }
-		}
+        public DateTime Expiration
+        {
+            get { return expiration; }
+            internal set { expiration = value; }
+        }
 
-		public bool IsExpired()
-		{
-			return expiration < DateTime.Now;
-		}
+        public bool IsExpired()
+        {
+            return expiration < DateTime.Now;
+        }
 
-		public override bool Equals(object obj)
-		{
-			var other = obj as Mapping;
-			return other == null
-				? false
-				: protocol == other.protocol &&
-				  privatePort == other.privatePort && publicPort == other.publicPort;
-		}
+        public override bool Equals(object obj)
+        {
+            var other = obj as Mapping;
+            return other == null
+                ? false
+                : protocol == other.protocol &&
+                  privatePort == other.privatePort && publicPort == other.publicPort;
+        }
 
-		public override int GetHashCode()
-		{
-			return protocol.GetHashCode() ^ privatePort.GetHashCode() ^ publicPort.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return protocol.GetHashCode() ^ privatePort.GetHashCode() ^ publicPort.GetHashCode();
+        }
 
-		public override string ToString()
-		{
-			return
-				String.Format(
-					"Protocol: {0}, Public Port: {1}, Private Port: {2}, Description: {3}, Expiration: {4}, Lifetime: {5}",
-					protocol, publicPort, privatePort, description, expiration, lifetime);
-		}
-	}
+        public override string ToString()
+        {
+            return
+                String.Format(
+                    "Protocol: {0}, Public Port: {1}, Private Port: {2}, Description: {3}, Expiration: {4}, Lifetime: {5}",
+                    protocol, publicPort, privatePort, description, expiration, lifetime);
+        }
+    }
 }

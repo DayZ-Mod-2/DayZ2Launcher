@@ -32,55 +32,55 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client
 {
-	/// <summary>
-	///     Provides the data needed to handle a PeerMessage event
-	/// </summary>
-	public class PeerMessageEventArgs : TorrentEventArgs
-	{
-		#region Member Variables
+    /// <summary>
+    ///     Provides the data needed to handle a PeerMessage event
+    /// </summary>
+    public class PeerMessageEventArgs : TorrentEventArgs
+    {
+        #region Member Variables
 
-		private readonly Direction direction;
-		private readonly PeerId id;
-		private readonly PeerMessage message;
+        private readonly Direction direction;
+        private readonly PeerId id;
+        private readonly PeerMessage message;
 
-		/// <summary>
-		///     The Peer message that was just sent/Received
-		/// </summary>
-		public PeerMessage Message
-		{
-			get { return message; }
-		}
+        /// <summary>
+        ///     The Peer message that was just sent/Received
+        /// </summary>
+        public PeerMessage Message
+        {
+            get { return message; }
+        }
 
-		/// <summary>
-		///     The direction of the message (outgoing/incoming)
-		/// </summary>
-		public Direction Direction
-		{
-			get { return direction; }
-		}
+        /// <summary>
+        ///     The direction of the message (outgoing/incoming)
+        /// </summary>
+        public Direction Direction
+        {
+            get { return direction; }
+        }
 
-		public PeerId ID
-		{
-			get { return id; }
-		}
+        public PeerId ID
+        {
+            get { return id; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		///     Creates a new PeerMessageEventArgs
-		/// </summary>
-		/// <param name="message">The peer message involved</param>
-		/// <param name="direction">The direction of the message</param>
-		internal PeerMessageEventArgs(TorrentManager manager, PeerMessage message, Direction direction, PeerId id)
-			: base(manager)
-		{
-			this.direction = direction;
-			this.id = id;
-			this.message = message;
-		}
+        /// <summary>
+        ///     Creates a new PeerMessageEventArgs
+        /// </summary>
+        /// <param name="message">The peer message involved</param>
+        /// <param name="direction">The direction of the message</param>
+        internal PeerMessageEventArgs(TorrentManager manager, PeerMessage message, Direction direction, PeerId id)
+            : base(manager)
+        {
+            this.direction = direction;
+            this.id = id;
+            this.message = message;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

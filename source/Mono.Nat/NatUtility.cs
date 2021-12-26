@@ -33,138 +33,138 @@ using System.Threading;
 
 namespace Mono.Nat
 {
-	public static class NatUtility
-	{
-		private static readonly ManualResetEvent searching;
+    public static class NatUtility
+    {
+        private static readonly ManualResetEvent searching;
 
-		private static readonly List<ISearcher> controllers;
+        private static readonly List<ISearcher> controllers;
 
-		static NatUtility()
-		{
-			searching = new ManualResetEvent(false);
+        static NatUtility()
+        {
+            searching = new ManualResetEvent(false);
 
-			controllers = new List<ISearcher>();
-			controllers.Add(UpnpSearcher.Instance);
-			controllers.Add(PmpSearcher.Instance);
+            controllers = new List<ISearcher>();
+            controllers.Add(UpnpSearcher.Instance);
+            controllers.Add(PmpSearcher.Instance);
 
-			foreach (ISearcher searcher in controllers)
-			{
-				searcher.DeviceFound += delegate(object sender, DeviceEventArgs args)
-				{
-					if (DeviceFound != null)
-						DeviceFound(sender, args);
-				};
-				searcher.DeviceLost += delegate(object sender, DeviceEventArgs args)
-				{
-					if (DeviceLost != null)
-						DeviceLost(sender, args);
-				};
-			}
-			var t = new Thread((ThreadStart) delegate { SearchAndListen(); });
-			t.IsBackground = true;
-			t.Start();
-		}
+            foreach (ISearcher searcher in controllers)
+            {
+                searcher.DeviceFound += delegate (object sender, DeviceEventArgs args)
+                {
+                    if (DeviceFound != null)
+                        DeviceFound(sender, args);
+                };
+                searcher.DeviceLost += delegate (object sender, DeviceEventArgs args)
+                {
+                    if (DeviceLost != null)
+                        DeviceLost(sender, args);
+                };
+            }
+            var t = new Thread((ThreadStart)delegate { SearchAndListen(); });
+            t.IsBackground = true;
+            t.Start();
+        }
 
-		public static TextWriter Logger { get; set; }
+        public static TextWriter Logger { get; set; }
 
-		public static bool Verbose { get; set; }
-		public static event EventHandler<DeviceEventArgs> DeviceFound;
-		public static event EventHandler<DeviceEventArgs> DeviceLost;
+        public static bool Verbose { get; set; }
+        public static event EventHandler<DeviceEventArgs> DeviceFound;
+        public static event EventHandler<DeviceEventArgs> DeviceLost;
 
-		public static event EventHandler<UnhandledExceptionEventArgs> UnhandledException;
+        public static event EventHandler<UnhandledExceptionEventArgs> UnhandledException;
 
-		internal static void Log(string format, params object[] args)
-		{
-			TextWriter logger = Logger;
-			if (logger != null)
-				logger.WriteLine(format, args);
-		}
+        internal static void Log(string format, params object[] args)
+        {
+            TextWriter logger = Logger;
+            if (logger != null)
+                logger.WriteLine(format, args);
+        }
 
-		private static void SearchAndListen()
-		{
-			while (true)
-			{
-				searching.WaitOne();
+        private static void SearchAndListen()
+        {
+            while (true)
+            {
+                searching.WaitOne();
 
-				try
-				{
-					Receive(UpnpSearcher.Instance, UpnpSearcher.sockets);
-					Receive(PmpSearcher.Instance, PmpSearcher.sockets);
+                try
+                {
+                    Receive(UpnpSearcher.Instance, UpnpSearcher.sockets);
+                    Receive(PmpSearcher.Instance, PmpSearcher.sockets);
 
-					foreach (ISearcher s in controllers)
-						if (s.NextSearch < DateTime.Now)
-						{
-							Log("Searching for: {0}", s.GetType().Name);
-							s.Search();
-						}
-				}
-				catch (Exception e)
-				{
-					if (UnhandledException != null)
-						UnhandledException(typeof (NatUtility), new UnhandledExceptionEventArgs(e, false));
-				}
-				Thread.Sleep(10);
-			}
-		}
+                    foreach (ISearcher s in controllers)
+                        if (s.NextSearch < DateTime.Now)
+                        {
+                            Log("Searching for: {0}", s.GetType().Name);
+                            s.Search();
+                        }
+                }
+                catch (Exception e)
+                {
+                    if (UnhandledException != null)
+                        UnhandledException(typeof(NatUtility), new UnhandledExceptionEventArgs(e, false));
+                }
+                Thread.Sleep(10);
+            }
+        }
 
-		private static void Receive(ISearcher searcher, List<UdpClient> clients)
-		{
-			var received = new IPEndPoint(IPAddress.Parse("192.168.0.1"), 5351);
-			foreach (UdpClient client in clients)
-			{
-				if (client.Available > 0)
-				{
-					IPAddress localAddress = ((IPEndPoint) client.Client.LocalEndPoint).Address;
-					byte[] data = client.Receive(ref received);
-					searcher.Handle(localAddress, data, received);
-				}
-			}
-		}
+        private static void Receive(ISearcher searcher, List<UdpClient> clients)
+        {
+            var received = new IPEndPoint(IPAddress.Parse("192.168.0.1"), 5351);
+            foreach (UdpClient client in clients)
+            {
+                if (client.Available > 0)
+                {
+                    IPAddress localAddress = ((IPEndPoint)client.Client.LocalEndPoint).Address;
+                    byte[] data = client.Receive(ref received);
+                    searcher.Handle(localAddress, data, received);
+                }
+            }
+        }
 
-		public static void StartDiscovery()
-		{
-			searching.Set();
-		}
+        public static void StartDiscovery()
+        {
+            searching.Set();
+        }
 
-		public static void StopDiscovery()
-		{
-			searching.Reset();
-		}
+        public static void StopDiscovery()
+        {
+            searching.Reset();
+        }
 
-		[Obsolete("This method serves no purpose and shouldn't be used")]
-		public static IPAddress[] GetLocalAddresses(bool includeIPv6)
-		{
-			var addresses = new List<IPAddress>();
+        [Obsolete("This method serves no purpose and shouldn't be used")]
+        public static IPAddress[] GetLocalAddresses(bool includeIPv6)
+        {
+            var addresses = new List<IPAddress>();
 
-			IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
-			foreach (IPAddress address in hostInfo.AddressList)
-			{
-				if (address.AddressFamily == AddressFamily.InterNetwork ||
-				    (includeIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6))
-				{
-					addresses.Add(address);
-				}
-			}
+            IPHostEntry hostInfo = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress address in hostInfo.AddressList)
+            {
+                if (address.AddressFamily == AddressFamily.InterNetwork ||
+                    (includeIPv6 && address.AddressFamily == AddressFamily.InterNetworkV6))
+                {
+                    addresses.Add(address);
+                }
+            }
 
-			return addresses.ToArray();
-		}
+            return addresses.ToArray();
+        }
 
-		//checks if an IP address is a private address space as defined by RFC 1918
-		public static bool IsPrivateAddressSpace(IPAddress address)
-		{
-			byte[] ba = address.GetAddressBytes();
+        //checks if an IP address is a private address space as defined by RFC 1918
+        public static bool IsPrivateAddressSpace(IPAddress address)
+        {
+            byte[] ba = address.GetAddressBytes();
 
-			switch ((int) ba[0])
-			{
-				case 10:
-					return true; //10.x.x.x
-				case 172:
-					return (ba[1] & 16) != 0; //172.16-31.x.x
-				case 192:
-					return ba[1] == 168; //192.168.x.x
-				default:
-					return false;
-			}
-		}
-	}
+            switch ((int)ba[0])
+            {
+                case 10:
+                    return true; //10.x.x.x
+                case 172:
+                    return (ba[1] & 16) != 0; //172.16-31.x.x
+                case 192:
+                    return ba[1] == 168; //192.168.x.x
+                default:
+                    return false;
+            }
+        }
+    }
 }

@@ -30,29 +30,29 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	internal class GetSpecificPortMappingEntryMessage : MessageBase
-	{
-		internal int externalPort;
-		internal Protocol protocol;
+    internal class GetSpecificPortMappingEntryMessage : MessageBase
+    {
+        internal int externalPort;
+        internal Protocol protocol;
 
-		public GetSpecificPortMappingEntryMessage(Protocol protocol, int externalPort, UpnpNatDevice device)
-			: base(device)
-		{
-			this.protocol = protocol;
-			this.externalPort = externalPort;
-		}
+        public GetSpecificPortMappingEntryMessage(Protocol protocol, int externalPort, UpnpNatDevice device)
+            : base(device)
+        {
+            this.protocol = protocol;
+            this.externalPort = externalPort;
+        }
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			var sb = new StringBuilder(64);
-			XmlWriter writer = CreateWriter(sb);
+        public override WebRequest Encode(out byte[] body)
+        {
+            var sb = new StringBuilder(64);
+            XmlWriter writer = CreateWriter(sb);
 
-			WriteFullElement(writer, "NewRemoteHost", string.Empty);
-			WriteFullElement(writer, "NewExternalPort", externalPort.ToString());
-			WriteFullElement(writer, "NewProtocol", protocol == Protocol.Tcp ? "TCP" : "UDP");
-			writer.Flush();
+            WriteFullElement(writer, "NewRemoteHost", string.Empty);
+            WriteFullElement(writer, "NewExternalPort", externalPort.ToString());
+            WriteFullElement(writer, "NewProtocol", protocol == Protocol.Tcp ? "TCP" : "UDP");
+            writer.Flush();
 
-			return CreateRequest("GetSpecificPortMappingEntry", sb.ToString(), out body);
-		}
-	}
+            return CreateRequest("GetSpecificPortMappingEntry", sb.ToString(), out body);
+        }
+    }
 }

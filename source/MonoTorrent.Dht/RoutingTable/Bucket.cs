@@ -34,129 +34,129 @@ using System.Collections.Generic;
 
 namespace MonoTorrent.Dht
 {
-	/// <summary>
-	///     This class holds a maximum amount of 8 Nodes and is itself a child of a RoutingTable
-	/// </summary>
-	internal class Bucket : IComparable<Bucket>, IEquatable<Bucket>
-	{
-		public const int MaxCapacity = 8;
-		private static readonly NodeId Minimum = new NodeId(new byte[20]);
+    /// <summary>
+    ///     This class holds a maximum amount of 8 Nodes and is itself a child of a RoutingTable
+    /// </summary>
+    internal class Bucket : IComparable<Bucket>, IEquatable<Bucket>
+    {
+        public const int MaxCapacity = 8;
+        private static readonly NodeId Minimum = new NodeId(new byte[20]);
 
-		private static readonly NodeId Maximum =
-			new NodeId(new byte[]
-			{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255});
+        private static readonly NodeId Maximum =
+            new NodeId(new byte[]
+            {255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255});
 
-		private readonly NodeId max;
-		private readonly NodeId min;
-		private readonly List<Node> nodes = new List<Node>(MaxCapacity);
-		private DateTime lastChanged = DateTime.UtcNow;
+        private readonly NodeId max;
+        private readonly NodeId min;
+        private readonly List<Node> nodes = new List<Node>(MaxCapacity);
+        private DateTime lastChanged = DateTime.UtcNow;
 
-		public Bucket()
-			: this(Minimum, Maximum)
-		{
-		}
+        public Bucket()
+            : this(Minimum, Maximum)
+        {
+        }
 
-		public Bucket(NodeId min, NodeId max)
-		{
-			this.min = min;
-			this.max = max;
-		}
+        public Bucket(NodeId min, NodeId max)
+        {
+            this.min = min;
+            this.max = max;
+        }
 
-		public DateTime LastChanged
-		{
-			get { return lastChanged; }
-			set { lastChanged = value; }
-		}
+        public DateTime LastChanged
+        {
+            get { return lastChanged; }
+            set { lastChanged = value; }
+        }
 
-		public NodeId Max
-		{
-			get { return max; }
-		}
+        public NodeId Max
+        {
+            get { return max; }
+        }
 
-		public NodeId Min
-		{
-			get { return min; }
-		}
+        public NodeId Min
+        {
+            get { return min; }
+        }
 
-		public List<Node> Nodes
-		{
-			get { return nodes; }
-		}
+        public List<Node> Nodes
+        {
+            get { return nodes; }
+        }
 
-		internal Node Replacement { get; set; }
+        internal Node Replacement { get; set; }
 
-		public int CompareTo(Bucket other)
-		{
-			return min.CompareTo(other.min);
-		}
+        public int CompareTo(Bucket other)
+        {
+            return min.CompareTo(other.min);
+        }
 
-		public bool Equals(Bucket other)
-		{
-			if (other == null)
-				return false;
+        public bool Equals(Bucket other)
+        {
+            if (other == null)
+                return false;
 
-			return min.Equals(other.min) && max.Equals(other.max);
-		}
+            return min.Equals(other.min) && max.Equals(other.max);
+        }
 
-		public bool Add(Node node)
-		{
-			// if the current bucket is not full we directly add the Node
-			if (nodes.Count < MaxCapacity)
-			{
-				nodes.Add(node);
-				lastChanged = DateTime.UtcNow;
-				return true;
-			}
-			//test replace
+        public bool Add(Node node)
+        {
+            // if the current bucket is not full we directly add the Node
+            if (nodes.Count < MaxCapacity)
+            {
+                nodes.Add(node);
+                lastChanged = DateTime.UtcNow;
+                return true;
+            }
+            //test replace
 
-			for (int i = nodes.Count - 1; i >= 0; i--)
-			{
-				if (nodes[i].State != NodeState.Bad)
-					continue;
+            for (int i = nodes.Count - 1; i >= 0; i--)
+            {
+                if (nodes[i].State != NodeState.Bad)
+                    continue;
 
-				nodes.RemoveAt(i);
-				nodes.Add(node);
-				lastChanged = DateTime.Now;
-				return true;
-			}
-			return false;
-		}
+                nodes.RemoveAt(i);
+                nodes.Add(node);
+                lastChanged = DateTime.Now;
+                return true;
+            }
+            return false;
+        }
 
-		public bool CanContain(Node node)
-		{
-			if (node == null)
-				throw new ArgumentNullException("node");
-			return CanContain(node.Id);
-		}
+        public bool CanContain(Node node)
+        {
+            if (node == null)
+                throw new ArgumentNullException("node");
+            return CanContain(node.Id);
+        }
 
-		public bool CanContain(NodeId id)
-		{
-			if (id == null)
-				throw new ArgumentNullException("id");
+        public bool CanContain(NodeId id)
+        {
+            if (id == null)
+                throw new ArgumentNullException("id");
 
-			return Min <= id && Max > id;
-		}
+            return Min <= id && Max > id;
+        }
 
-		public override bool Equals(object obj)
-		{
-			return Equals(obj as Bucket);
-		}
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Bucket);
+        }
 
-		public override int GetHashCode()
-		{
-			return min.GetHashCode() ^ max.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return min.GetHashCode() ^ max.GetHashCode();
+        }
 
-		public override string ToString()
-		{
-			return string.Format("Count: {2} Min: {0}  Max: {1}", min, max, nodes.Count);
-		}
+        public override string ToString()
+        {
+            return string.Format("Count: {2} Min: {0}  Max: {1}", min, max, nodes.Count);
+        }
 
-		internal void SortBySeen()
-		{
-			nodes.Sort();
-		}
-	}
+        internal void SortBySeen()
+        {
+            nodes.Sort();
+        }
+    }
 }
 
 #endif

@@ -1,0 +1,12 @@
+{
+    "mods": [
+        {
+            "archive": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/mod.json",
+                "sha1": "6054aea8839c1b8545c54a831da62fcb524f6f09"
+            },
+            "version": "0.0.0.0"
+        }
+    ],
+    "latest": "0.0.0.0"
+}

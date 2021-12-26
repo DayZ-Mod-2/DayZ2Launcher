@@ -2,71 +2,71 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Tracker
 {
-	public class RequestMonitor
-	{
-		#region Member Variables
+    public class RequestMonitor
+    {
+        #region Member Variables
 
-		private readonly SpeedMonitor announces;
-		private readonly SpeedMonitor scrapes;
+        private readonly SpeedMonitor announces;
+        private readonly SpeedMonitor scrapes;
 
-		#endregion Member Variables
+        #endregion Member Variables
 
-		#region Properties
+        #region Properties
 
-		public int AnnounceRate
-		{
-			get { return announces.Rate; }
-		}
+        public int AnnounceRate
+        {
+            get { return announces.Rate; }
+        }
 
-		public int ScrapeRate
-		{
-			get { return scrapes.Rate; }
-		}
+        public int ScrapeRate
+        {
+            get { return scrapes.Rate; }
+        }
 
-		public int TotalAnnounces
-		{
-			get { return (int) announces.Total; }
-		}
+        public int TotalAnnounces
+        {
+            get { return (int)announces.Total; }
+        }
 
-		public int TotalScrapes
-		{
-			get { return (int) scrapes.Total; }
-		}
+        public int TotalScrapes
+        {
+            get { return (int)scrapes.Total; }
+        }
 
-		#endregion Properties
+        #endregion Properties
 
-		#region Constructors
+        #region Constructors
 
-		public RequestMonitor()
-		{
-			announces = new SpeedMonitor();
-			scrapes = new SpeedMonitor();
-		}
+        public RequestMonitor()
+        {
+            announces = new SpeedMonitor();
+            scrapes = new SpeedMonitor();
+        }
 
-		#endregion Constructors
+        #endregion Constructors
 
-		#region Methods
+        #region Methods
 
-		internal void AnnounceReceived()
-		{
-			lock (announces)
-				announces.AddDelta(1);
-		}
+        internal void AnnounceReceived()
+        {
+            lock (announces)
+                announces.AddDelta(1);
+        }
 
-		internal void ScrapeReceived()
-		{
-			lock (scrapes)
-				scrapes.AddDelta(1);
-		}
+        internal void ScrapeReceived()
+        {
+            lock (scrapes)
+                scrapes.AddDelta(1);
+        }
 
-		#endregion Methods
+        #endregion Methods
 
-		internal void Tick()
-		{
-			lock (announces)
-				announces.Tick();
-			lock (scrapes)
-				scrapes.Tick();
-		}
-	}
+        internal void Tick()
+        {
+            lock (announces)
+                announces.Tick();
+            lock (scrapes)
+                scrapes.Tick();
+        }
+    }
 }

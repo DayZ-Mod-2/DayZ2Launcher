@@ -29,40 +29,40 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	internal class ErrorMessage : MessageBase
-	{
-		#region Member Variables
+    internal class ErrorMessage : MessageBase
+    {
+        #region Member Variables
 
-		private readonly string description;
+        private readonly string description;
 
-		private readonly int errorCode;
+        private readonly int errorCode;
 
-		public string Description
-		{
-			get { return description; }
-		}
+        public string Description
+        {
+            get { return description; }
+        }
 
-		public int ErrorCode
-		{
-			get { return errorCode; }
-		}
+        public int ErrorCode
+        {
+            get { return errorCode; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		public ErrorMessage(int errorCode, string description)
-			: base(null)
-		{
-			this.description = description;
-			this.errorCode = errorCode;
-		}
+        public ErrorMessage(int errorCode, string description)
+            : base(null)
+        {
+            this.description = description;
+            this.errorCode = errorCode;
+        }
 
-		#endregion
+        #endregion
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public override WebRequest Encode(out byte[] body)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

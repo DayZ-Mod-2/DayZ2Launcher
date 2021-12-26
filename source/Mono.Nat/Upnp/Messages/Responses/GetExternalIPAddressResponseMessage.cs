@@ -29,24 +29,24 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	internal class GetExternalIPAddressResponseMessage : MessageBase
-	{
-		private readonly IPAddress externalIPAddress;
+    internal class GetExternalIPAddressResponseMessage : MessageBase
+    {
+        private readonly IPAddress externalIPAddress;
 
-		public GetExternalIPAddressResponseMessage(string ip)
-			: base(null)
-		{
-			externalIPAddress = IPAddress.Parse(ip);
-		}
+        public GetExternalIPAddressResponseMessage(string ip)
+            : base(null)
+        {
+            externalIPAddress = IPAddress.Parse(ip);
+        }
 
-		public IPAddress ExternalIPAddress
-		{
-			get { return externalIPAddress; }
-		}
+        public IPAddress ExternalIPAddress
+        {
+            get { return externalIPAddress; }
+        }
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public override WebRequest Encode(out byte[] body)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

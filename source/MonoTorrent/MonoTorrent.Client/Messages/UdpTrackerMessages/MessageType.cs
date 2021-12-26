@@ -29,9 +29,9 @@
 
 namespace MonoTorrent.Client.Messages.UdpTracker
 {
-	public enum MessageType
-	{
-		Request,
-		Response
-	}
+    public enum MessageType
+    {
+        Request,
+        Response
+    }
 }

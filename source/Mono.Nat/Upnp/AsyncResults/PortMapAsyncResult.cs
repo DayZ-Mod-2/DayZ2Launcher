@@ -30,34 +30,34 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	internal class PortMapAsyncResult : AsyncResult
-	{
-		protected PortMapAsyncResult(WebRequest request, AsyncCallback callback, object asyncState)
-			: base(callback, asyncState)
-		{
-			this.Request = request;
-		}
+    internal class PortMapAsyncResult : AsyncResult
+    {
+        protected PortMapAsyncResult(WebRequest request, AsyncCallback callback, object asyncState)
+            : base(callback, asyncState)
+        {
+            this.Request = request;
+        }
 
-		internal WebRequest Request { get; set; }
+        internal WebRequest Request { get; set; }
 
-		internal MessageBase SavedMessage { get; set; }
+        internal MessageBase SavedMessage { get; set; }
 
-		internal static PortMapAsyncResult Create(MessageBase message, WebRequest request, AsyncCallback storedCallback,
-			object asyncState)
-		{
-			if (message is GetGenericPortMappingEntry)
-				return new GetAllMappingsAsyncResult(request, storedCallback, asyncState);
+        internal static PortMapAsyncResult Create(MessageBase message, WebRequest request, AsyncCallback storedCallback,
+            object asyncState)
+        {
+            if (message is GetGenericPortMappingEntry)
+                return new GetAllMappingsAsyncResult(request, storedCallback, asyncState);
 
-			if (message is GetSpecificPortMappingEntryMessage)
-			{
-				var mapMessage = (GetSpecificPortMappingEntryMessage) message;
-				var result = new GetAllMappingsAsyncResult(request, storedCallback, asyncState);
+            if (message is GetSpecificPortMappingEntryMessage)
+            {
+                var mapMessage = (GetSpecificPortMappingEntryMessage)message;
+                var result = new GetAllMappingsAsyncResult(request, storedCallback, asyncState);
 
-				result.SpecificMapping = new Mapping(mapMessage.protocol, 0, mapMessage.externalPort, 0);
-				return result;
-			}
+                result.SpecificMapping = new Mapping(mapMessage.protocol, 0, mapMessage.externalPort, 0);
+                return result;
+            }
 
-			return new PortMapAsyncResult(request, storedCallback, asyncState);
-		}
-	}
+            return new PortMapAsyncResult(request, storedCallback, asyncState);
+        }
+    }
 }

@@ -1,0 +1,150 @@
+{
+    "addons": [
+        {
+            "name": "dayz_anims",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_anims.torrent",
+                "sha1": "95760915f0bece4ba32ac597b0ab45813f0e05ae"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_arma",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_arma.torrent",
+                "sha1": "8ac28114466831a21949b22934c9f0f0638739d8"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_buildings",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_buildings.torrent",
+                "sha1": "895a1f7a44c8ef17b305e6726487598daa871e1e"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_characters",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_characters.torrent",
+                "sha1": "dcb483616cf5b72384f42010e6e1d9eb7f1546b6"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_chernarus",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_chernarus.torrent",
+                "sha1": "146e553856a594512c26c664ee23e817fc8362ec"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_client",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_client.torrent",
+                "sha1": "cd790d82a840d6487405f3ed79b21b593c4e24a8"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_common",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_common.torrent",
+                "sha1": "d49c1d7202c04d5da1ffcf41a347ff6566c4adb7"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_debug",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_debug.torrent",
+                "sha1": "f683a705be65c7f6630573b25a96aab18376ae0d"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_items",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_items.torrent",
+                "sha1": "6d68f52504612b610df4200c9e8e45c06191558a"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_legacy",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_legacy.torrent",
+                "sha1": "26800dc406f174546c87bb614b329edb024401c8"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_sound",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_sound.torrent",
+                "sha1": "47e8ae5a8b5f7f9a6fb96d5cba75b517c238c88e"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_vehicles",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_vehicles.torrent",
+                "sha1": "97a1ce7ab19f11d4fdc7836ee2f7ea66f977f9f3"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "dayz_weapons",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/dayz_weapons.torrent",
+                "sha1": "c2d62f60809abb632f97dff007f2af9ba88e47a7"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "DayzSignatures",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/DayzSignatures.torrent",
+                "sha1": "2d4a56789950e12123e20ffd8b07c58962634323"
+            },
+            "version": "0.0.0.0"
+        },
+        {
+            "name": "DayzExtensions",
+            "torrent": {
+                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/DayzExtensions.torrent",
+                "sha1": "830b8f3288d2ed29034fff520b7c490a088707fe"
+            },
+            "version": "0.0.0.0"
+        }
+    ],
+    "gametypes": [
+        {
+            "addons": [
+                "dayz_anims",
+                "dayz_arma",
+                "dayz_buildings",
+                "dayz_characters",
+                "dayz_chernarus",
+                "dayz_client",
+                "dayz_common",
+                "dayz_debug",
+                "dayz_items",
+                "dayz_legacy",
+                "dayz_sound",
+                "dayz_vehicles",
+                "dayz_weapons",
+                "DayzSignatures",
+                "DayzExtensions"
+            ],
+            "ident": "@DayZ2",
+            "launchable": true,
+            "name": "DayZ2"
+        }
+    ],
+    "plugins": [],
+    "version": "0.0.0.0"
+}

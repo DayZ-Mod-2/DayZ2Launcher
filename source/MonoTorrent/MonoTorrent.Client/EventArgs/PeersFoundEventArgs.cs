@@ -34,27 +34,27 @@ using MonoTorrent.Client;
 
 namespace MonoTorrent
 {
-	public class PeersFoundEventArgs : EventArgs
-	{
-		private readonly InfoHash infoHash;
-		private readonly List<Peer> peers;
+    public class PeersFoundEventArgs : EventArgs
+    {
+        private readonly InfoHash infoHash;
+        private readonly List<Peer> peers;
 
-		public PeersFoundEventArgs(InfoHash infoHash, List<Peer> peers)
-		{
-			this.peers = peers;
-			this.infoHash = infoHash;
-		}
+        public PeersFoundEventArgs(InfoHash infoHash, List<Peer> peers)
+        {
+            this.peers = peers;
+            this.infoHash = infoHash;
+        }
 
-		public List<Peer> Peers
-		{
-			get { return peers; }
-		}
+        public List<Peer> Peers
+        {
+            get { return peers; }
+        }
 
-		public InfoHash InfoHash
-		{
-			get { return infoHash; }
-		}
-	}
+        public InfoHash InfoHash
+        {
+            get { return infoHash; }
+        }
+    }
 }
 
 #endif

@@ -29,19 +29,19 @@
 
 namespace MonoTorrent.Client
 {
-	internal class PeerEventArgs : TorrentEventArgs
-	{
-		private readonly PeerId peer;
+    internal class PeerEventArgs : TorrentEventArgs
+    {
+        private readonly PeerId peer;
 
-		public PeerEventArgs(PeerId peer)
-			: base(peer.TorrentManager)
-		{
-			this.peer = peer;
-		}
+        public PeerEventArgs(PeerId peer)
+            : base(peer.TorrentManager)
+        {
+            this.peer = peer;
+        }
 
-		public PeerId Peer
-		{
-			get { return peer; }
-		}
-	}
+        public PeerId Peer
+        {
+            get { return peer; }
+        }
+    }
 }

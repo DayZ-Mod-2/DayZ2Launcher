@@ -39,366 +39,366 @@ using MonoTorrent.Client.PieceWriters;
 
 namespace MonoTorrent.Common
 {
-	public class TorrentCreator : EditableTorrent
-	{
-		private readonly List<string> getrightHttpSeeds;
-		private TorrentCreatorAsyncResult asyncResult;
+    public class TorrentCreator : EditableTorrent
+    {
+        private readonly List<string> getrightHttpSeeds;
+        private TorrentCreatorAsyncResult asyncResult;
 
-		public TorrentCreator()
-		{
-			getrightHttpSeeds = new List<string>();
-			CanEditSecureMetadata = true;
-			CreatedBy = string.Format("MonoTorrent {0}", VersionInfo.Version);
-		}
+        public TorrentCreator()
+        {
+            getrightHttpSeeds = new List<string>();
+            CanEditSecureMetadata = true;
+            CreatedBy = string.Format("MonoTorrent {0}", VersionInfo.Version);
+        }
 
-		public List<string> GetrightHttpSeeds
-		{
-			get { return getrightHttpSeeds; }
-		}
+        public List<string> GetrightHttpSeeds
+        {
+            get { return getrightHttpSeeds; }
+        }
 
-		public bool StoreMD5 { get; set; }
+        public bool StoreMD5 { get; set; }
 
-		public static int RecommendedPieceSize(long totalSize)
-		{
-			// Check all piece sizes that are multiples of 32kB and
-			// choose the smallest piece size which results in a
-			// .torrent file smaller than 60kb
-			for (int i = 32768; i < 4*1024*1024; i *= 2)
-			{
-				int pieces = (int) (totalSize/i) + 1;
-				if ((pieces*20) < (60*1024))
-					return i;
-			}
+        public static int RecommendedPieceSize(long totalSize)
+        {
+            // Check all piece sizes that are multiples of 32kB and
+            // choose the smallest piece size which results in a
+            // .torrent file smaller than 60kb
+            for (int i = 32768; i < 4 * 1024 * 1024; i *= 2)
+            {
+                int pieces = (int)(totalSize / i) + 1;
+                if ((pieces * 20) < (60 * 1024))
+                    return i;
+            }
 
-			// If we get here, we're hashing a massive file, so lets limit
-			// to a max of 4MB pieces.
-			return 4*1024*1024;
-		}
+            // If we get here, we're hashing a massive file, so lets limit
+            // to a max of 4MB pieces.
+            return 4 * 1024 * 1024;
+        }
 
-		public static int RecommendedPieceSize(IEnumerable<string> files)
-		{
-			long total = 0;
-			foreach (string file in files)
-				total += new FileInfo(file).Length;
-			return RecommendedPieceSize(total);
-		}
+        public static int RecommendedPieceSize(IEnumerable<string> files)
+        {
+            long total = 0;
+            foreach (string file in files)
+                total += new FileInfo(file).Length;
+            return RecommendedPieceSize(total);
+        }
 
-		public static int RecommendedPieceSize(IEnumerable<TorrentFile> files)
-		{
-			long total = 0;
-			foreach (TorrentFile file in files)
-				total += file.Length;
-			return RecommendedPieceSize(total);
-		}
+        public static int RecommendedPieceSize(IEnumerable<TorrentFile> files)
+        {
+            long total = 0;
+            foreach (TorrentFile file in files)
+                total += file.Length;
+            return RecommendedPieceSize(total);
+        }
 
-		public static int RecommendedPieceSize(IEnumerable<FileMapping> files)
-		{
-			long total = 0;
-			foreach (FileMapping file in files)
-				total += new FileInfo(file.Source).Length;
-			return RecommendedPieceSize(total);
-		}
-
-
-		public event EventHandler<TorrentCreatorEventArgs> Hashed;
+        public static int RecommendedPieceSize(IEnumerable<FileMapping> files)
+        {
+            long total = 0;
+            foreach (FileMapping file in files)
+                total += new FileInfo(file.Source).Length;
+            return RecommendedPieceSize(total);
+        }
 
 
-		public void AbortCreation()
-		{
-			TorrentCreatorAsyncResult r = asyncResult;
-			if (r != null)
-				r.Aborted = true;
-		}
+        public event EventHandler<TorrentCreatorEventArgs> Hashed;
 
-		private void AddCommonStuff(BEncodedDictionary torrent)
-		{
-			if (Announces.Count > 0 && Announces[0].Count > 0)
-				Announce = Announces[0][0];
 
-			if (getrightHttpSeeds.Count > 0)
-			{
-				var seedlist = new BEncodedList();
-				seedlist.AddRange(getrightHttpSeeds.ConvertAll<BEncodedValue>(delegate(string s) { return (BEncodedString) s; }));
-				torrent["url-list"] = seedlist;
-			}
+        public void AbortCreation()
+        {
+            TorrentCreatorAsyncResult r = asyncResult;
+            if (r != null)
+                r.Aborted = true;
+        }
 
-			TimeSpan span = DateTime.Now - new DateTime(1970, 1, 1);
-			torrent["creation date"] = new BEncodedNumber((long) span.TotalSeconds);
-		}
+        private void AddCommonStuff(BEncodedDictionary torrent)
+        {
+            if (Announces.Count > 0 && Announces[0].Count > 0)
+                Announce = Announces[0][0];
 
-		public IAsyncResult BeginCreate(ITorrentFileSource fileSource, AsyncCallback callback, object asyncState)
-		{
-			return BeginCreate(delegate { return Create(fileSource); }, callback, asyncState);
-		}
+            if (getrightHttpSeeds.Count > 0)
+            {
+                var seedlist = new BEncodedList();
+                seedlist.AddRange(getrightHttpSeeds.ConvertAll<BEncodedValue>(delegate (string s) { return (BEncodedString)s; }));
+                torrent["url-list"] = seedlist;
+            }
 
-		private IAsyncResult BeginCreate(MainLoopJob task, AsyncCallback callback, object asyncState)
-		{
-			if (asyncResult != null)
-				throw new InvalidOperationException("Two asynchronous operations cannot be executed simultaenously");
+            TimeSpan span = DateTime.Now - new DateTime(1970, 1, 1);
+            torrent["creation date"] = new BEncodedNumber((long)span.TotalSeconds);
+        }
 
-			asyncResult = new TorrentCreatorAsyncResult(callback, asyncState);
-			ThreadPool.QueueUserWorkItem(delegate
-			{
-				try
-				{
-					asyncResult.Dictionary = (BEncodedDictionary) task();
-				}
-				catch (Exception ex)
-				{
-					asyncResult.SavedException = ex;
-				}
-				asyncResult.Complete();
-			});
-			return asyncResult;
-		}
+        public IAsyncResult BeginCreate(ITorrentFileSource fileSource, AsyncCallback callback, object asyncState)
+        {
+            return BeginCreate(delegate { return Create(fileSource); }, callback, asyncState);
+        }
 
-		private byte[] CalcPiecesHash(List<TorrentFile> files, PieceWriter writer)
-		{
-			byte[] buffer = null;
-			int bufferRead = 0;
-			long fileRead = 0;
-			long overallRead = 0;
-			long overallTotal = 0;
-			MD5 md5Hasher = null;
-			SHA1 shaHasher = null;
-			List<byte> torrentHashes = null;
+        private IAsyncResult BeginCreate(MainLoopJob task, AsyncCallback callback, object asyncState)
+        {
+            if (asyncResult != null)
+                throw new InvalidOperationException("Two asynchronous operations cannot be executed simultaenously");
 
-			shaHasher = HashAlgoFactory.Create<SHA1>();
-			torrentHashes = new List<byte>();
-			overallTotal = Toolbox.Accumulate(files, delegate(TorrentFile m) { return m.Length; });
+            asyncResult = new TorrentCreatorAsyncResult(callback, asyncState);
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                try
+                {
+                    asyncResult.Dictionary = (BEncodedDictionary)task();
+                }
+                catch (Exception ex)
+                {
+                    asyncResult.SavedException = ex;
+                }
+                asyncResult.Complete();
+            });
+            return asyncResult;
+        }
 
-			long pieceLength = PieceLength;
-			buffer = new byte[pieceLength];
+        private byte[] CalcPiecesHash(List<TorrentFile> files, PieceWriter writer)
+        {
+            byte[] buffer = null;
+            int bufferRead = 0;
+            long fileRead = 0;
+            long overallRead = 0;
+            long overallTotal = 0;
+            MD5 md5Hasher = null;
+            SHA1 shaHasher = null;
+            List<byte> torrentHashes = null;
 
-			if (StoreMD5)
-				md5Hasher = HashAlgoFactory.Create<MD5>();
+            shaHasher = HashAlgoFactory.Create<SHA1>();
+            torrentHashes = new List<byte>();
+            overallTotal = Toolbox.Accumulate(files, delegate (TorrentFile m) { return m.Length; });
 
-			try
-			{
-				foreach (TorrentFile file in files)
-				{
-					fileRead = 0;
-					if (md5Hasher != null)
-						md5Hasher.Initialize();
+            long pieceLength = PieceLength;
+            buffer = new byte[pieceLength];
 
-					while (fileRead < file.Length)
-					{
-						var toRead = (int) Math.Min(buffer.Length - bufferRead, file.Length - fileRead);
-						int read = writer.Read(file, fileRead, buffer, bufferRead, toRead);
+            if (StoreMD5)
+                md5Hasher = HashAlgoFactory.Create<MD5>();
 
-						if (md5Hasher != null)
-							md5Hasher.TransformBlock(buffer, bufferRead, read, buffer, bufferRead);
-						shaHasher.TransformBlock(buffer, bufferRead, read, buffer, bufferRead);
+            try
+            {
+                foreach (TorrentFile file in files)
+                {
+                    fileRead = 0;
+                    if (md5Hasher != null)
+                        md5Hasher.Initialize();
 
-						bufferRead += read;
-						fileRead += read;
-						overallRead += read;
+                    while (fileRead < file.Length)
+                    {
+                        var toRead = (int)Math.Min(buffer.Length - bufferRead, file.Length - fileRead);
+                        int read = writer.Read(file, fileRead, buffer, bufferRead, toRead);
 
-						if (bufferRead == buffer.Length)
-						{
-							bufferRead = 0;
-							shaHasher.TransformFinalBlock(buffer, 0, 0);
-							torrentHashes.AddRange(shaHasher.Hash);
-							shaHasher.Initialize();
-						}
-						RaiseHashed(new TorrentCreatorEventArgs(file.Path, fileRead, file.Length, overallRead, overallTotal));
-					}
-					if (md5Hasher != null)
-					{
-						md5Hasher.TransformFinalBlock(buffer, 0, 0);
-						md5Hasher.Initialize();
-						file.MD5 = md5Hasher.Hash;
-					}
-				}
-				if (bufferRead > 0)
-				{
-					shaHasher.TransformFinalBlock(buffer, 0, 0);
-					torrentHashes.AddRange(shaHasher.Hash);
-				}
-			}
-			finally
-			{
-				if (shaHasher != null)
-					shaHasher.Clear();
-				if (md5Hasher != null)
-					md5Hasher.Clear();
-			}
-			return torrentHashes.ToArray();
-		}
+                        if (md5Hasher != null)
+                            md5Hasher.TransformBlock(buffer, bufferRead, read, buffer, bufferRead);
+                        shaHasher.TransformBlock(buffer, bufferRead, read, buffer, bufferRead);
 
-		public BEncodedDictionary Create(ITorrentFileSource fileSource)
-		{
-			Check.FileSource(fileSource);
+                        bufferRead += read;
+                        fileRead += read;
+                        overallRead += read;
 
-			var mappings = new List<FileMapping>(fileSource.Files);
-			if (mappings.Count == 0)
-				throw new ArgumentException("The file source must contain one or more files", "fileSource");
+                        if (bufferRead == buffer.Length)
+                        {
+                            bufferRead = 0;
+                            shaHasher.TransformFinalBlock(buffer, 0, 0);
+                            torrentHashes.AddRange(shaHasher.Hash);
+                            shaHasher.Initialize();
+                        }
+                        RaiseHashed(new TorrentCreatorEventArgs(file.Path, fileRead, file.Length, overallRead, overallTotal));
+                    }
+                    if (md5Hasher != null)
+                    {
+                        md5Hasher.TransformFinalBlock(buffer, 0, 0);
+                        md5Hasher.Initialize();
+                        file.MD5 = md5Hasher.Hash;
+                    }
+                }
+                if (bufferRead > 0)
+                {
+                    shaHasher.TransformFinalBlock(buffer, 0, 0);
+                    torrentHashes.AddRange(shaHasher.Hash);
+                }
+            }
+            finally
+            {
+                if (shaHasher != null)
+                    shaHasher.Clear();
+                if (md5Hasher != null)
+                    md5Hasher.Clear();
+            }
+            return torrentHashes.ToArray();
+        }
 
-			mappings.Sort((left, right) => left.Destination.CompareTo(right.Destination));
-			Validate(mappings);
+        public BEncodedDictionary Create(ITorrentFileSource fileSource)
+        {
+            Check.FileSource(fileSource);
 
-			var maps = new List<TorrentFile>();
-			foreach (FileMapping m in fileSource.Files)
-				maps.Add(ToTorrentFile(m));
-			return Create(fileSource.TorrentName, maps);
-		}
+            var mappings = new List<FileMapping>(fileSource.Files);
+            if (mappings.Count == 0)
+                throw new ArgumentException("The file source must contain one or more files", "fileSource");
 
-		public void Create(ITorrentFileSource fileSource, Stream stream)
-		{
-			Check.Stream(stream);
+            mappings.Sort((left, right) => left.Destination.CompareTo(right.Destination));
+            Validate(mappings);
 
-			byte[] data = Create(fileSource).Encode();
-			stream.Write(data, 0, data.Length);
-		}
+            var maps = new List<TorrentFile>();
+            foreach (FileMapping m in fileSource.Files)
+                maps.Add(ToTorrentFile(m));
+            return Create(fileSource.TorrentName, maps);
+        }
 
-		public void Create(ITorrentFileSource fileSource, string savePath)
-		{
-			Check.SavePath(savePath);
+        public void Create(ITorrentFileSource fileSource, Stream stream)
+        {
+            Check.Stream(stream);
 
-			File.WriteAllBytes(savePath, Create(fileSource).Encode());
-		}
+            byte[] data = Create(fileSource).Encode();
+            stream.Write(data, 0, data.Length);
+        }
 
-		internal BEncodedDictionary Create(string name, List<TorrentFile> files)
-		{
-			if (PieceLength == 0)
-				PieceLength = RecommendedPieceSize(files);
+        public void Create(ITorrentFileSource fileSource, string savePath)
+        {
+            Check.SavePath(savePath);
 
-			BEncodedDictionary torrent = BEncodedValue.Clone(Metadata);
-			var info = (BEncodedDictionary) torrent["info"];
+            File.WriteAllBytes(savePath, Create(fileSource).Encode());
+        }
 
-			info["name"] = (BEncodedString) name;
-			AddCommonStuff(torrent);
+        internal BEncodedDictionary Create(string name, List<TorrentFile> files)
+        {
+            if (PieceLength == 0)
+                PieceLength = RecommendedPieceSize(files);
 
-			using (PieceWriter reader = CreateReader())
-			{
-				info["pieces"] = (BEncodedString) CalcPiecesHash(files, reader);
+            BEncodedDictionary torrent = BEncodedValue.Clone(Metadata);
+            var info = (BEncodedDictionary)torrent["info"];
 
-				if (files.Count == 1 && files[0].Path == name)
-					CreateSingleFileTorrent(torrent, files, reader, name);
-				else
-					CreateMultiFileTorrent(torrent, files, reader, name);
-			}
+            info["name"] = (BEncodedString)name;
+            AddCommonStuff(torrent);
 
-			return torrent;
-		}
+            using (PieceWriter reader = CreateReader())
+            {
+                info["pieces"] = (BEncodedString)CalcPiecesHash(files, reader);
 
-		private void CreateMultiFileTorrent(BEncodedDictionary dictionary, List<TorrentFile> mappings, PieceWriter writer,
-			string name)
-		{
-			var info = (BEncodedDictionary) dictionary["info"];
-			List<BEncodedValue> files = mappings.ConvertAll(ToFileInfoDict);
-			info.Add("files", new BEncodedList(files));
-		}
+                if (files.Count == 1 && files[0].Path == name)
+                    CreateSingleFileTorrent(torrent, files, reader, name);
+                else
+                    CreateMultiFileTorrent(torrent, files, reader, name);
+            }
 
-		protected virtual PieceWriter CreateReader()
-		{
-			return new DiskWriter();
-		}
+            return torrent;
+        }
 
-		private void CreateSingleFileTorrent(BEncodedDictionary dictionary, List<TorrentFile> mappings, PieceWriter writer,
-			string name)
-		{
-			var infoDict = (BEncodedDictionary) dictionary["info"];
-			infoDict.Add("length", new BEncodedNumber(mappings[0].Length));
-			if (mappings[0].MD5 != null)
-				infoDict["md5sum"] = (BEncodedString) mappings[0].MD5;
-		}
+        private void CreateMultiFileTorrent(BEncodedDictionary dictionary, List<TorrentFile> mappings, PieceWriter writer,
+            string name)
+        {
+            var info = (BEncodedDictionary)dictionary["info"];
+            List<BEncodedValue> files = mappings.ConvertAll(ToFileInfoDict);
+            info.Add("files", new BEncodedList(files));
+        }
 
-		public BEncodedDictionary EndCreate(IAsyncResult result)
-		{
-			Check.Result(result);
+        protected virtual PieceWriter CreateReader()
+        {
+            return new DiskWriter();
+        }
 
-			if (result != asyncResult)
-				throw new ArgumentException("The supplied async result does not correspond to currently active async result");
+        private void CreateSingleFileTorrent(BEncodedDictionary dictionary, List<TorrentFile> mappings, PieceWriter writer,
+            string name)
+        {
+            var infoDict = (BEncodedDictionary)dictionary["info"];
+            infoDict.Add("length", new BEncodedNumber(mappings[0].Length));
+            if (mappings[0].MD5 != null)
+                infoDict["md5sum"] = (BEncodedString)mappings[0].MD5;
+        }
 
-			try
-			{
-				if (!result.IsCompleted)
-					result.AsyncWaitHandle.WaitOne();
+        public BEncodedDictionary EndCreate(IAsyncResult result)
+        {
+            Check.Result(result);
 
-				if (asyncResult.SavedException != null)
-					throw asyncResult.SavedException;
+            if (result != asyncResult)
+                throw new ArgumentException("The supplied async result does not correspond to currently active async result");
 
-				return asyncResult.Aborted ? null : asyncResult.Dictionary;
-			}
-			finally
-			{
-				asyncResult = null;
-			}
-		}
+            try
+            {
+                if (!result.IsCompleted)
+                    result.AsyncWaitHandle.WaitOne();
 
-		public void EndCreate(IAsyncResult result, string path)
-		{
-			Check.PathNotEmpty(path);
+                if (asyncResult.SavedException != null)
+                    throw asyncResult.SavedException;
 
-			BEncodedDictionary dict = EndCreate(result);
-			File.WriteAllBytes(path, dict.Encode());
-		}
+                return asyncResult.Aborted ? null : asyncResult.Dictionary;
+            }
+            finally
+            {
+                asyncResult = null;
+            }
+        }
 
-		public void EndCreate(IAsyncResult result, Stream stream)
-		{
-			Check.Stream(stream);
+        public void EndCreate(IAsyncResult result, string path)
+        {
+            Check.PathNotEmpty(path);
 
-			byte[] buffer = EndCreate(result).Encode();
-			stream.Write(buffer, 0, buffer.Length);
-		}
+            BEncodedDictionary dict = EndCreate(result);
+            File.WriteAllBytes(path, dict.Encode());
+        }
 
-		private void RaiseHashed(TorrentCreatorEventArgs e)
-		{
-			Toolbox.RaiseAsyncEvent(Hashed, this, e);
-		}
+        public void EndCreate(IAsyncResult result, Stream stream)
+        {
+            Check.Stream(stream);
 
-		private TorrentFile ToTorrentFile(FileMapping mapping)
-		{
-			var info = new FileInfo(mapping.Source);
-			return new TorrentFile(mapping.Destination, info.Length, mapping.Source);
-		}
+            byte[] buffer = EndCreate(result).Encode();
+            stream.Write(buffer, 0, buffer.Length);
+        }
 
-		private BEncodedValue ToFileInfoDict(TorrentFile file)
-		{
-			var fileDict = new BEncodedDictionary();
+        private void RaiseHashed(TorrentCreatorEventArgs e)
+        {
+            Toolbox.RaiseAsyncEvent(Hashed, this, e);
+        }
 
-			var filePath = new BEncodedList();
-			string[] splittetPath = file.Path.Split(new[] {Path.DirectorySeparatorChar}, StringSplitOptions.RemoveEmptyEntries);
-			foreach (string s in splittetPath)
-				filePath.Add(new BEncodedString(s));
+        private TorrentFile ToTorrentFile(FileMapping mapping)
+        {
+            var info = new FileInfo(mapping.Source);
+            return new TorrentFile(mapping.Destination, info.Length, mapping.Source);
+        }
 
-			fileDict["length"] = new BEncodedNumber(file.Length);
-			fileDict["path"] = filePath;
-			if (file.MD5 != null)
-				fileDict["md5sum"] = (BEncodedString) file.MD5;
+        private BEncodedValue ToFileInfoDict(TorrentFile file)
+        {
+            var fileDict = new BEncodedDictionary();
 
-			return fileDict;
-		}
+            var filePath = new BEncodedList();
+            string[] splittetPath = file.Path.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (string s in splittetPath)
+                filePath.Add(new BEncodedString(s));
 
-		private void Validate(List<FileMapping> maps)
-		{
-			// Make sure the user doesn't try to overwrite system files. Ensure
-			// that the path is relative and doesn't try to access its parent folder
-			string sepLinux = "/";
-			string sepWindows = "\\";
-			string dropLinux = "../";
-			string dropWindows = "..\\";
-			foreach (FileMapping map in maps)
-			{
-				if (map.Destination.StartsWith(sepLinux))
-					throw new ArgumentException("The destination path cannot start with the '{0}' character", sepLinux);
-				if (map.Destination.StartsWith(sepWindows))
-					throw new ArgumentException("The destination path cannot start with the '{0}' character", sepWindows);
+            fileDict["length"] = new BEncodedNumber(file.Length);
+            fileDict["path"] = filePath;
+            if (file.MD5 != null)
+                fileDict["md5sum"] = (BEncodedString)file.MD5;
 
-				if (map.Destination.Contains(dropLinux))
-					throw new ArgumentException("The destination path cannot contain '{0}'", dropLinux);
-				if (map.Destination.Contains(dropWindows))
-					throw new ArgumentException("The destination path cannot contain '{0}'", dropWindows);
-			}
+            return fileDict;
+        }
 
-			// Ensure all the destination files are unique too. The files should already be sorted.
-			for (int i = 1; i < maps.Count; i++)
-				if (maps[i - 1].Destination == maps[i].Destination)
-					throw new ArgumentException(string.Format("Files '{0}' and '{1}' both map to the same destination '{2}'",
-						maps[i - 1].Source,
-						maps[i].Source,
-						maps[i].Destination));
-		}
-	}
+        private void Validate(List<FileMapping> maps)
+        {
+            // Make sure the user doesn't try to overwrite system files. Ensure
+            // that the path is relative and doesn't try to access its parent folder
+            string sepLinux = "/";
+            string sepWindows = "\\";
+            string dropLinux = "../";
+            string dropWindows = "..\\";
+            foreach (FileMapping map in maps)
+            {
+                if (map.Destination.StartsWith(sepLinux))
+                    throw new ArgumentException("The destination path cannot start with the '{0}' character", sepLinux);
+                if (map.Destination.StartsWith(sepWindows))
+                    throw new ArgumentException("The destination path cannot start with the '{0}' character", sepWindows);
+
+                if (map.Destination.Contains(dropLinux))
+                    throw new ArgumentException("The destination path cannot contain '{0}'", dropLinux);
+                if (map.Destination.Contains(dropWindows))
+                    throw new ArgumentException("The destination path cannot contain '{0}'", dropWindows);
+            }
+
+            // Ensure all the destination files are unique too. The files should already be sorted.
+            for (int i = 1; i < maps.Count; i++)
+                if (maps[i - 1].Destination == maps[i].Destination)
+                    throw new ArgumentException(string.Format("Files '{0}' and '{1}' both map to the same destination '{2}'",
+                        maps[i - 1].Source,
+                        maps[i].Source,
+                        maps[i].Destination));
+        }
+    }
 }

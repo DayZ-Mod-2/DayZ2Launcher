@@ -29,25 +29,25 @@
 
 namespace MonoTorrent.Common
 {
-	public struct FileMapping
-	{
-		private readonly string destination;
-		private readonly string source;
+    public struct FileMapping
+    {
+        private readonly string destination;
+        private readonly string source;
 
-		public FileMapping(string source, string destination)
-		{
-			this.source = source;
-			this.destination = destination;
-		}
+        public FileMapping(string source, string destination)
+        {
+            this.source = source;
+            this.destination = destination;
+        }
 
-		public string Source
-		{
-			get { return source; }
-		}
+        public string Source
+        {
+            get { return source; }
+        }
 
-		public string Destination
-		{
-			get { return destination; }
-		}
-	}
+        public string Destination
+        {
+            get { return destination; }
+        }
+    }
 }

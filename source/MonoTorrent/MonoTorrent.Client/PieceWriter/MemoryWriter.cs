@@ -4,139 +4,139 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client.PieceWriters
 {
-	public class MemoryWriter : PieceWriter
-	{
-		private readonly List<CachedBlock> cachedBlocks;
-		private readonly PieceWriter writer;
+    public class MemoryWriter : PieceWriter
+    {
+        private readonly List<CachedBlock> cachedBlocks;
+        private readonly PieceWriter writer;
 
 
-		public MemoryWriter(PieceWriter writer)
-			: this(writer, 2*1024*1024)
-		{
-		}
+        public MemoryWriter(PieceWriter writer)
+            : this(writer, 2 * 1024 * 1024)
+        {
+        }
 
-		public MemoryWriter(PieceWriter writer, int capacity)
-		{
-			Check.Writer(writer);
+        public MemoryWriter(PieceWriter writer, int capacity)
+        {
+            Check.Writer(writer);
 
-			if (capacity < 0)
-				throw new ArgumentOutOfRangeException("capacity");
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException("capacity");
 
-			cachedBlocks = new List<CachedBlock>();
-			this.Capacity = capacity;
-			this.writer = writer;
-		}
+            cachedBlocks = new List<CachedBlock>();
+            this.Capacity = capacity;
+            this.writer = writer;
+        }
 
-		public int Capacity { get; set; }
+        public int Capacity { get; set; }
 
-		public int Used
-		{
-			get { return cachedBlocks.Count*Piece.BlockSize; }
-		}
+        public int Used
+        {
+            get { return cachedBlocks.Count * Piece.BlockSize; }
+        }
 
-		public override int Read(TorrentFile file, long offset, byte[] buffer, int bufferOffset, int count)
-		{
-			Check.File(file);
-			Check.Buffer(buffer);
+        public override int Read(TorrentFile file, long offset, byte[] buffer, int bufferOffset, int count)
+        {
+            Check.File(file);
+            Check.Buffer(buffer);
 
-			for (int i = 0; i < cachedBlocks.Count; i++)
-			{
-				if (cachedBlocks[i].File != file)
-					continue;
-				if (cachedBlocks[i].Offset != offset || cachedBlocks[i].File != file || cachedBlocks[i].Count != count)
-					continue;
-				Buffer.BlockCopy(cachedBlocks[i].Buffer, 0, buffer, bufferOffset, count);
-				return count;
-			}
+            for (int i = 0; i < cachedBlocks.Count; i++)
+            {
+                if (cachedBlocks[i].File != file)
+                    continue;
+                if (cachedBlocks[i].Offset != offset || cachedBlocks[i].File != file || cachedBlocks[i].Count != count)
+                    continue;
+                Buffer.BlockCopy(cachedBlocks[i].Buffer, 0, buffer, bufferOffset, count);
+                return count;
+            }
 
-			return writer.Read(file, offset, buffer, bufferOffset, count);
-		}
+            return writer.Read(file, offset, buffer, bufferOffset, count);
+        }
 
-		public override void Write(TorrentFile file, long offset, byte[] buffer, int bufferOffset, int count)
-		{
-			Write(file, offset, buffer, bufferOffset, count, false);
-		}
+        public override void Write(TorrentFile file, long offset, byte[] buffer, int bufferOffset, int count)
+        {
+            Write(file, offset, buffer, bufferOffset, count, false);
+        }
 
-		public void Write(TorrentFile file, long offset, byte[] buffer, int bufferOffset, int count, bool forceWrite)
-		{
-			if (forceWrite)
-			{
-				writer.Write(file, offset, buffer, bufferOffset, count);
-			}
-			else
-			{
-				if (Used > (Capacity - count))
-					Flush(0);
+        public void Write(TorrentFile file, long offset, byte[] buffer, int bufferOffset, int count, bool forceWrite)
+        {
+            if (forceWrite)
+            {
+                writer.Write(file, offset, buffer, bufferOffset, count);
+            }
+            else
+            {
+                if (Used > (Capacity - count))
+                    Flush(0);
 
-				byte[] cacheBuffer = BufferManager.EmptyBuffer;
-				ClientEngine.BufferManager.GetBuffer(ref cacheBuffer, count);
-				Buffer.BlockCopy(buffer, bufferOffset, cacheBuffer, 0, count);
+                byte[] cacheBuffer = BufferManager.EmptyBuffer;
+                ClientEngine.BufferManager.GetBuffer(ref cacheBuffer, count);
+                Buffer.BlockCopy(buffer, bufferOffset, cacheBuffer, 0, count);
 
-				var block = new CachedBlock();
-				block.Buffer = cacheBuffer;
-				block.Count = count;
-				block.Offset = offset;
-				block.File = file;
-				cachedBlocks.Add(block);
-			}
-		}
+                var block = new CachedBlock();
+                block.Buffer = cacheBuffer;
+                block.Count = count;
+                block.Offset = offset;
+                block.File = file;
+                cachedBlocks.Add(block);
+            }
+        }
 
-		public override void Close(TorrentFile file)
-		{
-			Flush(file);
-			writer.Close(file);
-		}
+        public override void Close(TorrentFile file)
+        {
+            Flush(file);
+            writer.Close(file);
+        }
 
-		public override bool Exists(TorrentFile file)
-		{
-			return writer.Exists(file);
-		}
+        public override bool Exists(TorrentFile file)
+        {
+            return writer.Exists(file);
+        }
 
-		public override void Flush(TorrentFile file)
-		{
-			for (int i = 0; i < cachedBlocks.Count; i++)
-			{
-				if (cachedBlocks[i].File == file)
-				{
-					CachedBlock b = cachedBlocks[i];
-					writer.Write(b.File, b.Offset, b.Buffer, 0, b.Count);
-					ClientEngine.BufferManager.FreeBuffer(ref b.Buffer);
-				}
-			}
-			cachedBlocks.RemoveAll(delegate(CachedBlock b) { return b.File == file; });
-		}
+        public override void Flush(TorrentFile file)
+        {
+            for (int i = 0; i < cachedBlocks.Count; i++)
+            {
+                if (cachedBlocks[i].File == file)
+                {
+                    CachedBlock b = cachedBlocks[i];
+                    writer.Write(b.File, b.Offset, b.Buffer, 0, b.Count);
+                    ClientEngine.BufferManager.FreeBuffer(ref b.Buffer);
+                }
+            }
+            cachedBlocks.RemoveAll(delegate (CachedBlock b) { return b.File == file; });
+        }
 
-		public void Flush(int index)
-		{
-			CachedBlock b = cachedBlocks[index];
-			cachedBlocks.RemoveAt(index);
-			Write(b.File, b.Offset, b.Buffer, 0, b.Count, true);
-			ClientEngine.BufferManager.FreeBuffer(ref b.Buffer);
-		}
+        public void Flush(int index)
+        {
+            CachedBlock b = cachedBlocks[index];
+            cachedBlocks.RemoveAt(index);
+            Write(b.File, b.Offset, b.Buffer, 0, b.Count, true);
+            ClientEngine.BufferManager.FreeBuffer(ref b.Buffer);
+        }
 
-		public override void Move(string oldPath, string newPath, bool ignoreExisting)
-		{
-			writer.Move(oldPath, newPath, ignoreExisting);
-		}
+        public override void Move(string oldPath, string newPath, bool ignoreExisting)
+        {
+            writer.Move(oldPath, newPath, ignoreExisting);
+        }
 
-		public override void Dispose()
-		{
-			// Flush everything in memory to disk
-			while (cachedBlocks.Count > 0)
-				Flush(0);
+        public override void Dispose()
+        {
+            // Flush everything in memory to disk
+            while (cachedBlocks.Count > 0)
+                Flush(0);
 
-			// Dispose the held writer
-			writer.Dispose();
+            // Dispose the held writer
+            writer.Dispose();
 
-			base.Dispose();
-		}
+            base.Dispose();
+        }
 
-		private struct CachedBlock
-		{
-			public byte[] Buffer;
-			public int Count;
-			public TorrentFile File;
-			public long Offset;
-		}
-	}
+        private struct CachedBlock
+        {
+            public byte[] Buffer;
+            public int Count;
+            public TorrentFile File;
+            public long Offset;
+        }
+    }
 }

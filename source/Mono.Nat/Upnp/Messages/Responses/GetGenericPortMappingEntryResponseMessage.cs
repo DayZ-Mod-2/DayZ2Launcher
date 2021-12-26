@@ -30,80 +30,80 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	internal class GetGenericPortMappingEntryResponseMessage : MessageBase
-	{
-		private readonly bool enabled;
-		private readonly int externalPort;
-		private readonly string internalClient;
-		private readonly int internalPort;
-		private readonly int leaseDuration;
-		private readonly string portMappingDescription;
-		private readonly Protocol protocol;
-		private readonly string remoteHost;
+    internal class GetGenericPortMappingEntryResponseMessage : MessageBase
+    {
+        private readonly bool enabled;
+        private readonly int externalPort;
+        private readonly string internalClient;
+        private readonly int internalPort;
+        private readonly int leaseDuration;
+        private readonly string portMappingDescription;
+        private readonly Protocol protocol;
+        private readonly string remoteHost;
 
-		public GetGenericPortMappingEntryResponseMessage(XmlNode data, bool genericMapping)
-			: base(null)
-		{
-			remoteHost = (genericMapping) ? data["NewRemoteHost"].InnerText : string.Empty;
-			externalPort = (genericMapping) ? Convert.ToInt32(data["NewExternalPort"].InnerText) : -1;
-			if (genericMapping)
-				protocol = data["NewProtocol"].InnerText.Equals("TCP", StringComparison.InvariantCultureIgnoreCase)
-					? Protocol.Tcp
-					: Protocol.Udp;
-			else
-				protocol = Protocol.Udp;
+        public GetGenericPortMappingEntryResponseMessage(XmlNode data, bool genericMapping)
+            : base(null)
+        {
+            remoteHost = (genericMapping) ? data["NewRemoteHost"].InnerText : string.Empty;
+            externalPort = (genericMapping) ? Convert.ToInt32(data["NewExternalPort"].InnerText) : -1;
+            if (genericMapping)
+                protocol = data["NewProtocol"].InnerText.Equals("TCP", StringComparison.InvariantCultureIgnoreCase)
+                    ? Protocol.Tcp
+                    : Protocol.Udp;
+            else
+                protocol = Protocol.Udp;
 
-			internalPort = Convert.ToInt32(data["NewInternalPort"].InnerText);
-			internalClient = data["NewInternalClient"].InnerText;
-			enabled = data["NewEnabled"].InnerText == "1" ? true : false;
-			portMappingDescription = data["NewPortMappingDescription"].InnerText;
-			leaseDuration = Convert.ToInt32(data["NewLeaseDuration"].InnerText);
-		}
+            internalPort = Convert.ToInt32(data["NewInternalPort"].InnerText);
+            internalClient = data["NewInternalClient"].InnerText;
+            enabled = data["NewEnabled"].InnerText == "1" ? true : false;
+            portMappingDescription = data["NewPortMappingDescription"].InnerText;
+            leaseDuration = Convert.ToInt32(data["NewLeaseDuration"].InnerText);
+        }
 
-		public string RemoteHost
-		{
-			get { return remoteHost; }
-		}
+        public string RemoteHost
+        {
+            get { return remoteHost; }
+        }
 
-		public int ExternalPort
-		{
-			get { return externalPort; }
-		}
+        public int ExternalPort
+        {
+            get { return externalPort; }
+        }
 
-		public Protocol Protocol
-		{
-			get { return protocol; }
-		}
+        public Protocol Protocol
+        {
+            get { return protocol; }
+        }
 
-		public int InternalPort
-		{
-			get { return internalPort; }
-		}
+        public int InternalPort
+        {
+            get { return internalPort; }
+        }
 
-		public string InternalClient
-		{
-			get { return internalClient; }
-		}
+        public string InternalClient
+        {
+            get { return internalClient; }
+        }
 
-		public bool Enabled
-		{
-			get { return enabled; }
-		}
+        public bool Enabled
+        {
+            get { return enabled; }
+        }
 
-		public string PortMappingDescription
-		{
-			get { return portMappingDescription; }
-		}
+        public string PortMappingDescription
+        {
+            get { return portMappingDescription; }
+        }
 
-		public int LeaseDuration
-		{
-			get { return leaseDuration; }
-		}
+        public int LeaseDuration
+        {
+            get { return leaseDuration; }
+        }
 
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public override WebRequest Encode(out byte[] body)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

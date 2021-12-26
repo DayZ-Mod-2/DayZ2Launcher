@@ -38,250 +38,250 @@ using MonoTorrent.Dht.Tasks;
 
 namespace MonoTorrent.Dht
 {
-	internal enum ErrorCode
-	{
-		GenericError = 201,
-		ServerError = 202,
-		ProtocolError = 203, // malformed packet, invalid arguments, or bad token
-		MethodUnknown = 204 //Method Unknown
-	}
+    internal enum ErrorCode
+    {
+        GenericError = 201,
+        ServerError = 202,
+        ProtocolError = 203, // malformed packet, invalid arguments, or bad token
+        MethodUnknown = 204 //Method Unknown
+    }
 
-	public class DhtEngine : IDisposable, IDhtEngine
-	{
-		#region Events
+    public class DhtEngine : IDisposable, IDhtEngine
+    {
+        #region Events
 
-		public event EventHandler<PeersFoundEventArgs> PeersFound;
-		public event EventHandler StateChanged;
+        public event EventHandler<PeersFoundEventArgs> PeersFound;
+        public event EventHandler StateChanged;
 
-		#endregion Events
+        #endregion Events
 
-		#region Fields
+        #region Fields
 
-		internal static MainLoop MainLoop = new MainLoop("DhtLoop");
-		private readonly MessageLoop messageLoop;
-		private readonly RoutingTable table = new RoutingTable();
-		private readonly TokenManager tokenManager;
-		private readonly Dictionary<NodeId, List<Node>> torrents = new Dictionary<NodeId, List<Node>>();
+        internal static MainLoop MainLoop = new MainLoop("DhtLoop");
+        private readonly MessageLoop messageLoop;
+        private readonly RoutingTable table = new RoutingTable();
+        private readonly TokenManager tokenManager;
+        private readonly Dictionary<NodeId, List<Node>> torrents = new Dictionary<NodeId, List<Node>>();
 
-		private bool bootStrap = true;
-		private TimeSpan bucketRefreshTimeout = TimeSpan.FromMinutes(15);
-		private bool disposed;
-		private DhtState state = DhtState.NotReady;
-		private TimeSpan timeout;
+        private bool bootStrap = true;
+        private TimeSpan bucketRefreshTimeout = TimeSpan.FromMinutes(15);
+        private bool disposed;
+        private DhtState state = DhtState.NotReady;
+        private TimeSpan timeout;
 
-		#endregion Fields
+        #endregion Fields
 
-		#region Properties
+        #region Properties
 
-		internal bool Bootstrap
-		{
-			get { return bootStrap; }
-			set { bootStrap = value; }
-		}
+        internal bool Bootstrap
+        {
+            get { return bootStrap; }
+            set { bootStrap = value; }
+        }
 
-		internal TimeSpan BucketRefreshTimeout
-		{
-			get { return bucketRefreshTimeout; }
-			set { bucketRefreshTimeout = value; }
-		}
+        internal TimeSpan BucketRefreshTimeout
+        {
+            get { return bucketRefreshTimeout; }
+            set { bucketRefreshTimeout = value; }
+        }
 
-		internal NodeId LocalId
-		{
-			get { return RoutingTable.LocalNode.Id; }
-		}
+        internal NodeId LocalId
+        {
+            get { return RoutingTable.LocalNode.Id; }
+        }
 
-		internal MessageLoop MessageLoop
-		{
-			get { return messageLoop; }
-		}
+        internal MessageLoop MessageLoop
+        {
+            get { return messageLoop; }
+        }
 
-		internal RoutingTable RoutingTable
-		{
-			get { return table; }
-		}
+        internal RoutingTable RoutingTable
+        {
+            get { return table; }
+        }
 
-		internal TimeSpan TimeOut
-		{
-			get { return timeout; }
-			set { timeout = value; }
-		}
+        internal TimeSpan TimeOut
+        {
+            get { return timeout; }
+            set { timeout = value; }
+        }
 
-		internal TokenManager TokenManager
-		{
-			get { return tokenManager; }
-		}
+        internal TokenManager TokenManager
+        {
+            get { return tokenManager; }
+        }
 
-		internal Dictionary<NodeId, List<Node>> Torrents
-		{
-			get { return torrents; }
-		}
+        internal Dictionary<NodeId, List<Node>> Torrents
+        {
+            get { return torrents; }
+        }
 
-		public bool Disposed
-		{
-			get { return disposed; }
-		}
+        public bool Disposed
+        {
+            get { return disposed; }
+        }
 
-		public DhtState State
-		{
-			get { return state; }
-		}
+        public DhtState State
+        {
+            get { return state; }
+        }
 
-		#endregion Properties
+        #endregion Properties
 
-		#region Constructors
+        #region Constructors
 
-		public DhtEngine(DhtListener listener)
-		{
-			if (listener == null)
-				throw new ArgumentNullException("listener");
+        public DhtEngine(DhtListener listener)
+        {
+            if (listener == null)
+                throw new ArgumentNullException("listener");
 
-			messageLoop = new MessageLoop(this, listener);
-			timeout = TimeSpan.FromSeconds(15); // 15 second message timeout by default
-			tokenManager = new TokenManager();
-		}
+            messageLoop = new MessageLoop(this, listener);
+            timeout = TimeSpan.FromSeconds(15); // 15 second message timeout by default
+            tokenManager = new TokenManager();
+        }
 
-		#endregion Constructors
+        #endregion Constructors
 
-		#region Methods
+        #region Methods
 
-		public void Add(BEncodedList nodes)
-		{
-			// Maybe we should pipeline all our tasks to ensure we don't flood the DHT engine.
-			// I don't think it's *bad* that we can run several initialise tasks simultaenously
-			// but it might be better to run them sequentially instead. We should also
-			// run GetPeers and Announce tasks sequentially.
-			var task = new InitialiseTask(this, Node.FromCompactNode(nodes));
-			task.Execute();
-		}
+        public void Add(BEncodedList nodes)
+        {
+            // Maybe we should pipeline all our tasks to ensure we don't flood the DHT engine.
+            // I don't think it's *bad* that we can run several initialise tasks simultaenously
+            // but it might be better to run them sequentially instead. We should also
+            // run GetPeers and Announce tasks sequentially.
+            var task = new InitialiseTask(this, Node.FromCompactNode(nodes));
+            task.Execute();
+        }
 
-		public void Announce(InfoHash infoHash, int port)
-		{
-			CheckDisposed();
-			Check.InfoHash(infoHash);
-			new AnnounceTask(this, infoHash, port).Execute();
-		}
+        public void Announce(InfoHash infoHash, int port)
+        {
+            CheckDisposed();
+            Check.InfoHash(infoHash);
+            new AnnounceTask(this, infoHash, port).Execute();
+        }
 
-		public void GetPeers(InfoHash infoHash)
-		{
-			CheckDisposed();
-			Check.InfoHash(infoHash);
-			new GetPeersTask(this, infoHash).Execute();
-		}
+        public void GetPeers(InfoHash infoHash)
+        {
+            CheckDisposed();
+            Check.InfoHash(infoHash);
+            new GetPeersTask(this, infoHash).Execute();
+        }
 
-		public byte[] SaveNodes()
-		{
-			var details = new BEncodedList();
+        public byte[] SaveNodes()
+        {
+            var details = new BEncodedList();
 
-			MainLoop.QueueWait(delegate
-			{
-				foreach (Bucket b in RoutingTable.Buckets)
-				{
-					foreach (Node n in b.Nodes)
-						if (n.State != NodeState.Bad)
-							details.Add(n.CompactNode());
+            MainLoop.QueueWait(delegate
+            {
+                foreach (Bucket b in RoutingTable.Buckets)
+                {
+                    foreach (Node n in b.Nodes)
+                        if (n.State != NodeState.Bad)
+                            details.Add(n.CompactNode());
 
-					if (b.Replacement != null)
-						if (b.Replacement.State != NodeState.Bad)
-							details.Add(b.Replacement.CompactNode());
-				}
-			});
+                    if (b.Replacement != null)
+                        if (b.Replacement.State != NodeState.Bad)
+                            details.Add(b.Replacement.CompactNode());
+                }
+            });
 
-			return details.Encode();
-		}
+            return details.Encode();
+        }
 
-		public void Start()
-		{
-			Start(null);
-		}
+        public void Start()
+        {
+            Start(null);
+        }
 
-		public void Start(byte[] initialNodes)
-		{
-			CheckDisposed();
+        public void Start(byte[] initialNodes)
+        {
+            CheckDisposed();
 
-			messageLoop.Start();
-			if (Bootstrap)
-			{
-				new InitialiseTask(this, initialNodes).Execute();
-				RaiseStateChanged(DhtState.Initialising);
-				bootStrap = false;
-			}
-			else
-			{
-				RaiseStateChanged(DhtState.Ready);
-			}
+            messageLoop.Start();
+            if (Bootstrap)
+            {
+                new InitialiseTask(this, initialNodes).Execute();
+                RaiseStateChanged(DhtState.Initialising);
+                bootStrap = false;
+            }
+            else
+            {
+                RaiseStateChanged(DhtState.Ready);
+            }
 
-			MainLoop.QueueTimeout(TimeSpan.FromSeconds(1), delegate
-			{
-				if (Disposed)
-					return false;
+            MainLoop.QueueTimeout(TimeSpan.FromSeconds(1), delegate
+            {
+                if (Disposed)
+                    return false;
 
-				foreach (Bucket b in RoutingTable.Buckets)
-				{
-					if ((DateTime.UtcNow - b.LastChanged) > BucketRefreshTimeout)
-					{
-						b.LastChanged = DateTime.UtcNow;
-						var task = new RefreshBucketTask(this, b);
-						task.Execute();
-					}
-				}
-				return !Disposed;
-			});
-		}
+                foreach (Bucket b in RoutingTable.Buckets)
+                {
+                    if ((DateTime.UtcNow - b.LastChanged) > BucketRefreshTimeout)
+                    {
+                        b.LastChanged = DateTime.UtcNow;
+                        var task = new RefreshBucketTask(this, b);
+                        task.Execute();
+                    }
+                }
+                return !Disposed;
+            });
+        }
 
-		public void Stop()
-		{
-			messageLoop.Stop();
-		}
+        public void Stop()
+        {
+            messageLoop.Stop();
+        }
 
-		public void Dispose()
-		{
-			if (disposed)
-				return;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
 
-			// Ensure we don't break any threads actively running right now
-			MainLoop.QueueWait(delegate { disposed = true; });
-		}
+            // Ensure we don't break any threads actively running right now
+            MainLoop.QueueWait(delegate { disposed = true; });
+        }
 
-		internal void Add(IEnumerable<Node> nodes)
-		{
-			if (nodes == null)
-				throw new ArgumentNullException("nodes");
+        internal void Add(IEnumerable<Node> nodes)
+        {
+            if (nodes == null)
+                throw new ArgumentNullException("nodes");
 
-			foreach (Node n in nodes)
-				Add(n);
-		}
+            foreach (Node n in nodes)
+                Add(n);
+        }
 
-		internal void Add(Node node)
-		{
-			if (node == null)
-				throw new ArgumentNullException("node");
+        internal void Add(Node node)
+        {
+            if (node == null)
+                throw new ArgumentNullException("node");
 
-			var task = new SendQueryTask(this, new Ping(RoutingTable.LocalNode.Id), node);
-			task.Execute();
-		}
+            var task = new SendQueryTask(this, new Ping(RoutingTable.LocalNode.Id), node);
+            task.Execute();
+        }
 
-		private void CheckDisposed()
-		{
-			if (Disposed)
-				throw new ObjectDisposedException(GetType().Name);
-		}
+        private void CheckDisposed()
+        {
+            if (Disposed)
+                throw new ObjectDisposedException(GetType().Name);
+        }
 
-		internal void RaiseStateChanged(DhtState newState)
-		{
-			state = newState;
+        internal void RaiseStateChanged(DhtState newState)
+        {
+            state = newState;
 
-			if (StateChanged != null)
-				StateChanged(this, EventArgs.Empty);
-		}
+            if (StateChanged != null)
+                StateChanged(this, EventArgs.Empty);
+        }
 
-		internal void RaisePeersFound(NodeId infoHash, List<Peer> peers)
-		{
-			if (PeersFound != null)
-				PeersFound(this, new PeersFoundEventArgs(new InfoHash(infoHash.Bytes), peers));
-		}
+        internal void RaisePeersFound(NodeId infoHash, List<Peer> peers)
+        {
+            if (PeersFound != null)
+                PeersFound(this, new PeersFoundEventArgs(new InfoHash(infoHash.Bytes), peers));
+        }
 
-		#endregion Methods
-	}
+        #endregion Methods
+    }
 }
 
 #endif

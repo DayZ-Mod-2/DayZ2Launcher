@@ -32,45 +32,45 @@ using MonoTorrent.BEncoding;
 
 namespace MonoTorrent.Dht.Messages
 {
-	internal class FindNode : QueryMessage
-	{
-		private static readonly BEncodedString TargetKey = "target";
-		private static readonly BEncodedString QueryName = "find_node";
+    internal class FindNode : QueryMessage
+    {
+        private static readonly BEncodedString TargetKey = "target";
+        private static readonly BEncodedString QueryName = "find_node";
 
-		private static readonly ResponseCreator responseCreator =
-			delegate(BEncodedDictionary d, QueryMessage m) { return new FindNodeResponse(d, m); };
+        private static readonly ResponseCreator responseCreator =
+            delegate (BEncodedDictionary d, QueryMessage m) { return new FindNodeResponse(d, m); };
 
-		public FindNode(NodeId id, NodeId target)
-			: base(id, QueryName, responseCreator)
-		{
-			Parameters.Add(TargetKey, target.BencodedString());
-		}
+        public FindNode(NodeId id, NodeId target)
+            : base(id, QueryName, responseCreator)
+        {
+            Parameters.Add(TargetKey, target.BencodedString());
+        }
 
-		public FindNode(BEncodedDictionary d)
-			: base(d, responseCreator)
-		{
-		}
+        public FindNode(BEncodedDictionary d)
+            : base(d, responseCreator)
+        {
+        }
 
-		public NodeId Target
-		{
-			get { return new NodeId((BEncodedString) Parameters[TargetKey]); }
-		}
+        public NodeId Target
+        {
+            get { return new NodeId((BEncodedString)Parameters[TargetKey]); }
+        }
 
-		public override void Handle(DhtEngine engine, Node node)
-		{
-			base.Handle(engine, node);
+        public override void Handle(DhtEngine engine, Node node)
+        {
+            base.Handle(engine, node);
 
-			var response = new FindNodeResponse(engine.RoutingTable.LocalNode.Id, TransactionId);
+            var response = new FindNodeResponse(engine.RoutingTable.LocalNode.Id, TransactionId);
 
-			Node targetNode = engine.RoutingTable.FindNode(Target);
-			if (targetNode != null)
-				response.Nodes = targetNode.CompactNode();
-			else
-				response.Nodes = Node.CompactNode(engine.RoutingTable.GetClosest(Target));
+            Node targetNode = engine.RoutingTable.FindNode(Target);
+            if (targetNode != null)
+                response.Nodes = targetNode.CompactNode();
+            else
+                response.Nodes = Node.CompactNode(engine.RoutingTable.GetClosest(Target));
 
-			engine.MessageLoop.EnqueueSend(response, node.EndPoint);
-		}
-	}
+            engine.MessageLoop.EnqueueSend(response, node.EndPoint);
+        }
+    }
 }
 
 #endif

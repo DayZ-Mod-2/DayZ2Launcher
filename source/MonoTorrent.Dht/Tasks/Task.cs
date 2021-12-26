@@ -3,21 +3,21 @@ using System;
 
 namespace MonoTorrent.Dht
 {
-	internal abstract class Task : ITask
-	{
-		public event EventHandler<TaskCompleteEventArgs> Completed;
+    internal abstract class Task : ITask
+    {
+        public event EventHandler<TaskCompleteEventArgs> Completed;
 
-		public bool Active { get; protected set; }
+        public bool Active { get; protected set; }
 
-		public abstract void Execute();
+        public abstract void Execute();
 
-		protected virtual void RaiseComplete(TaskCompleteEventArgs e)
-		{
-			EventHandler<TaskCompleteEventArgs> h = Completed;
-			if (h != null)
-				h(this, e);
-		}
-	}
+        protected virtual void RaiseComplete(TaskCompleteEventArgs e)
+        {
+            EventHandler<TaskCompleteEventArgs> h = Completed;
+            if (h != null)
+                h(this, e);
+        }
+    }
 }
 
 #endif

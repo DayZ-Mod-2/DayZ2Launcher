@@ -2,15 +2,15 @@
 
 namespace MonoTorrent.Tracker
 {
-	public class TrackerException : Exception
-	{
-		public TrackerException()
-		{
-		}
+    public class TrackerException : Exception
+    {
+        public TrackerException()
+        {
+        }
 
-		public TrackerException(string message)
-			: base(message)
-		{
-		}
-	}
+        public TrackerException(string message)
+            : base(message)
+        {
+        }
+    }
 }

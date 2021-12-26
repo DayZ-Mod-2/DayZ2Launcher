@@ -30,66 +30,66 @@
 
 namespace MonoTorrent.Client.Messages.Standard
 {
-	/// <summary>
-	///     Represents a "KeepAlive" message
-	/// </summary>
-	public class KeepAliveMessage : PeerMessage
-	{
-		private const int messageLength = 0; // has no payload
-		internal static readonly byte MessageId = 0;
-		private static readonly byte[] payload = {0, 0, 0, 0};
+    /// <summary>
+    ///     Represents a "KeepAlive" message
+    /// </summary>
+    public class KeepAliveMessage : PeerMessage
+    {
+        private const int messageLength = 0; // has no payload
+        internal static readonly byte MessageId = 0;
+        private static readonly byte[] payload = { 0, 0, 0, 0 };
 
-		#region Constructors
+        #region Constructors
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		///     Returns the length of the message in bytes
-		/// </summary>
-		public override int ByteLength
-		{
-			get { return (4); }
-		}
+        /// <summary>
+        ///     Returns the length of the message in bytes
+        /// </summary>
+        public override int ByteLength
+        {
+            get { return (4); }
+        }
 
-		public override int Encode(byte[] buffer, int offset)
-		{
-			int written = offset;
+        public override int Encode(byte[] buffer, int offset)
+        {
+            int written = offset;
 
-			written += Write(buffer, written, payload);
+            written += Write(buffer, written, payload);
 
-			return CheckWritten(written - offset);
-		}
+            return CheckWritten(written - offset);
+        }
 
-		public override void Decode(byte[] buffer, int offset, int length)
-		{
-			// No decoding needed
-		}
+        public override void Decode(byte[] buffer, int offset, int length)
+        {
+            // No decoding needed
+        }
 
-		#endregion
+        #endregion
 
-		#region Overridden Methods
+        #region Overridden Methods
 
-		/// <summary>
-		/// </summary>
-		/// <returns></returns>
-		public override string ToString()
-		{
-			return "KeepAliveMessage";
-		}
+        /// <summary>
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return "KeepAliveMessage";
+        }
 
-		public override bool Equals(object obj)
-		{
-			return (obj is KeepAliveMessage);
-		}
+        public override bool Equals(object obj)
+        {
+            return (obj is KeepAliveMessage);
+        }
 
 
-		public override int GetHashCode()
-		{
-			return ToString().GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

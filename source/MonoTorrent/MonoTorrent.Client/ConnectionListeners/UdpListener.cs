@@ -36,102 +36,102 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent
 {
-	public abstract class UdpListener : Listener
-	{
-		private UdpClient client;
+    public abstract class UdpListener : Listener
+    {
+        private UdpClient client;
 
-		protected UdpListener(IPEndPoint endpoint)
-			: base(endpoint)
-		{
-		}
+        protected UdpListener(IPEndPoint endpoint)
+            : base(endpoint)
+        {
+        }
 
-		private void EndReceive(IAsyncResult result)
-		{
-			try
-			{
-				var e = new IPEndPoint(IPAddress.Any, Endpoint.Port);
-				byte[] buffer = client.EndReceive(result, ref e);
+        private void EndReceive(IAsyncResult result)
+        {
+            try
+            {
+                var e = new IPEndPoint(IPAddress.Any, Endpoint.Port);
+                byte[] buffer = client.EndReceive(result, ref e);
 
-				OnMessageReceived(buffer, e);
-				client.BeginReceive(EndReceive, null);
-			}
-			catch (ObjectDisposedException)
-			{
-				// Ignore, we're finished!
-			}
-			catch (SocketException ex)
-			{
-				// If the destination computer closes the connection
-				// we get error code 10054. We need to keep receiving on
-				// the socket until we clear all the error states
-				if (ex.ErrorCode == 10054)
-				{
-					while (true)
-					{
-						try
-						{
-							client.BeginReceive(EndReceive, null);
-							return;
-						}
-						catch (ObjectDisposedException)
-						{
-							return;
-						}
-						catch (SocketException e)
-						{
-							if (e.ErrorCode != 10054)
-								return;
-						}
-					}
-				}
-			}
-		}
+                OnMessageReceived(buffer, e);
+                client.BeginReceive(EndReceive, null);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Ignore, we're finished!
+            }
+            catch (SocketException ex)
+            {
+                // If the destination computer closes the connection
+                // we get error code 10054. We need to keep receiving on
+                // the socket until we clear all the error states
+                if (ex.ErrorCode == 10054)
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            client.BeginReceive(EndReceive, null);
+                            return;
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                            return;
+                        }
+                        catch (SocketException e)
+                        {
+                            if (e.ErrorCode != 10054)
+                                return;
+                        }
+                    }
+                }
+            }
+        }
 
-		protected abstract void OnMessageReceived(byte[] buffer, IPEndPoint endpoint);
+        protected abstract void OnMessageReceived(byte[] buffer, IPEndPoint endpoint);
 
-		public virtual void Send(byte[] buffer, IPEndPoint endpoint)
-		{
-			try
-			{
-				if (endpoint.Address != IPAddress.Any)
-					client.Send(buffer, buffer.Length, endpoint);
-			}
-			catch (Exception ex)
-			{
-				Logger.Log(null, "UdpListener could not send message: {0}", ex);
-			}
-		}
+        public virtual void Send(byte[] buffer, IPEndPoint endpoint)
+        {
+            try
+            {
+                if (endpoint.Address != IPAddress.Any)
+                    client.Send(buffer, buffer.Length, endpoint);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(null, "UdpListener could not send message: {0}", ex);
+            }
+        }
 
-		public override void Start()
-		{
-			try
-			{
-				client = new UdpClient(Endpoint);
-				client.BeginReceive(EndReceive, null);
-				RaiseStatusChanged(ListenerStatus.Listening);
-			}
-			catch (SocketException)
-			{
-				RaiseStatusChanged(ListenerStatus.PortNotFree);
-			}
-			catch (ObjectDisposedException)
-			{
-				// Do Nothing
-			}
-		}
+        public override void Start()
+        {
+            try
+            {
+                client = new UdpClient(Endpoint);
+                client.BeginReceive(EndReceive, null);
+                RaiseStatusChanged(ListenerStatus.Listening);
+            }
+            catch (SocketException)
+            {
+                RaiseStatusChanged(ListenerStatus.PortNotFree);
+            }
+            catch (ObjectDisposedException)
+            {
+                // Do Nothing
+            }
+        }
 
-		public override void Stop()
-		{
-			try
-			{
-				client.Close();
-			}
-			catch
-			{
-				// FIXME: Not needed
-			}
-		}
-	}
+        public override void Stop()
+        {
+            try
+            {
+                client.Close();
+            }
+            catch
+            {
+                // FIXME: Not needed
+            }
+        }
+    }
 }
 
 #endif

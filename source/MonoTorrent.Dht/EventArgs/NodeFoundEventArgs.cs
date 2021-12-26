@@ -31,20 +31,20 @@ using System;
 
 namespace MonoTorrent.Dht
 {
-	internal class NodeFoundEventArgs : EventArgs
-	{
-		private readonly Node node;
+    internal class NodeFoundEventArgs : EventArgs
+    {
+        private readonly Node node;
 
-		public NodeFoundEventArgs(Node node)
-		{
-			this.node = node;
-		}
+        public NodeFoundEventArgs(Node node)
+        {
+            this.node = node;
+        }
 
-		public Node Node
-		{
-			get { return node; }
-		}
-	}
+        public Node Node
+        {
+            get { return node; }
+        }
+    }
 }
 
 #endif

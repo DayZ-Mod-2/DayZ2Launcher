@@ -33,28 +33,28 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client
 {
-	public class ProtocolException : TorrentException
-	{
-		public ProtocolException()
-		{
-		}
+    public class ProtocolException : TorrentException
+    {
+        public ProtocolException()
+        {
+        }
 
 
-		public ProtocolException(string message)
-			: base(message)
-		{
-		}
+        public ProtocolException(string message)
+            : base(message)
+        {
+        }
 
 
-		public ProtocolException(string message, Exception innerException)
-			: base(message, innerException)
-		{
-		}
+        public ProtocolException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
 
 
-		public ProtocolException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-		}
-	}
+        public ProtocolException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
+    }
 }

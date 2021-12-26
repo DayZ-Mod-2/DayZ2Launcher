@@ -34,216 +34,216 @@ using System.Text;
 
 namespace MonoTorrent.BEncoding
 {
-	/// <summary>
-	///     Class representing a BEncoded list
-	/// </summary>
-	public class BEncodedList : BEncodedValue, IList<BEncodedValue>
-	{
-		#region Member Variables
+    /// <summary>
+    ///     Class representing a BEncoded list
+    /// </summary>
+    public class BEncodedList : BEncodedValue, IList<BEncodedValue>
+    {
+        #region Member Variables
 
-		private readonly List<BEncodedValue> list;
+        private readonly List<BEncodedValue> list;
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		///     Create a new BEncoded List with default capacity
-		/// </summary>
-		public BEncodedList()
-			: this(new List<BEncodedValue>())
-		{
-		}
+        /// <summary>
+        ///     Create a new BEncoded List with default capacity
+        /// </summary>
+        public BEncodedList()
+            : this(new List<BEncodedValue>())
+        {
+        }
 
-		/// <summary>
-		///     Create a new BEncoded List with the supplied capacity
-		/// </summary>
-		/// <param name="capacity">The initial capacity</param>
-		public BEncodedList(int capacity)
-			: this(new List<BEncodedValue>(capacity))
-		{
-		}
+        /// <summary>
+        ///     Create a new BEncoded List with the supplied capacity
+        /// </summary>
+        /// <param name="capacity">The initial capacity</param>
+        public BEncodedList(int capacity)
+            : this(new List<BEncodedValue>(capacity))
+        {
+        }
 
-		public BEncodedList(IEnumerable<BEncodedValue> list)
-		{
-			if (list == null)
-				throw new ArgumentNullException("list");
+        public BEncodedList(IEnumerable<BEncodedValue> list)
+        {
+            if (list == null)
+                throw new ArgumentNullException("list");
 
-			this.list = new List<BEncodedValue>(list);
-		}
+            this.list = new List<BEncodedValue>(list);
+        }
 
-		private BEncodedList(List<BEncodedValue> value)
-		{
-			list = value;
-		}
+        private BEncodedList(List<BEncodedValue> value)
+        {
+            list = value;
+        }
 
-		#endregion
+        #endregion
 
-		#region Encode/Decode Methods
+        #region Encode/Decode Methods
 
-		/// <summary>
-		///     Encodes the list to a byte[]
-		/// </summary>
-		/// <param name="buffer">The buffer to encode the list to</param>
-		/// <param name="offset">The offset to start writing the data at</param>
-		/// <returns></returns>
-		public override int Encode(byte[] buffer, int offset)
-		{
-			int written = 0;
-			buffer[offset] = (byte) 'l';
-			written++;
-			for (int i = 0; i < list.Count; i++)
-				written += list[i].Encode(buffer, offset + written);
-			buffer[offset + written] = (byte) 'e';
-			written++;
-			return written;
-		}
+        /// <summary>
+        ///     Encodes the list to a byte[]
+        /// </summary>
+        /// <param name="buffer">The buffer to encode the list to</param>
+        /// <param name="offset">The offset to start writing the data at</param>
+        /// <returns></returns>
+        public override int Encode(byte[] buffer, int offset)
+        {
+            int written = 0;
+            buffer[offset] = (byte)'l';
+            written++;
+            for (int i = 0; i < list.Count; i++)
+                written += list[i].Encode(buffer, offset + written);
+            buffer[offset + written] = (byte)'e';
+            written++;
+            return written;
+        }
 
-		/// <summary>
-		///     Decodes a BEncodedList from the given StreamReader
-		/// </summary>
-		/// <param name="reader"></param>
-		internal override void DecodeInternal(RawReader reader)
-		{
-			if (reader.ReadByte() != 'l') // Remove the leading 'l'
-				throw new BEncodingException("Invalid data found. Aborting");
+        /// <summary>
+        ///     Decodes a BEncodedList from the given StreamReader
+        /// </summary>
+        /// <param name="reader"></param>
+        internal override void DecodeInternal(RawReader reader)
+        {
+            if (reader.ReadByte() != 'l') // Remove the leading 'l'
+                throw new BEncodingException("Invalid data found. Aborting");
 
-			while ((reader.PeekByte() != -1) && (reader.PeekByte() != 'e'))
-				list.Add(Decode(reader));
+            while ((reader.PeekByte() != -1) && (reader.PeekByte() != 'e'))
+                list.Add(Decode(reader));
 
-			if (reader.ReadByte() != 'e') // Remove the trailing 'e'
-				throw new BEncodingException("Invalid data found. Aborting");
-		}
+            if (reader.ReadByte() != 'e') // Remove the trailing 'e'
+                throw new BEncodingException("Invalid data found. Aborting");
+        }
 
-		#endregion
+        #endregion
 
-		#region Helper Methods
+        #region Helper Methods
 
-		/// <summary>
-		///     Returns the size of the list in bytes
-		/// </summary>
-		/// <returns></returns>
-		public override int LengthInBytes()
-		{
-			int length = 0;
+        /// <summary>
+        ///     Returns the size of the list in bytes
+        /// </summary>
+        /// <returns></returns>
+        public override int LengthInBytes()
+        {
+            int length = 0;
 
-			length += 1; // Lists start with 'l'
-			for (int i = 0; i < list.Count; i++)
-				length += list[i].LengthInBytes();
+            length += 1; // Lists start with 'l'
+            for (int i = 0; i < list.Count; i++)
+                length += list[i].LengthInBytes();
 
-			length += 1; // Lists end with 'e'
-			return length;
-		}
+            length += 1; // Lists end with 'e'
+            return length;
+        }
 
-		#endregion
+        #endregion
 
-		#region Overridden Methods
+        #region Overridden Methods
 
-		public override bool Equals(object obj)
-		{
-			var other = obj as BEncodedList;
+        public override bool Equals(object obj)
+        {
+            var other = obj as BEncodedList;
 
-			if (other == null)
-				return false;
+            if (other == null)
+                return false;
 
-			for (int i = 0; i < list.Count; i++)
-				if (!list[i].Equals(other.list[i]))
-					return false;
+            for (int i = 0; i < list.Count; i++)
+                if (!list[i].Equals(other.list[i]))
+                    return false;
 
-			return true;
-		}
-
-
-		public override int GetHashCode()
-		{
-			int result = 0;
-			for (int i = 0; i < list.Count; i++)
-				result ^= list[i].GetHashCode();
-
-			return result;
-		}
+            return true;
+        }
 
 
-		public override string ToString()
-		{
-			return Encoding.UTF8.GetString(Encode());
-		}
+        public override int GetHashCode()
+        {
+            int result = 0;
+            for (int i = 0; i < list.Count; i++)
+                result ^= list[i].GetHashCode();
 
-		#endregion
+            return result;
+        }
 
-		#region IList methods
 
-		public void Add(BEncodedValue item)
-		{
-			list.Add(item);
-		}
+        public override string ToString()
+        {
+            return Encoding.UTF8.GetString(Encode());
+        }
 
-		public void Clear()
-		{
-			list.Clear();
-		}
+        #endregion
 
-		public bool Contains(BEncodedValue item)
-		{
-			return list.Contains(item);
-		}
+        #region IList methods
 
-		public void CopyTo(BEncodedValue[] array, int arrayIndex)
-		{
-			list.CopyTo(array, arrayIndex);
-		}
+        public void Add(BEncodedValue item)
+        {
+            list.Add(item);
+        }
 
-		public int Count
-		{
-			get { return list.Count; }
-		}
+        public void Clear()
+        {
+            list.Clear();
+        }
 
-		public int IndexOf(BEncodedValue item)
-		{
-			return list.IndexOf(item);
-		}
+        public bool Contains(BEncodedValue item)
+        {
+            return list.Contains(item);
+        }
 
-		public void Insert(int index, BEncodedValue item)
-		{
-			list.Insert(index, item);
-		}
+        public void CopyTo(BEncodedValue[] array, int arrayIndex)
+        {
+            list.CopyTo(array, arrayIndex);
+        }
 
-		public bool IsReadOnly
-		{
-			get { return false; }
-		}
+        public int Count
+        {
+            get { return list.Count; }
+        }
 
-		public bool Remove(BEncodedValue item)
-		{
-			return list.Remove(item);
-		}
+        public int IndexOf(BEncodedValue item)
+        {
+            return list.IndexOf(item);
+        }
 
-		public void RemoveAt(int index)
-		{
-			list.RemoveAt(index);
-		}
+        public void Insert(int index, BEncodedValue item)
+        {
+            list.Insert(index, item);
+        }
 
-		public BEncodedValue this[int index]
-		{
-			get { return list[index]; }
-			set { list[index] = value; }
-		}
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
-		public IEnumerator<BEncodedValue> GetEnumerator()
-		{
-			return list.GetEnumerator();
-		}
+        public bool Remove(BEncodedValue item)
+        {
+            return list.Remove(item);
+        }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+        public void RemoveAt(int index)
+        {
+            list.RemoveAt(index);
+        }
 
-		public void AddRange(IEnumerable<BEncodedValue> collection)
-		{
-			list.AddRange(collection);
-		}
+        public BEncodedValue this[int index]
+        {
+            get { return list[index]; }
+            set { list[index] = value; }
+        }
 
-		#endregion
-	}
+        public IEnumerator<BEncodedValue> GetEnumerator()
+        {
+            return list.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public void AddRange(IEnumerable<BEncodedValue> collection)
+        {
+            list.AddRange(collection);
+        }
+
+        #endregion
+    }
 }

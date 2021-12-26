@@ -3,15 +3,15 @@ using MonoTorrent.BEncoding;
 
 namespace MonoTorrent.Common
 {
-	internal class TorrentCreatorAsyncResult : AsyncResult
-	{
-		public TorrentCreatorAsyncResult(AsyncCallback callback, object asyncState)
-			: base(callback, asyncState)
-		{
-		}
+    internal class TorrentCreatorAsyncResult : AsyncResult
+    {
+        public TorrentCreatorAsyncResult(AsyncCallback callback, object asyncState)
+            : base(callback, asyncState)
+        {
+        }
 
-		public bool Aborted { get; set; }
+        public bool Aborted { get; set; }
 
-		internal BEncodedDictionary Dictionary { get; set; }
-	}
+        internal BEncodedDictionary Dictionary { get; set; }
+    }
 }

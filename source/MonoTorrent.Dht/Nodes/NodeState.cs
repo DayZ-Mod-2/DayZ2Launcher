@@ -30,13 +30,13 @@
 
 namespace MonoTorrent.Dht
 {
-	internal enum NodeState
-	{
-		Unknown,
-		Good,
-		Questionable,
-		Bad
-	}
+    internal enum NodeState
+    {
+        Unknown,
+        Good,
+        Questionable,
+        Bad
+    }
 }
 
 #endif

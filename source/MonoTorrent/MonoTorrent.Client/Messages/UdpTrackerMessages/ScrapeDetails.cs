@@ -29,32 +29,32 @@
 
 namespace MonoTorrent.Client.Messages.UdpTracker
 {
-	public class ScrapeDetails
-	{
-		private readonly int complete;
-		private readonly int leeches;
-		private readonly int seeds;
+    public class ScrapeDetails
+    {
+        private readonly int complete;
+        private readonly int leeches;
+        private readonly int seeds;
 
-		public ScrapeDetails(int seeds, int leeches, int complete)
-		{
-			this.complete = complete;
-			this.leeches = leeches;
-			this.seeds = seeds;
-		}
+        public ScrapeDetails(int seeds, int leeches, int complete)
+        {
+            this.complete = complete;
+            this.leeches = leeches;
+            this.seeds = seeds;
+        }
 
-		public int Complete
-		{
-			get { return complete; }
-		}
+        public int Complete
+        {
+            get { return complete; }
+        }
 
-		public int Leeches
-		{
-			get { return leeches; }
-		}
+        public int Leeches
+        {
+            get { return leeches; }
+        }
 
-		public int Seeds
-		{
-			get { return seeds; }
-		}
-	}
+        public int Seeds
+        {
+            get { return seeds; }
+        }
+    }
 }

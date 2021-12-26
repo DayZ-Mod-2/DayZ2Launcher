@@ -4,81 +4,81 @@ using System.Collections.Generic;
 
 namespace MonoTorrent.Client.Tracker
 {
-	public class TrackerTier : IEnumerable<Tracker>
-	{
-		#region Private Fields
+    public class TrackerTier : IEnumerable<Tracker>
+    {
+        #region Private Fields
 
-		private readonly List<Tracker> trackers;
+        private readonly List<Tracker> trackers;
 
-		#endregion Private Fields
+        #endregion Private Fields
 
-		#region Properties
+        #region Properties
 
-		internal bool SendingStartedEvent { get; set; }
+        internal bool SendingStartedEvent { get; set; }
 
-		internal bool SentStartedEvent { get; set; }
+        internal bool SentStartedEvent { get; set; }
 
-		internal List<Tracker> Trackers
-		{
-			get { return trackers; }
-		}
+        internal List<Tracker> Trackers
+        {
+            get { return trackers; }
+        }
 
-		#endregion Properties
+        #endregion Properties
 
-		#region Constructors
+        #region Constructors
 
-		internal TrackerTier(IEnumerable<string> trackerUrls)
-		{
-			Uri result;
-			var trackerList = new List<Tracker>();
+        internal TrackerTier(IEnumerable<string> trackerUrls)
+        {
+            Uri result;
+            var trackerList = new List<Tracker>();
 
-			foreach (string trackerUrl in trackerUrls)
-			{
-				// FIXME: Debug spew?
-				if (!Uri.TryCreate(trackerUrl, UriKind.Absolute, out result))
-				{
-					Logger.Log(null, "TrackerTier - Invalid tracker Url specified: {0}", trackerUrl);
-					continue;
-				}
+            foreach (string trackerUrl in trackerUrls)
+            {
+                // FIXME: Debug spew?
+                if (!Uri.TryCreate(trackerUrl, UriKind.Absolute, out result))
+                {
+                    Logger.Log(null, "TrackerTier - Invalid tracker Url specified: {0}", trackerUrl);
+                    continue;
+                }
 
-				Tracker tracker = TrackerFactory.Create(result);
-				if (tracker != null)
-				{
-					trackerList.Add(tracker);
-				}
-				else
-				{
-					Console.Error.WriteLine("Unsupported protocol {0}", result); // FIXME: Debug spew?
-				}
-			}
+                Tracker tracker = TrackerFactory.Create(result);
+                if (tracker != null)
+                {
+                    trackerList.Add(tracker);
+                }
+                else
+                {
+                    Console.Error.WriteLine("Unsupported protocol {0}", result); // FIXME: Debug spew?
+                }
+            }
 
-			trackers = trackerList;
-		}
+            trackers = trackerList;
+        }
 
-		#endregion Constructors
+        #endregion Constructors
 
-		#region Methods
+        #region Methods
 
-		public IEnumerator<Tracker> GetEnumerator()
-		{
-			return trackers.GetEnumerator();
-		}
+        public IEnumerator<Tracker> GetEnumerator()
+        {
+            return trackers.GetEnumerator();
+        }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
-		internal int IndexOf(Tracker tracker)
-		{
-			return trackers.IndexOf(tracker);
-		}
+        internal int IndexOf(Tracker tracker)
+        {
+            return trackers.IndexOf(tracker);
+        }
 
-		public List<Tracker> GetTrackers()
-		{
-			return new List<Tracker>(trackers);
-		}
+        public List<Tracker> GetTrackers()
+        {
+            return new List<Tracker>(trackers);
+        }
 
-		#endregion Methods
-	}
+        #endregion Methods
+    }
 }

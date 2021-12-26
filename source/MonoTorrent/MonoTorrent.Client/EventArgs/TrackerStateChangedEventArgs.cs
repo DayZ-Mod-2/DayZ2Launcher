@@ -31,55 +31,55 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client.Tracker
 {
-	/// <summary>
-	///     Provides the data needed to handle a TrackerUpdate event
-	/// </summary>
-	public class TrackerStateChangedEventArgs : TorrentEventArgs
-	{
-		#region Member Variables
+    /// <summary>
+    ///     Provides the data needed to handle a TrackerUpdate event
+    /// </summary>
+    public class TrackerStateChangedEventArgs : TorrentEventArgs
+    {
+        #region Member Variables
 
-		private readonly TrackerState newState;
-		private readonly TrackerState oldState;
-		private readonly Tracker tracker;
+        private readonly TrackerState newState;
+        private readonly TrackerState oldState;
+        private readonly Tracker tracker;
 
-		/// <summary>
-		///     The current status of the tracker update
-		/// </summary>
-		public Tracker Tracker
-		{
-			get { return tracker; }
-		}
-
-
-		public TrackerState OldState
-		{
-			get { return oldState; }
-		}
+        /// <summary>
+        ///     The current status of the tracker update
+        /// </summary>
+        public Tracker Tracker
+        {
+            get { return tracker; }
+        }
 
 
-		public TrackerState NewState
-		{
-			get { return newState; }
-		}
+        public TrackerState OldState
+        {
+            get { return oldState; }
+        }
 
-		#endregion
 
-		#region Constructors
+        public TrackerState NewState
+        {
+            get { return newState; }
+        }
 
-		/// <summary>
-		///     Creates a new TrackerUpdateEventArgs
-		/// </summary>
-		/// <param name="state">The current state of the update</param>
-		/// <param name="response">The response of the tracker (if any)</param>
-		public TrackerStateChangedEventArgs(TorrentManager manager, Tracker tracker, TrackerState oldState,
-			TrackerState newState)
-			: base(manager)
-		{
-			this.tracker = tracker;
-			this.oldState = oldState;
-			this.newState = newState;
-		}
+        #endregion
 
-		#endregion
-	}
+        #region Constructors
+
+        /// <summary>
+        ///     Creates a new TrackerUpdateEventArgs
+        /// </summary>
+        /// <param name="state">The current state of the update</param>
+        /// <param name="response">The response of the tracker (if any)</param>
+        public TrackerStateChangedEventArgs(TorrentManager manager, Tracker tracker, TrackerState oldState,
+            TrackerState newState)
+            : base(manager)
+        {
+            this.tracker = tracker;
+            this.oldState = oldState;
+            this.newState = newState;
+        }
+
+        #endregion
+    }
 }

@@ -34,97 +34,97 @@ using MonoTorrent.Client.Messages.Libtorrent;
 
 namespace MonoTorrent.Client
 {
-	/// <summary>
-	///     This class is used to send each minute a peer excahnge message to peer who have enable this protocol
-	/// </summary>
-	public class PeerExchangeManager : IDisposable
-	{
-		#region Member Variables
+    /// <summary>
+    ///     This class is used to send each minute a peer excahnge message to peer who have enable this protocol
+    /// </summary>
+    public class PeerExchangeManager : IDisposable
+    {
+        #region Member Variables
 
-		private const int MAX_PEERS = 50;
-		private readonly List<Peer> addedPeers;
-		private readonly List<Peer> droppedPeers;
-		private readonly PeerId id;
-		private bool disposed;
+        private const int MAX_PEERS = 50;
+        private readonly List<Peer> addedPeers;
+        private readonly List<Peer> droppedPeers;
+        private readonly PeerId id;
+        private bool disposed;
 
-		#endregion Member Variables
+        #endregion Member Variables
 
-		#region Constructors
+        #region Constructors
 
-		internal PeerExchangeManager(PeerId id)
-		{
-			this.id = id;
+        internal PeerExchangeManager(PeerId id)
+        {
+            this.id = id;
 
-			addedPeers = new List<Peer>();
-			droppedPeers = new List<Peer>();
-			id.TorrentManager.OnPeerFound += OnAdd;
-			Start();
-		}
+            addedPeers = new List<Peer>();
+            droppedPeers = new List<Peer>();
+            id.TorrentManager.OnPeerFound += OnAdd;
+            Start();
+        }
 
-		internal void OnAdd(object source, PeerAddedEventArgs e)
-		{
-			addedPeers.Add(e.Peer);
-		}
+        internal void OnAdd(object source, PeerAddedEventArgs e)
+        {
+            addedPeers.Add(e.Peer);
+        }
 
-		// TODO onDropped!
+        // TODO onDropped!
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		public void Dispose()
-		{
-			if (disposed)
-				return;
+        public void Dispose()
+        {
+            if (disposed)
+                return;
 
-			disposed = true;
-			id.TorrentManager.OnPeerFound -= OnAdd;
-		}
+            disposed = true;
+            id.TorrentManager.OnPeerFound -= OnAdd;
+        }
 
-		internal void Start()
-		{
-			ClientEngine.MainLoop.QueueTimeout(TimeSpan.FromMinutes(1), delegate
-			{
-				if (!disposed)
-					OnTick();
-				return !disposed;
-			});
-		}
+        internal void Start()
+        {
+            ClientEngine.MainLoop.QueueTimeout(TimeSpan.FromMinutes(1), delegate
+            {
+                if (!disposed)
+                    OnTick();
+                return !disposed;
+            });
+        }
 
-		internal void OnTick()
-		{
-			if (!id.TorrentManager.Settings.EnablePeerExchange)
-				return;
+        internal void OnTick()
+        {
+            if (!id.TorrentManager.Settings.EnablePeerExchange)
+                return;
 
-			int len = (addedPeers.Count <= MAX_PEERS) ? addedPeers.Count : MAX_PEERS;
-			var added = new byte[len*6];
-			var addedDotF = new byte[len];
-			for (int i = 0; i < len; i++)
-			{
-				addedPeers[i].CompactPeer(added, i*6);
-				if ((addedPeers[i].Encryption & (EncryptionTypes.RC4Full | EncryptionTypes.RC4Header)) != EncryptionTypes.None)
-				{
-					addedDotF[i] = 0x01;
-				}
-				else
-				{
-					addedDotF[i] = 0x00;
-				}
+            int len = (addedPeers.Count <= MAX_PEERS) ? addedPeers.Count : MAX_PEERS;
+            var added = new byte[len * 6];
+            var addedDotF = new byte[len];
+            for (int i = 0; i < len; i++)
+            {
+                addedPeers[i].CompactPeer(added, i * 6);
+                if ((addedPeers[i].Encryption & (EncryptionTypes.RC4Full | EncryptionTypes.RC4Header)) != EncryptionTypes.None)
+                {
+                    addedDotF[i] = 0x01;
+                }
+                else
+                {
+                    addedDotF[i] = 0x00;
+                }
 
-				addedDotF[i] |= (byte) (addedPeers[i].IsSeeder ? 0x02 : 0x00);
-			}
-			addedPeers.RemoveRange(0, len);
+                addedDotF[i] |= (byte)(addedPeers[i].IsSeeder ? 0x02 : 0x00);
+            }
+            addedPeers.RemoveRange(0, len);
 
-			len = Math.Min(MAX_PEERS - len, droppedPeers.Count);
+            len = Math.Min(MAX_PEERS - len, droppedPeers.Count);
 
-			var dropped = new byte[len*6];
-			for (int i = 0; i < len; i++)
-				droppedPeers[i].CompactPeer(dropped, i*6);
+            var dropped = new byte[len * 6];
+            for (int i = 0; i < len; i++)
+                droppedPeers[i].CompactPeer(dropped, i * 6);
 
-			droppedPeers.RemoveRange(0, len);
-			id.Enqueue(new PeerExchangeMessage(id, added, addedDotF, dropped));
-		}
+            droppedPeers.RemoveRange(0, len);
+            id.Enqueue(new PeerExchangeMessage(id, added, addedDotF, dropped));
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

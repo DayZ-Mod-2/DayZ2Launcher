@@ -32,31 +32,31 @@ using MonoTorrent.BEncoding;
 
 namespace MonoTorrent.Dht.Messages
 {
-	internal class Ping : QueryMessage
-	{
-		private static readonly BEncodedString QueryName = "ping";
+    internal class Ping : QueryMessage
+    {
+        private static readonly BEncodedString QueryName = "ping";
 
-		private static readonly ResponseCreator responseCreator =
-			delegate(BEncodedDictionary d, QueryMessage m) { return new PingResponse(d, m); };
+        private static readonly ResponseCreator responseCreator =
+            delegate (BEncodedDictionary d, QueryMessage m) { return new PingResponse(d, m); };
 
-		public Ping(NodeId id)
-			: base(id, QueryName, responseCreator)
-		{
-		}
+        public Ping(NodeId id)
+            : base(id, QueryName, responseCreator)
+        {
+        }
 
-		public Ping(BEncodedDictionary d)
-			: base(d, responseCreator)
-		{
-		}
+        public Ping(BEncodedDictionary d)
+            : base(d, responseCreator)
+        {
+        }
 
-		public override void Handle(DhtEngine engine, Node node)
-		{
-			base.Handle(engine, node);
+        public override void Handle(DhtEngine engine, Node node)
+        {
+            base.Handle(engine, node);
 
-			var m = new PingResponse(engine.RoutingTable.LocalNode.Id, TransactionId);
-			engine.MessageLoop.EnqueueSend(m, node.EndPoint);
-		}
-	}
+            var m = new PingResponse(engine.RoutingTable.LocalNode.Id, TransactionId);
+            engine.MessageLoop.EnqueueSend(m, node.EndPoint);
+        }
+    }
 }
 
 #endif

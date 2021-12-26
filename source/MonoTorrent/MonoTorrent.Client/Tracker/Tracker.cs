@@ -32,97 +32,97 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client.Tracker
 {
-	public abstract class Tracker : ITracker
-	{
-		private readonly Uri uri;
-		private string failureMessage;
-		private TimeSpan minUpdateInterval;
-		private TimeSpan updateInterval;
-		private string warningMessage;
+    public abstract class Tracker : ITracker
+    {
+        private readonly Uri uri;
+        private string failureMessage;
+        private TimeSpan minUpdateInterval;
+        private TimeSpan updateInterval;
+        private string warningMessage;
 
-		protected Tracker(Uri uri)
-		{
-			Check.Uri(uri);
-			MinUpdateInterval = TimeSpan.FromMinutes(3);
-			UpdateInterval = TimeSpan.FromMinutes(30);
-			this.uri = uri;
-		}
+        protected Tracker(Uri uri)
+        {
+            Check.Uri(uri);
+            MinUpdateInterval = TimeSpan.FromMinutes(3);
+            UpdateInterval = TimeSpan.FromMinutes(30);
+            this.uri = uri;
+        }
 
-		public event EventHandler BeforeAnnounce;
-		public event EventHandler<AnnounceResponseEventArgs> AnnounceComplete;
-		public event EventHandler BeforeScrape;
-		public event EventHandler<ScrapeResponseEventArgs> ScrapeComplete;
+        public event EventHandler BeforeAnnounce;
+        public event EventHandler<AnnounceResponseEventArgs> AnnounceComplete;
+        public event EventHandler BeforeScrape;
+        public event EventHandler<ScrapeResponseEventArgs> ScrapeComplete;
 
-		public bool CanAnnounce { get; protected set; }
+        public bool CanAnnounce { get; protected set; }
 
-		public bool CanScrape { get; set; }
+        public bool CanScrape { get; set; }
 
-		public int Complete { get; protected set; }
+        public int Complete { get; protected set; }
 
-		public int Downloaded { get; protected set; }
+        public int Downloaded { get; protected set; }
 
-		public string FailureMessage
-		{
-			get { return failureMessage ?? ""; }
-			protected set { failureMessage = value; }
-		}
+        public string FailureMessage
+        {
+            get { return failureMessage ?? ""; }
+            protected set { failureMessage = value; }
+        }
 
-		public int Incomplete { get; protected set; }
+        public int Incomplete { get; protected set; }
 
-		public TimeSpan MinUpdateInterval
-		{
-			get { return minUpdateInterval; }
-			protected set { minUpdateInterval = value; }
-		}
+        public TimeSpan MinUpdateInterval
+        {
+            get { return minUpdateInterval; }
+            protected set { minUpdateInterval = value; }
+        }
 
-		public TrackerState Status { get; protected set; }
+        public TrackerState Status { get; protected set; }
 
-		public TimeSpan UpdateInterval
-		{
-			get { return updateInterval; }
-			protected set { updateInterval = value; }
-		}
+        public TimeSpan UpdateInterval
+        {
+            get { return updateInterval; }
+            protected set { updateInterval = value; }
+        }
 
-		public Uri Uri
-		{
-			get { return uri; }
-		}
+        public Uri Uri
+        {
+            get { return uri; }
+        }
 
-		public string WarningMessage
-		{
-			get { return warningMessage ?? ""; }
-			protected set { warningMessage = value; }
-		}
+        public string WarningMessage
+        {
+            get { return warningMessage ?? ""; }
+            protected set { warningMessage = value; }
+        }
 
-		public abstract void Announce(AnnounceParameters parameters, object state);
-		public abstract void Scrape(ScrapeParameters parameters, object state);
+        public abstract void Announce(AnnounceParameters parameters, object state);
+        public abstract void Scrape(ScrapeParameters parameters, object state);
 
-		protected virtual void RaiseBeforeAnnounce()
-		{
-			EventHandler h = BeforeAnnounce;
-			if (h != null)
-				h(this, EventArgs.Empty);
-		}
+        protected virtual void RaiseBeforeAnnounce()
+        {
+            EventHandler h = BeforeAnnounce;
+            if (h != null)
+                h(this, EventArgs.Empty);
+        }
 
-		protected virtual void RaiseAnnounceComplete(AnnounceResponseEventArgs e)
-		{
-			EventHandler<AnnounceResponseEventArgs> h = AnnounceComplete;
-			if (h != null)
-				h(this, e);
-		}
+        protected virtual void RaiseAnnounceComplete(AnnounceResponseEventArgs e)
+        {
+            EventHandler<AnnounceResponseEventArgs> h = AnnounceComplete;
+            if (h != null)
+                h(this, e);
+        }
 
-		protected virtual void RaiseBeforeScrape()
-		{
-			EventHandler h = BeforeScrape;
-			if (h != null)
-				h(this, EventArgs.Empty);
-		}
+        protected virtual void RaiseBeforeScrape()
+        {
+            EventHandler h = BeforeScrape;
+            if (h != null)
+                h(this, EventArgs.Empty);
+        }
 
-		protected virtual void RaiseScrapeComplete(ScrapeResponseEventArgs e)
-		{
-			EventHandler<ScrapeResponseEventArgs> h = ScrapeComplete;
-			if (h != null)
-				h(this, e);
-		}
-	}
+        protected virtual void RaiseScrapeComplete(ScrapeResponseEventArgs e)
+        {
+            EventHandler<ScrapeResponseEventArgs> h = ScrapeComplete;
+            if (h != null)
+                h(this, e);
+        }
+    }
 }

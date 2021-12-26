@@ -31,103 +31,103 @@ using System.Text;
 
 namespace MonoTorrent.Client.Messages.FastPeer
 {
-	// FIXME: The only use for a SuggestPiece message is for when i load a piece into a Disk Cache and want to make use for it
-	public class SuggestPieceMessage : PeerMessage, IFastPeerMessage
-	{
-		internal static readonly byte MessageId = 0x0D;
-		private readonly int messageLength = 5;
+    // FIXME: The only use for a SuggestPiece message is for when i load a piece into a Disk Cache and want to make use for it
+    public class SuggestPieceMessage : PeerMessage, IFastPeerMessage
+    {
+        internal static readonly byte MessageId = 0x0D;
+        private readonly int messageLength = 5;
 
-		#region Member Variables
+        #region Member Variables
 
-		private int pieceIndex;
+        private int pieceIndex;
 
-		/// <summary>
-		///     The index of the suggested piece to request
-		/// </summary>
-		public int PieceIndex
-		{
-			get { return pieceIndex; }
-		}
+        /// <summary>
+        ///     The index of the suggested piece to request
+        /// </summary>
+        public int PieceIndex
+        {
+            get { return pieceIndex; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		///     Creates a new SuggestPiece message
-		/// </summary>
-		public SuggestPieceMessage()
-		{
-		}
+        /// <summary>
+        ///     Creates a new SuggestPiece message
+        /// </summary>
+        public SuggestPieceMessage()
+        {
+        }
 
 
-		/// <summary>
-		///     Creates a new SuggestPiece message
-		/// </summary>
-		/// <param name="pieceIndex">The suggested piece to download</param>
-		public SuggestPieceMessage(int pieceIndex)
-		{
-			this.pieceIndex = pieceIndex;
-		}
+        /// <summary>
+        ///     Creates a new SuggestPiece message
+        /// </summary>
+        /// <param name="pieceIndex">The suggested piece to download</param>
+        public SuggestPieceMessage(int pieceIndex)
+        {
+            this.pieceIndex = pieceIndex;
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		public override int ByteLength
-		{
-			get { return messageLength + 4; }
-		}
+        public override int ByteLength
+        {
+            get { return messageLength + 4; }
+        }
 
-		public override int Encode(byte[] buffer, int offset)
-		{
-			if (!ClientEngine.SupportsFastPeer)
-				throw new ProtocolException("Message decoding not supported");
+        public override int Encode(byte[] buffer, int offset)
+        {
+            if (!ClientEngine.SupportsFastPeer)
+                throw new ProtocolException("Message decoding not supported");
 
-			int written = offset;
+            int written = offset;
 
-			written += Write(buffer, written, messageLength);
-			written += Write(buffer, written, MessageId);
-			written += Write(buffer, written, pieceIndex);
+            written += Write(buffer, written, messageLength);
+            written += Write(buffer, written, MessageId);
+            written += Write(buffer, written, pieceIndex);
 
-			return CheckWritten(written - offset);
-		}
+            return CheckWritten(written - offset);
+        }
 
-		public override void Decode(byte[] buffer, int offset, int length)
-		{
-			if (!ClientEngine.SupportsFastPeer)
-				throw new ProtocolException("Message decoding not supported");
+        public override void Decode(byte[] buffer, int offset, int length)
+        {
+            if (!ClientEngine.SupportsFastPeer)
+                throw new ProtocolException("Message decoding not supported");
 
-			pieceIndex = ReadInt(buffer, ref offset);
-		}
+            pieceIndex = ReadInt(buffer, ref offset);
+        }
 
-		#endregion
+        #endregion
 
-		#region Overidden Methods
+        #region Overidden Methods
 
-		public override bool Equals(object obj)
-		{
-			var msg = obj as SuggestPieceMessage;
-			if (msg == null)
-				return false;
+        public override bool Equals(object obj)
+        {
+            var msg = obj as SuggestPieceMessage;
+            if (msg == null)
+                return false;
 
-			return pieceIndex == msg.pieceIndex;
-		}
+            return pieceIndex == msg.pieceIndex;
+        }
 
-		public override int GetHashCode()
-		{
-			return pieceIndex.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return pieceIndex.GetHashCode();
+        }
 
-		public override string ToString()
-		{
-			var sb = new StringBuilder(24);
-			sb.Append("Suggest Piece");
-			sb.Append(" Index: ");
-			sb.Append(pieceIndex);
-			return sb.ToString();
-		}
+        public override string ToString()
+        {
+            var sb = new StringBuilder(24);
+            sb.Append("Suggest Piece");
+            sb.Append(" Index: ");
+            sb.Append(pieceIndex);
+            return sb.ToString();
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

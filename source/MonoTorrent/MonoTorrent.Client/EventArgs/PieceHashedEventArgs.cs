@@ -29,49 +29,49 @@
 
 namespace MonoTorrent.Client
 {
-	/// <summary>
-	///     Provides the data needed to handle a PieceHashed event
-	/// </summary>
-	public class PieceHashedEventArgs : TorrentEventArgs
-	{
-		#region Member Variables
+    /// <summary>
+    ///     Provides the data needed to handle a PieceHashed event
+    /// </summary>
+    public class PieceHashedEventArgs : TorrentEventArgs
+    {
+        #region Member Variables
 
-		private readonly bool hashPassed;
-		private readonly int pieceIndex;
+        private readonly bool hashPassed;
+        private readonly int pieceIndex;
 
-		/// <summary>
-		///     The index of the piece that was just hashed
-		/// </summary>
-		public int PieceIndex
-		{
-			get { return pieceIndex; }
-		}
+        /// <summary>
+        ///     The index of the piece that was just hashed
+        /// </summary>
+        public int PieceIndex
+        {
+            get { return pieceIndex; }
+        }
 
 
-		/// <summary>
-		///     The value of whether the piece passed or failed the hash check
-		/// </summary>
-		public bool HashPassed
-		{
-			get { return hashPassed; }
-		}
+        /// <summary>
+        ///     The value of whether the piece passed or failed the hash check
+        /// </summary>
+        public bool HashPassed
+        {
+            get { return hashPassed; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		///     Creates a new PieceHashedEventArgs
-		/// </summary>
-		/// <param name="pieceIndex">The index of the piece that was hashed</param>
-		/// <param name="hashPassed">True if the piece passed the hashcheck, false otherwise</param>
-		public PieceHashedEventArgs(TorrentManager manager, int pieceIndex, bool hashPassed)
-			: base(manager)
-		{
-			this.pieceIndex = pieceIndex;
-			this.hashPassed = hashPassed;
-		}
+        /// <summary>
+        ///     Creates a new PieceHashedEventArgs
+        /// </summary>
+        /// <param name="pieceIndex">The index of the piece that was hashed</param>
+        /// <param name="hashPassed">True if the piece passed the hashcheck, false otherwise</param>
+        public PieceHashedEventArgs(TorrentManager manager, int pieceIndex, bool hashPassed)
+            : base(manager)
+        {
+            this.pieceIndex = pieceIndex;
+            this.hashPassed = hashPassed;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

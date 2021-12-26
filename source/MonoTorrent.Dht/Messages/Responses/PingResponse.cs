@@ -32,18 +32,18 @@ using MonoTorrent.BEncoding;
 
 namespace MonoTorrent.Dht.Messages
 {
-	internal class PingResponse : ResponseMessage
-	{
-		public PingResponse(NodeId id, BEncodedValue transactionId)
-			: base(id, transactionId)
-		{
-		}
+    internal class PingResponse : ResponseMessage
+    {
+        public PingResponse(NodeId id, BEncodedValue transactionId)
+            : base(id, transactionId)
+        {
+        }
 
-		public PingResponse(BEncodedDictionary d, QueryMessage m)
-			: base(d, m)
-		{
-		}
-	}
+        public PingResponse(BEncodedDictionary d, QueryMessage m)
+            : base(d, m)
+        {
+        }
+    }
 }
 
 #endif

@@ -1,0 +1,12 @@
+{
+    "mods": {
+        "url": "https://www.perry-swift.de/dayz2/mods.json",
+        "sha1": "f4de0c351a7c66090b0d9daf24570711dba68528"
+    },
+    "motd": "https://www.perry-swift.de/dayz2/motd.txt",
+    "patches": {
+        "url": "https://www.perry-swift.de/dayz2/patches.json",
+        "sha1": "11c0332d5159797f79b14f2d2f7e619f296d5934"
+    },
+    "servers": "https://www.perry-swift.de/dayz2/serverlist.txt"
+}

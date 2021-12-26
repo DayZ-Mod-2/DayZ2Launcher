@@ -17,11 +17,11 @@
 
 using System.Reflection;
 
-[assembly: AssemblyCompany("ZOMBIES.NU")]
+[assembly: AssemblyCompany("DayZ2")]
 [assembly: AssemblyTitle("SSQLib")]
 [assembly: AssemblyDescription("Source Server Query Library")]
-[assembly: AssemblyProduct("DayZero Launcher")]
-[assembly: AssemblyCopyright("Copyright 2010 Elliot Spencer, 2014 ZOMBIES.NU")]
+[assembly: AssemblyProduct("DayZ2 Launcher")]
+[assembly: AssemblyCopyright("Copyright 2010 Elliot Spencer, 2021 DayZ2")]
 [assembly: AssemblyInformationalVersion("1.0.1")]
 [assembly: AssemblyVersion("1.0.1.2")]
 [assembly: AssemblyFileVersion("1.0.1.2")]

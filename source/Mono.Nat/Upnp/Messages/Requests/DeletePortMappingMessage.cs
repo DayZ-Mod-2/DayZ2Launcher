@@ -30,27 +30,27 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	internal class DeletePortMappingMessage : MessageBase
-	{
-		private readonly Mapping mapping;
+    internal class DeletePortMappingMessage : MessageBase
+    {
+        private readonly Mapping mapping;
 
-		public DeletePortMappingMessage(Mapping mapping, UpnpNatDevice device)
-			: base(device)
-		{
-			this.mapping = mapping;
-		}
+        public DeletePortMappingMessage(Mapping mapping, UpnpNatDevice device)
+            : base(device)
+        {
+            this.mapping = mapping;
+        }
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			var builder = new StringBuilder(256);
-			XmlWriter writer = CreateWriter(builder);
+        public override WebRequest Encode(out byte[] body)
+        {
+            var builder = new StringBuilder(256);
+            XmlWriter writer = CreateWriter(builder);
 
-			WriteFullElement(writer, "NewRemoteHost", string.Empty);
-			WriteFullElement(writer, "NewExternalPort", mapping.PublicPort.ToString(Culture));
-			WriteFullElement(writer, "NewProtocol", mapping.Protocol == Protocol.Tcp ? "TCP" : "UDP");
+            WriteFullElement(writer, "NewRemoteHost", string.Empty);
+            WriteFullElement(writer, "NewExternalPort", mapping.PublicPort.ToString(Culture));
+            WriteFullElement(writer, "NewProtocol", mapping.Protocol == Protocol.Tcp ? "TCP" : "UDP");
 
-			writer.Flush();
-			return CreateRequest("DeletePortMapping", builder.ToString(), out body);
-		}
-	}
+            writer.Flush();
+            return CreateRequest("DeletePortMapping", builder.ToString(), out body);
+        }
+    }
 }

@@ -350,7 +350,7 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>"$(WindowsSDK80Path)bin\x64\signtool.exe" sign /sha1 "$(SignCertificate)" /t "http://timestamp.verisign.com/scripts/timestamp.dll" "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>"C:\Program Files (x86)\Microsoft SDKs\ClickOnce\SignTool\signtool.exe" sign /sha1 "$(SignCertificate)" /t "http://timestamp.digicert.com" "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
     <ProjectGuid>{411A9E0E-FDC6-4E25-828A-0C2CD1CD96F8}</ProjectGuid>
     <RootNamespace>MonoTorrent</RootNamespace>
   </PropertyGroup>

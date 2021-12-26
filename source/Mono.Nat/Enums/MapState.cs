@@ -26,9 +26,9 @@
 
 namespace Mono.Nat
 {
-	public enum MapState
-	{
-		AlreadyMapped,
-		Available
-	}
+    public enum MapState
+    {
+        AlreadyMapped,
+        Available
+    }
 }

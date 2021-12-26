@@ -31,22 +31,22 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent
 {
-	public class TorrentEditor : EditableTorrent
-	{
-		public TorrentEditor(Torrent torrent)
-			: base(torrent)
-		{
-		}
+    public class TorrentEditor : EditableTorrent
+    {
+        public TorrentEditor(Torrent torrent)
+            : base(torrent)
+        {
+        }
 
-		public TorrentEditor(BEncodedDictionary metadata)
-			: base(metadata)
-		{
-		}
+        public TorrentEditor(BEncodedDictionary metadata)
+            : base(metadata)
+        {
+        }
 
-		public new bool CanEditSecureMetadata
-		{
-			get { return base.CanEditSecureMetadata; }
-			set { base.CanEditSecureMetadata = value; }
-		}
-	}
+        public new bool CanEditSecureMetadata
+        {
+            get { return base.CanEditSecureMetadata; }
+            set { base.CanEditSecureMetadata = value; }
+        }
+    }
 }

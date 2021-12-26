@@ -31,49 +31,49 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client
 {
-	/// <summary>
-	///     Provides the data needed to handle a TorrentStateChanged event
-	/// </summary>
-	public class TorrentStateChangedEventArgs : TorrentEventArgs
-	{
-		#region Member Variables
+    /// <summary>
+    ///     Provides the data needed to handle a TorrentStateChanged event
+    /// </summary>
+    public class TorrentStateChangedEventArgs : TorrentEventArgs
+    {
+        #region Member Variables
 
-		private readonly TorrentState newState;
-		private readonly TorrentState oldState;
+        private readonly TorrentState newState;
+        private readonly TorrentState oldState;
 
-		/// <summary>
-		///     The old state for the torrent
-		/// </summary>
-		public TorrentState OldState
-		{
-			get { return oldState; }
-		}
+        /// <summary>
+        ///     The old state for the torrent
+        /// </summary>
+        public TorrentState OldState
+        {
+            get { return oldState; }
+        }
 
 
-		/// <summary>
-		///     The new state for the torrent
-		/// </summary>
-		public TorrentState NewState
-		{
-			get { return newState; }
-		}
+        /// <summary>
+        ///     The new state for the torrent
+        /// </summary>
+        public TorrentState NewState
+        {
+            get { return newState; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		/// <summary>
-		///     Creates a new TorrentStateChangedEventArgs
-		/// </summary>
-		/// <param name="oldState">The old state of the Torrent</param>
-		/// <param name="newState">The new state of the Torrent</param>
-		public TorrentStateChangedEventArgs(TorrentManager manager, TorrentState oldState, TorrentState newState)
-			: base(manager)
-		{
-			this.oldState = oldState;
-			this.newState = newState;
-		}
+        /// <summary>
+        ///     Creates a new TorrentStateChangedEventArgs
+        /// </summary>
+        /// <param name="oldState">The old state of the Torrent</param>
+        /// <param name="newState">The new state of the Torrent</param>
+        public TorrentStateChangedEventArgs(TorrentManager manager, TorrentState oldState, TorrentState newState)
+            : base(manager)
+        {
+            this.oldState = oldState;
+            this.newState = newState;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

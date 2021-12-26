@@ -37,211 +37,211 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.Client
 {
-	public class Peer
-	{
-		#region Private Fields
+    public class Peer
+    {
+        #region Private Fields
 
-		private readonly Uri connectionUri;
-		private DateTime lastConnectionAttempt;
-		private string peerId;
-		private int repeatedHashFails;
-		private int totalHashFails;
+        private readonly Uri connectionUri;
+        private DateTime lastConnectionAttempt;
+        private string peerId;
+        private int repeatedHashFails;
+        private int totalHashFails;
 
-		#endregion Private Fields
+        #endregion Private Fields
 
-		#region Properties
+        #region Properties
 
-		public Uri ConnectionUri
-		{
-			get { return connectionUri; }
-		}
+        public Uri ConnectionUri
+        {
+            get { return connectionUri; }
+        }
 
-		internal int CleanedUpCount { get; set; }
+        internal int CleanedUpCount { get; set; }
 
-		public EncryptionTypes Encryption { get; set; }
+        public EncryptionTypes Encryption { get; set; }
 
-		internal int TotalHashFails
-		{
-			get { return totalHashFails; }
-		}
+        internal int TotalHashFails
+        {
+            get { return totalHashFails; }
+        }
 
-		internal string PeerId
-		{
-			get { return peerId; }
-			set { peerId = value; }
-		}
+        internal string PeerId
+        {
+            get { return peerId; }
+            set { peerId = value; }
+        }
 
-		internal bool IsSeeder { get; set; }
+        internal bool IsSeeder { get; set; }
 
-		internal int FailedConnectionAttempts { get; set; }
+        internal int FailedConnectionAttempts { get; set; }
 
-		internal int LocalPort { get; set; }
+        internal int LocalPort { get; set; }
 
-		internal DateTime LastConnectionAttempt
-		{
-			get { return lastConnectionAttempt; }
-			set { lastConnectionAttempt = value; }
-		}
+        internal DateTime LastConnectionAttempt
+        {
+            get { return lastConnectionAttempt; }
+            set { lastConnectionAttempt = value; }
+        }
 
-		internal int RepeatedHashFails
-		{
-			get { return repeatedHashFails; }
-		}
+        internal int RepeatedHashFails
+        {
+            get { return repeatedHashFails; }
+        }
 
-		#endregion Properties
+        #endregion Properties
 
-		#region Constructors
+        #region Constructors
 
-		public Peer(string peerId, Uri connectionUri)
-			: this(peerId, connectionUri, EncryptionTypes.All)
-		{
-		}
+        public Peer(string peerId, Uri connectionUri)
+            : this(peerId, connectionUri, EncryptionTypes.All)
+        {
+        }
 
-		public Peer(string peerId, Uri connectionUri, EncryptionTypes encryption)
-		{
-			if (peerId == null)
-				throw new ArgumentNullException("peerId");
-			if (connectionUri == null)
-				throw new ArgumentNullException("connectionUri");
+        public Peer(string peerId, Uri connectionUri, EncryptionTypes encryption)
+        {
+            if (peerId == null)
+                throw new ArgumentNullException("peerId");
+            if (connectionUri == null)
+                throw new ArgumentNullException("connectionUri");
 
-			this.connectionUri = connectionUri;
-			this.Encryption = encryption;
-			this.peerId = peerId;
-		}
+            this.connectionUri = connectionUri;
+            this.Encryption = encryption;
+            this.peerId = peerId;
+        }
 
-		#endregion
+        #endregion
 
-		public override bool Equals(object obj)
-		{
-			return Equals(obj as Peer);
-		}
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Peer);
+        }
 
-		public bool Equals(Peer other)
-		{
-			if (other == null)
-				return false;
+        public bool Equals(Peer other)
+        {
+            if (other == null)
+                return false;
 
-			// FIXME: Don't compare the port, just compare the IP
-			if (string.IsNullOrEmpty(peerId) || string.IsNullOrEmpty(other.peerId))
-				return connectionUri.Equals(other.connectionUri);
+            // FIXME: Don't compare the port, just compare the IP
+            if (string.IsNullOrEmpty(peerId) || string.IsNullOrEmpty(other.peerId))
+                return connectionUri.Equals(other.connectionUri);
 
-			return peerId == other.peerId;
-		}
+            return peerId == other.peerId;
+        }
 
-		public override int GetHashCode()
-		{
-			return connectionUri.Host.GetHashCode();
-		}
+        public override int GetHashCode()
+        {
+            return connectionUri.Host.GetHashCode();
+        }
 
-		public override string ToString()
-		{
-			return connectionUri.ToString();
-		}
+        public override string ToString()
+        {
+            return connectionUri.ToString();
+        }
 
-		internal byte[] CompactPeer()
-		{
-			var data = new byte[6];
-			CompactPeer(data, 0);
-			return data;
-		}
+        internal byte[] CompactPeer()
+        {
+            var data = new byte[6];
+            CompactPeer(data, 0);
+            return data;
+        }
 
-		internal void CompactPeer(byte[] data, int offset)
-		{
-			Buffer.BlockCopy(IPAddress.Parse(connectionUri.Host).GetAddressBytes(), 0, data, offset, 4);
-			Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(((short) connectionUri.Port))), 0, data,
-				offset + 4, 2);
-		}
+        internal void CompactPeer(byte[] data, int offset)
+        {
+            Buffer.BlockCopy(IPAddress.Parse(connectionUri.Host).GetAddressBytes(), 0, data, offset, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(((short)connectionUri.Port))), 0, data,
+                offset + 4, 2);
+        }
 
-		internal void HashedPiece(bool succeeded)
-		{
-			if (succeeded && repeatedHashFails > 0)
-				repeatedHashFails--;
+        internal void HashedPiece(bool succeeded)
+        {
+            if (succeeded && repeatedHashFails > 0)
+                repeatedHashFails--;
 
-			if (!succeeded)
-			{
-				repeatedHashFails++;
-				totalHashFails++;
-			}
-		}
+            if (!succeeded)
+            {
+                repeatedHashFails++;
+                totalHashFails++;
+            }
+        }
 
-		public static MonoTorrentCollection<Peer> Decode(BEncodedList peers)
-		{
-			var list = new MonoTorrentCollection<Peer>(peers.Count);
-			foreach (BEncodedValue value in peers)
-			{
-				try
-				{
-					if (value is BEncodedDictionary)
-						list.Add(DecodeFromDict((BEncodedDictionary) value));
-					else if (value is BEncodedString)
-						foreach (Peer p in Decode((BEncodedString) value))
-							list.Add(p);
-				}
-				catch
-				{
-					// If something is invalid and throws an exception, ignore it
-					// and continue decoding the rest of the peers
-				}
-			}
-			return list;
-		}
+        public static MonoTorrentCollection<Peer> Decode(BEncodedList peers)
+        {
+            var list = new MonoTorrentCollection<Peer>(peers.Count);
+            foreach (BEncodedValue value in peers)
+            {
+                try
+                {
+                    if (value is BEncodedDictionary)
+                        list.Add(DecodeFromDict((BEncodedDictionary)value));
+                    else if (value is BEncodedString)
+                        foreach (Peer p in Decode((BEncodedString)value))
+                            list.Add(p);
+                }
+                catch
+                {
+                    // If something is invalid and throws an exception, ignore it
+                    // and continue decoding the rest of the peers
+                }
+            }
+            return list;
+        }
 
-		private static Peer DecodeFromDict(BEncodedDictionary dict)
-		{
-			string peerId;
+        private static Peer DecodeFromDict(BEncodedDictionary dict)
+        {
+            string peerId;
 
-			if (dict.ContainsKey("peer id"))
-				peerId = dict["peer id"].ToString();
-			else if (dict.ContainsKey("peer_id")) // HACK: Some trackers return "peer_id" instead of "peer id"
-				peerId = dict["peer_id"].ToString();
-			else
-				peerId = string.Empty;
+            if (dict.ContainsKey("peer id"))
+                peerId = dict["peer id"].ToString();
+            else if (dict.ContainsKey("peer_id")) // HACK: Some trackers return "peer_id" instead of "peer id"
+                peerId = dict["peer_id"].ToString();
+            else
+                peerId = string.Empty;
 
-			var connectionUri = new Uri("tcp://" + dict["ip"] + ":" + dict["port"]);
-			return new Peer(peerId, connectionUri, EncryptionTypes.All);
-		}
+            var connectionUri = new Uri("tcp://" + dict["ip"] + ":" + dict["port"]);
+            return new Peer(peerId, connectionUri, EncryptionTypes.All);
+        }
 
-		public static MonoTorrentCollection<Peer> Decode(BEncodedString peers)
-		{
-			// "Compact Response" peers are encoded in network byte order. 
-			// IP's are the first four bytes
-			// Ports are the following 2 bytes
-			byte[] byteOrderedData = peers.TextBytes;
-			int i = 0;
-			UInt16 port;
-			var sb = new StringBuilder(27);
-			var list = new MonoTorrentCollection<Peer>((byteOrderedData.Length/6) + 1);
-			while ((i + 5) < byteOrderedData.Length)
-			{
-				sb.Remove(0, sb.Length);
+        public static MonoTorrentCollection<Peer> Decode(BEncodedString peers)
+        {
+            // "Compact Response" peers are encoded in network byte order. 
+            // IP's are the first four bytes
+            // Ports are the following 2 bytes
+            byte[] byteOrderedData = peers.TextBytes;
+            int i = 0;
+            UInt16 port;
+            var sb = new StringBuilder(27);
+            var list = new MonoTorrentCollection<Peer>((byteOrderedData.Length / 6) + 1);
+            while ((i + 5) < byteOrderedData.Length)
+            {
+                sb.Remove(0, sb.Length);
 
-				sb.Append("tcp://");
-				sb.Append(byteOrderedData[i++]);
-				sb.Append('.');
-				sb.Append(byteOrderedData[i++]);
-				sb.Append('.');
-				sb.Append(byteOrderedData[i++]);
-				sb.Append('.');
-				sb.Append(byteOrderedData[i++]);
+                sb.Append("tcp://");
+                sb.Append(byteOrderedData[i++]);
+                sb.Append('.');
+                sb.Append(byteOrderedData[i++]);
+                sb.Append('.');
+                sb.Append(byteOrderedData[i++]);
+                sb.Append('.');
+                sb.Append(byteOrderedData[i++]);
 
-				port = (UInt16) IPAddress.NetworkToHostOrder(BitConverter.ToInt16(byteOrderedData, i));
-				i += 2;
-				sb.Append(':');
-				sb.Append(port);
+                port = (UInt16)IPAddress.NetworkToHostOrder(BitConverter.ToInt16(byteOrderedData, i));
+                i += 2;
+                sb.Append(':');
+                sb.Append(port);
 
-				var uri = new Uri(sb.ToString());
-				list.Add(new Peer("", uri, EncryptionTypes.All));
-			}
+                var uri = new Uri(sb.ToString());
+                list.Add(new Peer("", uri, EncryptionTypes.All));
+            }
 
-			return list;
-		}
+            return list;
+        }
 
-		internal static BEncodedList Encode(IEnumerable<Peer> peers)
-		{
-			var list = new BEncodedList();
-			foreach (Peer p in peers)
-				list.Add((BEncodedString) p.CompactPeer());
-			return list;
-		}
-	}
+        internal static BEncodedList Encode(IEnumerable<Peer> peers)
+        {
+            var list = new BEncodedList();
+            foreach (Peer p in peers)
+                list.Add((BEncodedString)p.CompactPeer());
+            return list;
+        }
+    }
 }

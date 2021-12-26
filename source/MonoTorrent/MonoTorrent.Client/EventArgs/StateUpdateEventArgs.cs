@@ -2,7 +2,7 @@ using System;
 
 namespace MonoTorrent.Client
 {
-	public class StatsUpdateEventArgs : EventArgs
-	{
-	}
+    public class StatsUpdateEventArgs : EventArgs
+    {
+    }
 }

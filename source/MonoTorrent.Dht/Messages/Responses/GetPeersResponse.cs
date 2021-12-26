@@ -33,74 +33,74 @@ using MonoTorrent.BEncoding;
 
 namespace MonoTorrent.Dht.Messages
 {
-	internal class GetPeersResponse : ResponseMessage
-	{
-		internal static readonly BEncodedString NodesKey = "nodes";
-		private static readonly BEncodedString TokenKey = "token";
-		internal static readonly BEncodedString ValuesKey = "values";
+    internal class GetPeersResponse : ResponseMessage
+    {
+        internal static readonly BEncodedString NodesKey = "nodes";
+        private static readonly BEncodedString TokenKey = "token";
+        internal static readonly BEncodedString ValuesKey = "values";
 
-		public GetPeersResponse(NodeId id, BEncodedValue transactionId, BEncodedString token)
-			: base(id, transactionId)
-		{
-			Parameters.Add(TokenKey, token);
-		}
+        public GetPeersResponse(NodeId id, BEncodedValue transactionId, BEncodedString token)
+            : base(id, transactionId)
+        {
+            Parameters.Add(TokenKey, token);
+        }
 
-		public GetPeersResponse(BEncodedDictionary d, QueryMessage m)
-			: base(d, m)
-		{
-		}
+        public GetPeersResponse(BEncodedDictionary d, QueryMessage m)
+            : base(d, m)
+        {
+        }
 
-		public BEncodedString Token
-		{
-			get { return (BEncodedString) Parameters[TokenKey]; }
-			set { Parameters[TokenKey] = value; }
-		}
+        public BEncodedString Token
+        {
+            get { return (BEncodedString)Parameters[TokenKey]; }
+            set { Parameters[TokenKey] = value; }
+        }
 
-		public BEncodedString Nodes
-		{
-			get
-			{
-				if (Parameters.ContainsKey(ValuesKey) || !Parameters.ContainsKey(NodesKey))
-					return null;
-				return (BEncodedString) Parameters[NodesKey];
-			}
-			set
-			{
-				if (Parameters.ContainsKey(ValuesKey))
-					throw new InvalidOperationException("Already contains the values key");
-				if (!Parameters.ContainsKey(NodesKey))
-					Parameters.Add(NodesKey, null);
-				Parameters[NodesKey] = value;
-			}
-		}
+        public BEncodedString Nodes
+        {
+            get
+            {
+                if (Parameters.ContainsKey(ValuesKey) || !Parameters.ContainsKey(NodesKey))
+                    return null;
+                return (BEncodedString)Parameters[NodesKey];
+            }
+            set
+            {
+                if (Parameters.ContainsKey(ValuesKey))
+                    throw new InvalidOperationException("Already contains the values key");
+                if (!Parameters.ContainsKey(NodesKey))
+                    Parameters.Add(NodesKey, null);
+                Parameters[NodesKey] = value;
+            }
+        }
 
-		public BEncodedList Values
-		{
-			get
-			{
-				if (Parameters.ContainsKey(NodesKey) || !Parameters.ContainsKey(ValuesKey))
-					return null;
-				return (BEncodedList) Parameters[ValuesKey];
-			}
-			set
-			{
-				if (Parameters.ContainsKey(NodesKey))
-					throw new InvalidOperationException("Already contains the nodes key");
-				if (!Parameters.ContainsKey(ValuesKey))
-					Parameters.Add(ValuesKey, value);
-				else
-					Parameters[ValuesKey] = value;
-			}
-		}
+        public BEncodedList Values
+        {
+            get
+            {
+                if (Parameters.ContainsKey(NodesKey) || !Parameters.ContainsKey(ValuesKey))
+                    return null;
+                return (BEncodedList)Parameters[ValuesKey];
+            }
+            set
+            {
+                if (Parameters.ContainsKey(NodesKey))
+                    throw new InvalidOperationException("Already contains the nodes key");
+                if (!Parameters.ContainsKey(ValuesKey))
+                    Parameters.Add(ValuesKey, value);
+                else
+                    Parameters[ValuesKey] = value;
+            }
+        }
 
-		public override void Handle(DhtEngine engine, Node node)
-		{
-			base.Handle(engine, node);
-			node.Token = Token;
-			if (Nodes != null)
-				engine.Add(Node.FromCompactNode(Nodes));
-		}
-	}
+        public override void Handle(DhtEngine engine, Node node)
+        {
+            base.Handle(engine, node);
+            node.Token = Token;
+            if (Nodes != null)
+                engine.Add(Node.FromCompactNode(Nodes));
+        }
+    }
 }
 
 #endif

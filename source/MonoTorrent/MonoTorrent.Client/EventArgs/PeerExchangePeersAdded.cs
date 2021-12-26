@@ -30,22 +30,22 @@ using System;
 
 namespace MonoTorrent.Client
 {
-	public class PeerExchangePeersAdded : PeersAddedEventArgs
-	{
-		private readonly PeerId id;
+    public class PeerExchangePeersAdded : PeersAddedEventArgs
+    {
+        private readonly PeerId id;
 
-		public PeerExchangePeersAdded(TorrentManager manager, int count, int total, PeerId id)
-			: base(manager, count, total)
-		{
-			if (id == null)
-				throw new ArgumentNullException("id");
+        public PeerExchangePeersAdded(TorrentManager manager, int count, int total, PeerId id)
+            : base(manager, count, total)
+        {
+            if (id == null)
+                throw new ArgumentNullException("id");
 
-			this.id = id;
-		}
+            this.id = id;
+        }
 
-		public PeerId Id
-		{
-			get { return id; }
-		}
-	}
+        public PeerId Id
+        {
+            get { return id; }
+        }
+    }
 }

@@ -31,43 +31,43 @@ using MonoTorrent.Common;
 
 namespace MonoTorrent.TorrentWatcher
 {
-	/// <summary>
-	///     Main controller class for ITorrentWatcher
-	/// </summary>
-	public class TorrentWatchers : MonoTorrentCollection<ITorrentWatcher>
-	{
-		#region Constructors
+    /// <summary>
+    ///     Main controller class for ITorrentWatcher
+    /// </summary>
+    public class TorrentWatchers : MonoTorrentCollection<ITorrentWatcher>
+    {
+        #region Constructors
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		/// </summary>
-		public void StartAll()
-		{
-			for (int i = 0; i < Count; i++)
-				this[i].Start();
-		}
-
-
-		/// <summary>
-		/// </summary>
-		public void StopAll()
-		{
-			for (int i = 0; i < Count; i++)
-				this[i].Stop();
-		}
+        /// <summary>
+        /// </summary>
+        public void StartAll()
+        {
+            for (int i = 0; i < Count; i++)
+                this[i].Start();
+        }
 
 
-		/// <summary>
-		/// </summary>
-		public void ForceScanAll()
-		{
-			for (int i = 0; i < Count; i++)
-				this[i].ForceScan();
-		}
+        /// <summary>
+        /// </summary>
+        public void StopAll()
+        {
+            for (int i = 0; i < Count; i++)
+                this[i].Stop();
+        }
 
-		#endregion
-	}
+
+        /// <summary>
+        /// </summary>
+        public void ForceScanAll()
+        {
+            for (int i = 0; i < Count; i++)
+                this[i].ForceScan();
+        }
+
+        #endregion
+    }
 }

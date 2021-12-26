@@ -30,20 +30,20 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	internal class CreatePortMappingResponseMessage : MessageBase
-	{
-		#region Constructors
+    internal class CreatePortMappingResponseMessage : MessageBase
+    {
+        #region Constructors
 
-		public CreatePortMappingResponseMessage()
-			: base(null)
-		{
-		}
+        public CreatePortMappingResponseMessage()
+            : base(null)
+        {
+        }
 
-		#endregion
+        #endregion
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public override WebRequest Encode(out byte[] body)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

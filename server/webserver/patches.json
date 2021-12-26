@@ -1,0 +1,10 @@
+{
+    "patches": [
+        {
+            "steambeta": false,
+            "steambuild": "144629",
+            "version": 144629
+        }
+    ],
+    "latest": 144629
+}

@@ -29,33 +29,33 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	internal class GetServicesMessage : MessageBase
-	{
-		private readonly EndPoint hostAddress;
-		private readonly string servicesDescriptionUrl;
+    internal class GetServicesMessage : MessageBase
+    {
+        private readonly EndPoint hostAddress;
+        private readonly string servicesDescriptionUrl;
 
-		public GetServicesMessage(string description, EndPoint hostAddress)
-			: base(null)
-		{
-			if (string.IsNullOrEmpty(description))
-				Trace.WriteLine("Description is null");
+        public GetServicesMessage(string description, EndPoint hostAddress)
+            : base(null)
+        {
+            if (string.IsNullOrEmpty(description))
+                Trace.WriteLine("Description is null");
 
-			if (hostAddress == null)
-				Trace.WriteLine("hostaddress is null");
+            if (hostAddress == null)
+                Trace.WriteLine("hostaddress is null");
 
-			servicesDescriptionUrl = description;
-			this.hostAddress = hostAddress;
-		}
+            servicesDescriptionUrl = description;
+            this.hostAddress = hostAddress;
+        }
 
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			var req = (HttpWebRequest) WebRequest.Create("http://" + hostAddress + servicesDescriptionUrl);
-			req.Headers.Add("ACCEPT-LANGUAGE", "en");
-			req.Method = "GET";
+        public override WebRequest Encode(out byte[] body)
+        {
+            var req = (HttpWebRequest)WebRequest.Create("http://" + hostAddress + servicesDescriptionUrl);
+            req.Headers.Add("ACCEPT-LANGUAGE", "en");
+            req.Method = "GET";
 
-			body = new byte[0];
-			return req;
-		}
-	}
+            body = new byte[0];
+            return req;
+        }
+    }
 }

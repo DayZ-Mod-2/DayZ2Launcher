@@ -31,93 +31,93 @@ using System.Text;
 
 namespace MonoTorrent.Client.Messages.FastPeer
 {
-	public class AllowedFastMessage : PeerMessage, IFastPeerMessage
-	{
-		internal static readonly byte MessageId = 0x11;
-		private readonly int messageLength = 5;
+    public class AllowedFastMessage : PeerMessage, IFastPeerMessage
+    {
+        internal static readonly byte MessageId = 0x11;
+        private readonly int messageLength = 5;
 
-		#region Member Variables
+        #region Member Variables
 
-		private int pieceIndex;
+        private int pieceIndex;
 
-		public int PieceIndex
-		{
-			get { return pieceIndex; }
-		}
+        public int PieceIndex
+        {
+            get { return pieceIndex; }
+        }
 
-		#endregion
+        #endregion
 
-		#region Constructors
+        #region Constructors
 
-		internal AllowedFastMessage()
-		{
-		}
+        internal AllowedFastMessage()
+        {
+        }
 
-		internal AllowedFastMessage(int pieceIndex)
-		{
-			this.pieceIndex = pieceIndex;
-		}
+        internal AllowedFastMessage(int pieceIndex)
+        {
+            this.pieceIndex = pieceIndex;
+        }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		public override int ByteLength
-		{
-			get { return messageLength + 4; }
-		}
+        public override int ByteLength
+        {
+            get { return messageLength + 4; }
+        }
 
-		public override int Encode(byte[] buffer, int offset)
-		{
-			if (!ClientEngine.SupportsFastPeer)
-				throw new ProtocolException("Message encoding not supported");
+        public override int Encode(byte[] buffer, int offset)
+        {
+            if (!ClientEngine.SupportsFastPeer)
+                throw new ProtocolException("Message encoding not supported");
 
-			int written = offset;
+            int written = offset;
 
-			written += Write(buffer, written, messageLength);
-			written += Write(buffer, written, MessageId);
-			written += Write(buffer, written, pieceIndex);
+            written += Write(buffer, written, messageLength);
+            written += Write(buffer, written, MessageId);
+            written += Write(buffer, written, pieceIndex);
 
-			return CheckWritten(written - offset);
-		}
+            return CheckWritten(written - offset);
+        }
 
-		public override void Decode(byte[] buffer, int offset, int length)
-		{
-			if (!ClientEngine.SupportsFastPeer)
-				throw new ProtocolException("Message decoding not supported");
+        public override void Decode(byte[] buffer, int offset, int length)
+        {
+            if (!ClientEngine.SupportsFastPeer)
+                throw new ProtocolException("Message decoding not supported");
 
-			pieceIndex = ReadInt(buffer, offset);
-		}
+            pieceIndex = ReadInt(buffer, offset);
+        }
 
-		#endregion
+        #endregion
 
-		#region Overidden Methods
+        #region Overidden Methods
 
-		public override bool Equals(object obj)
-		{
-			var msg = obj as AllowedFastMessage;
-			if (msg == null)
-				return false;
+        public override bool Equals(object obj)
+        {
+            var msg = obj as AllowedFastMessage;
+            if (msg == null)
+                return false;
 
-			return pieceIndex == msg.pieceIndex;
-		}
-
-
-		public override int GetHashCode()
-		{
-			return pieceIndex.GetHashCode();
-		}
+            return pieceIndex == msg.pieceIndex;
+        }
 
 
-		public override string ToString()
-		{
-			var sb = new StringBuilder(24);
-			sb.Append("AllowedFast");
-			sb.Append(" Index: ");
-			sb.Append(pieceIndex);
-			return sb.ToString();
-		}
+        public override int GetHashCode()
+        {
+            return pieceIndex.GetHashCode();
+        }
 
-		#endregion
-	}
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder(24);
+            sb.Append("AllowedFast");
+            sb.Append(" Index: ");
+            sb.Append(pieceIndex);
+            return sb.ToString();
+        }
+
+        #endregion
+    }
 }

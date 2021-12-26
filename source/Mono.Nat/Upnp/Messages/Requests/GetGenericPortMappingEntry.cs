@@ -30,25 +30,25 @@ using System.Xml;
 
 namespace Mono.Nat.Upnp
 {
-	internal class GetGenericPortMappingEntry : MessageBase
-	{
-		private readonly int index;
+    internal class GetGenericPortMappingEntry : MessageBase
+    {
+        private readonly int index;
 
-		public GetGenericPortMappingEntry(int index, UpnpNatDevice device)
-			: base(device)
-		{
-			this.index = index;
-		}
+        public GetGenericPortMappingEntry(int index, UpnpNatDevice device)
+            : base(device)
+        {
+            this.index = index;
+        }
 
-		public override WebRequest Encode(out byte[] body)
-		{
-			var sb = new StringBuilder(128);
-			XmlWriter writer = CreateWriter(sb);
+        public override WebRequest Encode(out byte[] body)
+        {
+            var sb = new StringBuilder(128);
+            XmlWriter writer = CreateWriter(sb);
 
-			WriteFullElement(writer, "NewPortMappingIndex", index.ToString());
+            WriteFullElement(writer, "NewPortMappingIndex", index.ToString());
 
-			writer.Flush();
-			return CreateRequest("GetGenericPortMappingEntry", sb.ToString(), out body);
-		}
-	}
+            writer.Flush();
+            return CreateRequest("GetGenericPortMappingEntry", sb.ToString(), out body);
+        }
+    }
 }

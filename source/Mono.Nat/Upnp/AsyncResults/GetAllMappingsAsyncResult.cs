@@ -30,21 +30,21 @@ using System.Net;
 
 namespace Mono.Nat.Upnp
 {
-	internal class GetAllMappingsAsyncResult : PortMapAsyncResult
-	{
-		private readonly List<Mapping> mappings;
+    internal class GetAllMappingsAsyncResult : PortMapAsyncResult
+    {
+        private readonly List<Mapping> mappings;
 
-		public GetAllMappingsAsyncResult(WebRequest request, AsyncCallback callback, object asyncState)
-			: base(request, callback, asyncState)
-		{
-			mappings = new List<Mapping>();
-		}
+        public GetAllMappingsAsyncResult(WebRequest request, AsyncCallback callback, object asyncState)
+            : base(request, callback, asyncState)
+        {
+            mappings = new List<Mapping>();
+        }
 
-		public List<Mapping> Mappings
-		{
-			get { return mappings; }
-		}
+        public List<Mapping> Mappings
+        {
+            get { return mappings; }
+        }
 
-		public Mapping SpecificMapping { get; set; }
-	}
+        public Mapping SpecificMapping { get; set; }
+    }
 }
