@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Threading;
-using MonoTorrent.Common;
 using Newtonsoft.Json;
 using DayZ2.DayZ2Launcher.App.Core;
 using MonoTorrent.Client;

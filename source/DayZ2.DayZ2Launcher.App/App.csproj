@@ -141,13 +141,8 @@
     <Reference Include="Mono.Nat, Version=3.0.0.0, Culture=neutral, PublicKeyToken=6c9468a3c21bc6d1, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Nat.3.0.2\lib\netstandard2.0\Mono.Nat.dll</HintPath>
     </Reference>
-    <Reference Include="MonoTorrent, Version=1.0.1.5, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MonoTorrent\MonoTorrent.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoTorrent.Dht, Version=0.7.1.3, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MonoTorrent\MonoTorrent.Dht.dll</HintPath>
+    <Reference Include="MonoTorrent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MonoTorrent.2.0.1\lib\netstandard2.0\MonoTorrent.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -155,6 +150,9 @@
     <Reference Include="Ookii.Dialogs.Wpf, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c15020868fd6249, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Ookii.Dialogs.1.0\lib\net40\Ookii.Dialogs.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="ReusableTasks, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ReusableTasks.2.0.1\lib\netstandard2.0\ReusableTasks.dll</HintPath>
     </Reference>
     <Reference Include="SharpCompress, Version=0.30.1.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpCompress.0.30.1\lib\net461\SharpCompress.dll</HintPath>
@@ -206,6 +204,7 @@
     <Compile Include="Core\CalculatedGameSettings.cs" />
     <Compile Include="Core\Hash.cs" />
     <Compile Include="Core\HttpUtility.cs" />
+    <Compile Include="Core\TorrentUpdater2.cs" />
     <Compile Include="Core\Unpacker.cs" />
     <Compile Include="SteamKit2\KeyValue.cs" />
     <Compile Include="SteamKit2\StreamHelpers.cs" />
@@ -505,5 +504,12 @@
       <SignableFiles Include="$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\$(TargetFileName)" />
     </ItemGroup>
     <Exec Command="&quot;$(SignToolPath)&quot; sign /d &quot;$(ProductName)&quot; /du &quot;$(InstallUrl)&quot; /sha1 &quot;$(ManifestCertificateThumbprint)&quot; /t &quot;$(ManifestTimestampUrl)&quot; &quot;%(SignableFiles.Identity)&quot;" />
+  </Target>
+  <Import Project="..\packages\ReusableTasks.2.0.1\build\ReusableTasks.targets" Condition="Exists('..\packages\ReusableTasks.2.0.1\build\ReusableTasks.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\ReusableTasks.2.0.1\build\ReusableTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ReusableTasks.2.0.1\build\ReusableTasks.targets'))" />
   </Target>
 </Project>

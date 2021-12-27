@@ -14,7 +14,6 @@ using MonoTorrent.BEncoding;
 using MonoTorrent.Client;
 using MonoTorrent.Client.Encryption;
 using MonoTorrent.Client.Tracker;
-using MonoTorrent.Common;
 using MonoTorrent.Dht;
 using MonoTorrent.Dht.Listeners;
 
@@ -75,9 +74,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 var newAddOn = new AddOnTorrent
                 {
                     Meta = addOn,
-                    torrentFileName = Path.Combine(torrentsDir,
+                    TorrentFileName = Path.Combine(torrentsDir,
                         addOn.Name + "-" + addOn.Version + ".torrent"),
-                    torrentSavePath = null  //will be filled in if successful download
+                    TorrentSavePath = null  //will be filled in if successful download
                 };
                 addOnTorrents.Add(newAddOn);
             }
@@ -88,7 +87,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             {
                 if (
                     addOnTorrents.Count(
-                        naot => { return naot.torrentFileName.Equals(torrentPath, StringComparison.InvariantCultureIgnoreCase); }) < 1)
+                        naot => { return naot.TorrentFileName.Equals(torrentPath, StringComparison.InvariantCultureIgnoreCase); }) < 1)
                 {
                     //this is an unwanted torrent file
                     try
@@ -115,7 +114,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 {
                     var wc = new HashWebClient();
                     wc.DownloadFileCompleted += (sender, args) => { TorrentDownloadComplete(sender, args, idxCopy); };
-                    wc.BeginDownload(newAddOn.Meta.Torrent, newAddOn.torrentFileName);
+                    wc.BeginDownload(newAddOn.Meta.Torrent, newAddOn.TorrentFileName);
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +143,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             return TorrentState.Stopped;
         }
 
-        public static int GetCurrentSpeed()
+        public static long GetCurrentSpeed()
         {
             if (globalEngine == null)
                 return 0;
@@ -153,7 +152,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             if (engineTorrents == null || engineTorrents.Count < 1)
                 return 0;
 
-            int totalDownloadSpeed = 0;
+            long totalDownloadSpeed = 0;
             foreach (TorrentManager tm in engineTorrents)
                 totalDownloadSpeed += tm.Monitor.DownloadSpeed;
 
@@ -198,9 +197,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
             }
 
             AddOnTorrent addOnStuff = addOnTorrents[addOnIndex];
-            addOnStuff.torrentSavePath = UserSettings.ContentPackedDataPath;
+            addOnStuff.TorrentSavePath = UserSettings.ContentPackedDataPath;
 
-            if (addOnTorrents.Count(aot => { return string.IsNullOrWhiteSpace(aot.torrentSavePath); }) < 1)
+            if (addOnTorrents.Count(aot => { return string.IsNullOrWhiteSpace(aot.TorrentSavePath); }) < 1)
             {
                 //this was the last one, and all of them succeeded
                 StartTorrentsThread();
@@ -219,10 +218,10 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
         private void StartTorrentsThread()
         {
-            Task.Factory.StartNew(() => RunTorrents());
+            Task.Run(() => RunTorrents(CancellationToken.None));
         }
 
-        private void RunTorrents()
+        private async Task RunTorrents(CancellationToken cancellationToken)
         {
             TorrentOptions tOpts = UserSettings.Current.TorrentOptions;
             if (globalEngine == null)
@@ -233,24 +232,28 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 // Create the settings which the engine will use
                 // downloadsPath - this is the path where we will save all the files to
                 // port - this is the port we listen for connections on
-                var engineSettings = new EngineSettings(mainDownloadsPath, listenPort);
-                engineSettings.PreferEncryption = true;
-                engineSettings.AllowedEncryption = EncryptionTypes.All;
-                engineSettings.GlobalMaxConnections = tOpts.MaxDLConnsNormalized;
-                engineSettings.GlobalMaxDownloadSpeed = tOpts.MaxDLSpeed * 1024;
-                engineSettings.GlobalMaxHalfOpenConnections = 10;
-                engineSettings.GlobalMaxUploadSpeed = tOpts.MaxULSpeed * 1024;
+                // mainDownloadsPath, listenPort
+
+                var engineSettings = new EngineSettingsBuilder()
+                {
+                    AllowedEncryption = new List<EncryptionType>{ EncryptionType.PlainText },
+                    MaximumHalfOpenConnections = 10,
+                    MaximumUploadSpeed = tOpts.MaxULSpeed * 1024,
+                    MaximumDownloadSpeed = tOpts.MaxDLSpeed * 1024,
+                    MaximumConnections = tOpts.MaxDLConnsNormalized,
+                    ListenPort = listenPort,
+                };
 
                 // Create an instance of the engine.
-                globalEngine = new ClientEngine(engineSettings);
-                globalEngine.ChangeListenEndpoint(new IPEndPoint(IPAddress.Any, listenPort));
+                globalEngine = new ClientEngine(engineSettings.ToSettings());
                 engineListenPort = listenPort;
 
                 EngineStartedOnPort(engineListenPort);
 
                 //create a DHT engine and register it with the main engine
                 {
-                    var dhtListener = new DhtListener(new IPEndPoint(IPAddress.Any, listenPort));
+                    var dhtListener = DhtListenerFactory.CreateUdp(new IPEndPoint(IPAddress.Any, listenPort));
+
                     var dhtEngine = new DhtEngine(dhtListener);
                     dhtListener.Start();
 
@@ -268,8 +271,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
                         dhtNodesData = null;
                     }
 
-                    dhtEngine.Start(dhtNodesData);
-                    globalEngine.RegisterDht(dhtEngine);
+                    await dhtEngine.StartAsync(dhtNodesData);
+                    // globalEngine.RegisterDht(dhtEngine);
 
                     // We need to cleanup correctly when the user closes the window by using ctrl-c
                     // or an unhandled exception happens
@@ -291,9 +294,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 StopAllTorrents();
 
             // Create the default settings which a torrent will have.
-            var torrentDefaults = new TorrentSettings(tOpts.NumULSlotsNormalized);
-            torrentDefaults.UseDht = true;
-            torrentDefaults.EnablePeerExchange = true;
+            var defaultTorrentSettings = new TorrentSettingsBuilder()
+            {
+                UploadSlots = tOpts.NumULSlotsNormalized,
+                AllowDht = true,
+                AllowPeerExchange = true
+            }.ToSettings();
 
             // For each file in the torrents path that is a .torrent file, load it into the engine.
             var managers = new List<TorrentManager>();
@@ -302,7 +308,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 Torrent torrent = null;
                 try
                 {
-                    torrent = Torrent.Load(File.ReadAllBytes(newAddOn.torrentFileName));
+                    torrent = await Torrent.LoadAsync(File.ReadAllBytes(newAddOn.TorrentFileName));
                 }
                 catch (Exception ex)
                 {
@@ -316,9 +322,10 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 {
                     var fullFilePaths = new List<String>();
                     {
-                        TorrentFile[] torrentFiles = torrent.Files;
-                        foreach (TorrentFile theFile in torrentFiles)
-                            fullFilePaths.Add(Path.Combine(newAddOn.torrentSavePath, theFile.Path));
+                        foreach (TorrentFile theFile in torrent.Files)
+                        {
+                            fullFilePaths.Add(Path.Combine(newAddOn.TorrentSavePath, theFile.Path));
+                        }
                     }
 
                     foreach (string realPath in fullFilePaths)
@@ -352,15 +359,19 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 TorrentManager tm = null;
                 try
                 {
-                    tm = new TorrentManager(torrent, globalEngine.Settings.SavePath, torrentDefaults, newAddOn.torrentSavePath);
+                    await globalEngine.RemoveAsync(torrent);
+                    tm = await globalEngine.AddAsync(torrent, newAddOn.TorrentSavePath, defaultTorrentSettings);
+
                     //load the fast resume file for this torrent
                     if (!fullSystemCheck && !UserSettings.Current.TorrentOptions.DisableFastResume)
                     {
                         string fastResumeFilepath = GetFastResumeFileName(tm);
                         if (File.Exists(fastResumeFilepath))
                         {
-                            var bencoded = BEncodedValue.Decode<BEncodedDictionary>(File.ReadAllBytes(fastResumeFilepath));
-                            tm.LoadFastResume(new FastResume(bencoded));
+                            if (FastResume.TryLoad(fastResumeFilepath, out FastResume resume))
+                            {
+                                tm.LoadFastResume(resume);
+                            }
                         }
                     }
                 }
@@ -419,7 +430,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             foreach (TorrentManager manager in managers)
             {
                 // Add this manager to the global torrent engine
-                globalEngine.Register(manager);
+                // globalEngine.Register(manager);
 
                 // Every time a new peer is added, this is fired.
                 manager.PeersFound += delegate { };
@@ -428,11 +439,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 // Every time the state changes (Stopped -> Seeding -> Downloading -> Hashing) this is fired
                 manager.TorrentStateChanged += OnTorrentStateChanged;
                 // Every time the tracker's state changes, this is fired
+                /*
                 foreach (TrackerTier tier in manager.TrackerManager)
                 {
                 }
+                */
 
-                manager.Start();
+                await manager.StartAsync();
             }
 
             // While the torrents are still running, print out some stats to the screen.
@@ -447,8 +460,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 IList<TorrentManager> engineTorrents = globalEngine.Torrents;
                 if (firstRun || lastAnnounce < DateTime.Now.AddMinutes(-1))
                 {
-                    foreach (TorrentManager tm in engineTorrents)
-                        tm.TrackerManager.Announce();
+                    await Task.WhenAll(
+                        engineTorrents.Select(m => m.TrackerManager.AnnounceAsync(CancellationToken.None).AsTask()));
 
                     lastAnnounce = DateTime.Now;
                     firstRun = false;
@@ -508,10 +521,11 @@ namespace DayZ2.DayZ2Launcher.App.Core
                                         totalUploadConns += m.UploadingTo;
                                     }
                                     double totalDownloadProgress = totalDownloaded / totalToDownload;
-                                    status = "Status: " +
-                                             ((engineTorrents.Count(m => m.State == TorrentState.Downloading && m.GetPeers().Count > 0) > 0)
-                                                 ? "Downloading"
-                                                 : "Finding peers");
+
+                                    string statusText = engineTorrents.Count(m => m.State == TorrentState.Downloading && m.Peers.Seeds > 0) > 0
+                                        ? "Downloading" : "Finding peers";
+
+                                    status = $"Status: {statusText}";
                                     status += $"\nProgress: {totalDownloadProgress * 100:0.00}%";
                                     status += $"\nDownload({totalDownloadConns}): {totalDownloadSpeed / 1024.0:0.00} KiB/s";
                                     status += $"\nUpload({totalUploadConns}): {totalUploadSpeed / 1024.0:0.00} KiB/s";
@@ -532,7 +546,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
                                     StatusCallbacks(TorrentState.Seeding, 1);
 
                                     if (UserSettings.Current.TorrentOptions.StopSeeding)
-                                        globalEngine.StopAll();
+                                    {
+                                        await globalEngine.StopAllAsync();
+                                    }
                                 }
                                 break;
                             default:
@@ -549,11 +565,11 @@ namespace DayZ2.DayZ2Launcher.App.Core
                         downloader.Status = status;
                 }
 
-                Thread.Sleep(50);
+                await Task.Delay(50);
             }
         }
 
-        public void OnTorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
+        public async void OnTorrentStateChanged(object sender, TorrentStateChangedEventArgs e)
         {
             if (e.NewState == TorrentState.Stopped)
             {
@@ -577,7 +593,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             {
                 TorrentManager tm = e.TorrentManager;
                 ClientEngine engine = tm.Engine;
-                engine.Unregister(tm);
+                await engine.RemoveAsync(tm);
             }
             else if (Math.Abs(e.TorrentManager.Progress - 100.0) < Double.Epsilon && e.NewState == TorrentState.Seeding)
             {
@@ -610,9 +626,15 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 if (i > 0)
                     proto = Protocol.Udp;
 
-                Mapping mapping = device.GetSpecificMapping(proto, port);
-                if (mapping == null || mapping.IsExpired() || mapping.PrivatePort < 0 || mapping.PublicPort < 0)
-                    device.CreatePortMap(new Mapping(proto, port, port));
+                try
+                {
+                    Mapping mapping = device.GetSpecificMapping(proto, port);
+                    if (mapping == null || mapping.IsExpired() || mapping.PrivatePort < 0 || mapping.PublicPort < 0)
+                        device.CreatePortMap(new Mapping(proto, port, port));
+                }
+                catch (MappingException)
+                {
+                }
             }
         }
 
@@ -624,9 +646,15 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 if (i > 0)
                     proto = Protocol.Udp;
 
-                Mapping mapping = device.GetSpecificMapping(proto, port);
-                if (mapping != null && mapping.PrivatePort > 0 && mapping.PublicPort > 0)
-                    device.DeletePortMap(new Mapping(proto, port, port));
+                try
+                {
+                    Mapping mapping = device.GetSpecificMapping(proto, port);
+                    if (mapping != null && mapping.PrivatePort > 0 && mapping.PublicPort > 0)
+                        device.DeletePortMap(new Mapping(proto, port, port));
+                }
+                catch (MappingException)
+                {
+                }
             }
         }
 
@@ -730,7 +758,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             }
         }
 
-        public static void ReconfigureEngine()
+        public static async void ReconfigureEngine()
         {
             if (globalEngine != null)
             {
@@ -742,10 +770,10 @@ namespace DayZ2.DayZ2Launcher.App.Core
                         IDhtEngine oldDhtEngine = globalEngine.DhtEngine;
                         if (oldDhtEngine != null)
                         {
-                            dhtNodesData = oldDhtEngine.SaveNodes();
-                            oldDhtEngine.Stop();
+                            dhtNodesData = await oldDhtEngine.SaveNodesAsync();
+                            await oldDhtEngine.StopAsync();
 
-                            globalEngine.RegisterDht(null);
+                            // globalEngine.RegisterDht(null);
                             if (!oldDhtEngine.Disposed)
                                 oldDhtEngine.Dispose();
                         }
@@ -755,12 +783,20 @@ namespace DayZ2.DayZ2Launcher.App.Core
                     EngineStoppedOnPort(engineListenPort);
 
                     engineListenPort = tOpts.ListeningPort;
-                    globalEngine.ChangeListenEndpoint(new IPEndPoint(IPAddress.Any, engineListenPort));
 
-                    var dhtListener = new DhtListener(new IPEndPoint(IPAddress.Any, engineListenPort));
+                    var engineSettings = new EngineSettingsBuilder(globalEngine.Settings)
+                    {
+                        ListenPort = engineListenPort,
+                    }.ToSettings();
+
+                    await globalEngine.UpdateSettingsAsync(engineSettings);
+                    await globalEngine.DhtEngine.StartAsync(dhtNodesData);
+                    /*
+                    var dhtListener = DhtListenerFactory.CreateUdp(engineListenPort);
                     var dhtEngine = new DhtEngine(dhtListener);
-                    dhtEngine.Start(dhtNodesData);
+                    await dhtEngine.StartAsync(dhtNodesData);
                     globalEngine.RegisterDht(dhtEngine);
+                    */
 
                     EngineStartedOnPort(engineListenPort);
                 }
@@ -774,15 +810,26 @@ namespace DayZ2.DayZ2Launcher.App.Core
                     EngineStoppedOnPort(engineListenPort);
                 }
 
-                EngineSettings engSets = globalEngine.Settings;
-                engSets.GlobalMaxConnections = tOpts.MaxDLConnsNormalized;
-                engSets.GlobalMaxDownloadSpeed = tOpts.MaxDLSpeed * 1024;
-                engSets.GlobalMaxUploadSpeed = tOpts.MaxULSpeed * 1024;
+                var engSets = new EngineSettingsBuilder(globalEngine.Settings)
+                {
+                    MaximumConnections = tOpts.MaxDLConnsNormalized,
+                    MaximumDownloadSpeed = tOpts.MaxDLSpeed * 1024,
+                    MaximumUploadSpeed = tOpts.MaxULSpeed * 1024
+                }.ToSettings();
+
+                await globalEngine.UpdateSettingsAsync(engSets);
 
                 IList<TorrentManager> engineTorrents = globalEngine.Torrents;
 
                 foreach (TorrentManager tm in engineTorrents)
-                    tm.Settings.UploadSlots = tOpts.NumULSlotsNormalized;
+                {
+                    var torrentSettings = new TorrentSettingsBuilder(tm.Settings)
+                    {
+                        UploadSlots = tOpts.NumULSlotsNormalized
+                    }.ToSettings();
+
+                    await tm.UpdateSettingsAsync(torrentSettings);
+                }
             }
         }
 
@@ -798,7 +845,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
                         if (tm.State != TorrentState.Stopped)
                             runningTorrents.Add(tm);
                     }
-                    globalEngine.StopAll();
+                    globalEngine.StopAllAsync();
                 }
 
                 while (runningTorrents.Count > 0)
@@ -831,7 +878,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             }
         }
 
-        private static void EngineShutdown()
+        private static async void EngineShutdown()
         {
             if (globalEngine != null)
             {
@@ -843,7 +890,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 try
                 {
                     dhtNodesFileName = GetDhtNodesFileName();
-                    File.WriteAllBytes(dhtNodesFileName, globalEngine.DhtEngine.SaveNodes());
+                    var dhtNodes = await globalEngine.DhtEngine.SaveNodesAsync();
+                    File.WriteAllBytes(dhtNodesFileName, dhtNodes);
                 }
                 catch (Exception ex)
                 {
@@ -864,8 +912,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
         private class AddOnTorrent
         {
             public MetaAddon Meta;
-            public string torrentFileName;
-            public string torrentSavePath;
+            public string TorrentFileName;
+            public string TorrentSavePath;
         }
     }
 }
