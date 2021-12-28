@@ -247,13 +247,17 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 exePath = bestVer.ExePath;
                 gameName = "Arma 2: Operation Arrowhead";
 
-                if (server.ProtectionEnabled && bestVer.BuildNo >= 125402) // Beta where BE launcher was introduced.
+                bool beServer = server != null && server.ProtectionEnabled;
+                if (bestVer.BuildNo >= 125402)  // Beta where BE launcher was introduced.
                 {
-                    string bePath = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, "ArmA2OA_BE.exe");
-                    if (File.Exists(bePath))
+                    if (server == null || beServer)
                     {
-                        exePath = bePath;
-                        arguments.Append(" 0 0");
+                        string bePath = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, "ArmA2OA_BE.exe");
+                        if (File.Exists(bePath))
+                        {
+                            exePath = bePath;
+                            arguments.Append(" 0 0");
+                        }
                     }
                 }
             }
