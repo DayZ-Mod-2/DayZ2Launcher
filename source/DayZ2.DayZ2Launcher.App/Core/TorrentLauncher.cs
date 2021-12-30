@@ -100,7 +100,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
                 //stop existing torrents going on
                 if (_torrentUpdater != null)
                 {
-                    TorrentUpdater.StopAllTorrents();
+                    TorrentUpdater.Shutdown();
                     _torrentUpdater = null;
                 }
                 _torrentUpdater = new TorrentUpdater(versionString, modDetails.AddOns, fullSystemCheck, this, updater, errorMsgsOnly);
@@ -155,7 +155,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
                     _gameLauncher.SetModDetails(null, false, args.Error);
                 }
                 else
+                {
                     ContinueFromContentFile(versionString, metaJsonFilename, forceFullSystemsCheck, updater, errorMsgsOnly);
+                }
             };
             wc.BeginDownload(jsonIndex, metaJsonFilename);
         }

@@ -285,7 +285,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
             WindowState = WindowState.Minimized;
         }
 
-        private void ToggleMaxamimizeClick(object sender, RoutedEventArgs e)
+        private void ToggleMaximizeClick(object sender, RoutedEventArgs e)
         {
             ToggleMaximized();
         }

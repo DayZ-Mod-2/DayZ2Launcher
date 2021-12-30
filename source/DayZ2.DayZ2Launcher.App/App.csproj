@@ -23,6 +23,7 @@
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
+	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <UpdateMode>Background</UpdateMode>
     <UpdateInterval>7</UpdateInterval>
     <UpdateIntervalUnits>Days</UpdateIntervalUnits>
@@ -204,7 +205,7 @@
     <Compile Include="Core\CalculatedGameSettings.cs" />
     <Compile Include="Core\Hash.cs" />
     <Compile Include="Core\HttpUtility.cs" />
-    <Compile Include="Core\TorrentUpdater2.cs" />
+    <Compile Include="Core\TorrentUpdater.cs" />
     <Compile Include="Core\Unpacker.cs" />
     <Compile Include="SteamKit2\KeyValue.cs" />
     <Compile Include="SteamKit2\StreamHelpers.cs" />
@@ -219,7 +220,7 @@
     <Compile Include="Core\GameOptions.cs" />
     <Compile Include="Core\GameVersions.cs" />
     <Compile Include="Core\RecentServer.cs" />
-    <Compile Include="Core\TorrentUpdater.cs" />
+    <Compile Include="Core\TorrentUpdater_old.cs" />
     <Compile Include="Ui\Behaviors\NumericTextBoxBehavior.cs" />
     <Compile Include="Ui\Controls\InfoPopup.xaml.cs">
       <DependentUpon>InfoPopup.xaml</DependentUpon>
