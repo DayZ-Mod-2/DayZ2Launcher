@@ -1,5 +1,5 @@
 releases/
-
+build/
 
 #################
 ## Visual Studio
@@ -38,8 +38,8 @@ Dotjosh.DayZCommander.Deploy/app.config
 .builds
 *.dotCover
 
-## TODO: If you have NuGet Package Restore enabled, uncomment this
-#packages/
+# nuget
+source/packages
 
 # Visual C++ cache files
 ipch/
