@@ -6,50 +6,6 @@ using Newtonsoft.Json;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-    public class MetaPlugin
-    {
-        public MetaPlugin(string ident)
-        {
-            Ident = ident;
-        }
-
-        [JsonProperty("ident")]
-        public string Ident { get; set; }
-
-        [JsonProperty("addon")]
-        public string Addon { get; set; }
-
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("description")]
-        public string Description { get; set; }
-
-        public bool IsEnabled { get; set; }
-    }
-
-    public class MetaModDetails
-    {
-        [JsonProperty("addons")] public List<MetaAddon> AddOns;
-
-        [JsonProperty("gametypes")] public List<MetaGameType> GameTypes;
-
-        [JsonProperty("plugins")] public List<MetaPlugin> Plugins;
-
-        [JsonProperty("version")] public string Version;
-
-        public static string GetFileName(string versionString)
-        {
-            return Path.Combine(UserSettings.ContentMetaPath, versionString + ".json");
-        }
-
-        public static MetaModDetails LoadFromFile(string fullPath)
-        {
-            var modDetails = JsonConvert.DeserializeObject<MetaModDetails>(File.ReadAllText(fullPath));
-            return modDetails;
-        }
-    }
-
     public class GameVersion
     {
         public string DirPath;

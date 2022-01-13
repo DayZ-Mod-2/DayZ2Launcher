@@ -6,73 +6,73 @@ using System.Reflection;
 
 namespace Caliburn.Micro
 {
-    /// <summary>
-    ///     Generic extension methods used by the framework.
-    /// </summary>
-    public static class ExtensionMethods
-    {
-        /// <summary>
-        ///     Get's the name of the assembly.
-        /// </summary>
-        /// <param name="assembly">The assembly.</param>
-        /// <returns>The assembly's name.</returns>
-        public static string GetAssemblyName(this Assembly assembly)
-        {
-            return assembly.FullName.Remove(assembly.FullName.IndexOf(","));
-        }
+	/// <summary>
+	///     Generic extension methods used by the framework.
+	/// </summary>
+	public static class ExtensionMethods
+	{
+		/// <summary>
+		///     Get's the name of the assembly.
+		/// </summary>
+		/// <param name="assembly">The assembly.</param>
+		/// <returns>The assembly's name.</returns>
+		public static string GetAssemblyName(this Assembly assembly)
+		{
+			return assembly.FullName.Remove(assembly.FullName.IndexOf(","));
+		}
 
-        /// <summary>
-        ///     Gets all the attributes of a particular type.
-        /// </summary>
-        /// <typeparam name="T">The type of attributes to get.</typeparam>
-        /// <param name="member">The member to inspect for attributes.</param>
-        /// <param name="inherit">Whether or not to search for inherited attributes.</param>
-        /// <returns>The list of attributes found.</returns>
-        public static IEnumerable<T> GetAttributes<T>(this MemberInfo member, bool inherit)
-        {
+		/// <summary>
+		///     Gets all the attributes of a particular type.
+		/// </summary>
+		/// <typeparam name="T">The type of attributes to get.</typeparam>
+		/// <param name="member">The member to inspect for attributes.</param>
+		/// <param name="inherit">Whether or not to search for inherited attributes.</param>
+		/// <returns>The list of attributes found.</returns>
+		public static IEnumerable<T> GetAttributes<T>(this MemberInfo member, bool inherit)
+		{
 #if WinRT
-            return member.GetCustomAttributes(inherit).OfType<T>();
+			return member.GetCustomAttributes(inherit).OfType<T>();
 #else
-            return Attribute.GetCustomAttributes(member, inherit).OfType<T>();
+			return Attribute.GetCustomAttributes(member, inherit).OfType<T>();
 #endif
-        }
+		}
 
-        /// <summary>
-        ///     Applies the action to each element in the list.
-        /// </summary>
-        /// <typeparam name="T">The enumerable item's type.</typeparam>
-        /// <param name="enumerable">The elements to enumerate.</param>
-        /// <param name="action">The action to apply to each item in the list.</param>
-        public static void Apply<T>(this IEnumerable<T> enumerable, Action<T> action)
-        {
-            foreach (T item in enumerable)
-            {
-                action(item);
-            }
-        }
+		/// <summary>
+		///     Applies the action to each element in the list.
+		/// </summary>
+		/// <typeparam name="T">The enumerable item's type.</typeparam>
+		/// <param name="enumerable">The elements to enumerate.</param>
+		/// <param name="action">The action to apply to each item in the list.</param>
+		public static void Apply<T>(this IEnumerable<T> enumerable, Action<T> action)
+		{
+			foreach (T item in enumerable)
+			{
+				action(item);
+			}
+		}
 
-        /// <summary>
-        ///     Converts an expression into a <see cref="MemberInfo" />.
-        /// </summary>
-        /// <param name="expression">The expression to convert.</param>
-        /// <returns>The member info.</returns>
-        public static MemberInfo GetMemberInfo(this Expression expression)
-        {
-            var lambda = (LambdaExpression)expression;
+		/// <summary>
+		///     Converts an expression into a <see cref="MemberInfo" />.
+		/// </summary>
+		/// <param name="expression">The expression to convert.</param>
+		/// <returns>The member info.</returns>
+		public static MemberInfo GetMemberInfo(this Expression expression)
+		{
+			var lambda = (LambdaExpression)expression;
 
-            MemberExpression memberExpression;
-            if (lambda.Body is UnaryExpression)
-            {
-                var unaryExpression = (UnaryExpression)lambda.Body;
-                memberExpression = (MemberExpression)unaryExpression.Operand;
-            }
-            else
-            {
-                memberExpression = (MemberExpression)lambda.Body;
-            }
+			MemberExpression memberExpression;
+			if (lambda.Body is UnaryExpression)
+			{
+				var unaryExpression = (UnaryExpression)lambda.Body;
+				memberExpression = (MemberExpression)unaryExpression.Operand;
+			}
+			else
+			{
+				memberExpression = (MemberExpression)lambda.Body;
+			}
 
-            return memberExpression.Member;
-        }
+			return memberExpression.Member;
+		}
 
 #if WP71
 	//Method missing in WP71 Linq
@@ -90,15 +90,15 @@ namespace Caliburn.Micro
 		public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(this IEnumerable<TFirst> first, IEnumerable<TSecond> second, Func<TFirst, TSecond, TResult> resultSelector){
 			if (first == null){
 				throw new ArgumentNullException("first");
-            }
+			}
 
 			if (second == null) {
 				throw new ArgumentNullException("second");
-            }
+			}
 
 			if (resultSelector == null) {
 				throw new ArgumentNullException("resultSelector");
-            }
+			}
 
 			var enumFirst = first.GetEnumerator();
 			var enumSecond = second.GetEnumerator();
@@ -108,5 +108,5 @@ namespace Caliburn.Micro
 			}
 		}
 #endif
-    }
+	}
 }

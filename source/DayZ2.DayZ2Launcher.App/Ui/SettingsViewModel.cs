@@ -11,6 +11,8 @@ namespace DayZ2.DayZ2Launcher.App.Ui
         private string _customBranchName;
         private bool _isVisible;
 
+        public EventHandler TorrentSettingsChanged;
+
         public SettingsViewModel()
         {
             Settings = UserSettings.Current;
@@ -31,7 +33,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
                 if (args.PropertyName == "IsVisible")
                 {
                     if (IsVisible == false)
-                        TorrentUpdater.ReconfigureEngine();
+                        TorrentSettingsChanged?.Invoke(this, null);
                 }
             };
         }

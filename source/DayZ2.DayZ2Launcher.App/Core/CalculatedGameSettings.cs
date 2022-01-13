@@ -4,95 +4,78 @@ using Newtonsoft.Json;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-    public class LocatorInfo
-    {
-        [JsonProperty("installers")] public HashWebClient.RemoteFileInfo Installers = null;
-        [JsonProperty("mods")] public HashWebClient.RemoteFileInfo Mods = null;
-        [JsonProperty("motd")] public string MotdUrl = null;
+	public class CalculatedGameSettings : BindableBase
+	{
+		private static CalculatedGameSettings _current;
 
-        [JsonProperty("patches")] public HashWebClient.RemoteFileInfo Patches = null;
-        [JsonProperty("servers")] public string ServerListUrl = null;
+		public static CalculatedGameSettings Current
+		{
+			get
+			{
+				if (_current == null)
+				{
+					_current = new CalculatedGameSettings();
+					_current.Update();
+				}
+				return _current;
+			}
+		}
 
-        public static LocatorInfo LoadFromString(string jsonText)
-        {
-            return JsonConvert.DeserializeObject<LocatorInfo>(jsonText);
-        }
-    }
+		public string Arma2Path { get; set; }
+		public string Arma2OAPath { get; set; }
+		public GameVersions Versions { get; set; }
+		public string ModContentVersion { get; set; }
 
-    public class CalculatedGameSettings : BindableBase
-    {
-        private static CalculatedGameSettings _current;
+		public void Update()
+		{
+			SetArma2Path();
+			SetArma2OAPath();
+			SetGameVersions();
+			SetModContentVersion();
+		}
 
-        public static CalculatedGameSettings Current
-        {
-            get
-            {
-                if (_current == null)
-                {
-                    _current = new CalculatedGameSettings();
-                    _current.Update();
-                }
-                return _current;
-            }
-        }
+		public void SetArma2Path()
+		{
+			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2DirectoryOverride))
+				Arma2Path = UserSettings.Current.GameOptions.Arma2DirectoryOverride;
+			else
+				Arma2Path = LocalMachineInfo.Current.Arma2Path;
 
-        public string Arma2Path { get; set; }
-        public string Arma2OAPath { get; set; }
-        public GameVersions Versions { get; set; }
-        public string ModContentVersion { get; set; }
+			PropertyHasChanged("Arma2Path");
+		}
 
-        public LocatorInfo Locator { get; set; }
+		public void SetArma2OAPath()
+		{
+			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride))
+				Arma2OAPath = UserSettings.Current.GameOptions.Arma2OADirectoryOverride;
+			else
+				Arma2OAPath = LocalMachineInfo.Current.Arma2OAPath;
 
-        public void Update()
-        {
-            SetArma2Path();
-            SetArma2OAPath();
-            SetGameVersions();
-            SetModContentVersion();
-        }
+			PropertyHasChanged("Arma2OAPath");
+		}
 
-        public void SetArma2Path()
-        {
-            if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2DirectoryOverride))
-                Arma2Path = UserSettings.Current.GameOptions.Arma2DirectoryOverride;
-            else
-                Arma2Path = LocalMachineInfo.Current.Arma2Path;
+		private void SetGameVersions()
+		{
+			if (!string.IsNullOrEmpty(Arma2OAPath))
+				Versions = new GameVersions(Arma2OAPath);
+			else
+				Versions = null;
 
-            PropertyHasChanged("Arma2Path");
-        }
+			PropertyHasChanged("Versions");
+		}
 
-        public void SetArma2OAPath()
-        {
-            if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.Arma2OADirectoryOverride))
-                Arma2OAPath = UserSettings.Current.GameOptions.Arma2OADirectoryOverride;
-            else
-                Arma2OAPath = LocalMachineInfo.Current.Arma2OAPath;
+		private void SetModContentVersion()
+		{
+			try
+			{
+				ModContentVersion = File.ReadAllText(UserSettings.ContentCurrentTagFile).Trim();
+			}
+			catch (Exception)
+			{
+				ModContentVersion = null;
+			}
 
-            PropertyHasChanged("Arma2OAPath");
-        }
-
-        private void SetGameVersions()
-        {
-            if (!string.IsNullOrEmpty(Arma2OAPath))
-                Versions = new GameVersions(Arma2OAPath);
-            else
-                Versions = null;
-
-            PropertyHasChanged("Versions");
-        }
-
-        private void SetModContentVersion()
-        {
-            try
-            {
-                ModContentVersion = File.ReadAllText(UserSettings.ContentCurrentTagFile).Trim();
-            }
-            catch (Exception)
-            {
-                ModContentVersion = null;
-            }
-
-            PropertyHasChanged("ModContentVersion");
-        }
-    }
+			PropertyHasChanged("ModContentVersion");
+		}
+	}
 }

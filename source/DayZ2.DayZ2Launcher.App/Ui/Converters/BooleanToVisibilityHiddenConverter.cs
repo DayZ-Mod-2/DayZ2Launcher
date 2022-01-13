@@ -5,23 +5,21 @@ using System.Windows.Data;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.Converters
 {
-    public class BooleanToVisibilityHiddenConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            bool inverse = parameter != null && bool.Parse((string)parameter);
-            bool val = inverse
-                ? !(bool)value
-                : (bool)value;
+	public class BooleanToVisibilityHiddenConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			bool inverse = parameter != null && bool.Parse((string)parameter);
+			bool val = inverse ? !(bool)value : (bool)value;
 
-            if (val)
-                return Visibility.Visible;
-            return Visibility.Hidden;
-        }
+			if (val)
+				return Visibility.Visible;
+			return Visibility.Hidden;
+		}
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-    }
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

@@ -7,28 +7,23 @@
 	<Application.Resources>
 		<Converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
 		<Converters:PingToForegroundConverter x:Key="PingToForegroundConverter" />
-		<Converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter" />
 		<Converters:TimeToTextConverter x:Key="TimeToTextConverter" />
 		<Converters:TimeToColorConverter x:Key="TimeToColorConverter" />
 		<Converters:ServerFullnessToColorConverter x:Key="ServerFullnessToColorConverter" />
 		<Converters:BooleanToSelectedOptionColorConverter x:Key="BooleanToSelectedOptionColorConverter" />
 		<Converters:NotNullToVisibilityConverter x:Key="NotNullToVisibilityConverter" />
-		<Converters:NonZeroToVisibilityCollapsedConverter x:Key="NonZeroToVisibilityConverter" />
 		<Converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter" />
 		<Converters:DifficultyToDescriptionConverter x:Key="DifficultyToDescriptionConverter" />
 		<Converters:NonZeroToVisibilityHiddenConverter x:Key="NonZeroToVisibilityHiddenConverter" />
 		<Converters:EnabledSettingToForegroundConverter x:Key="EnabledSettingToForegroundConverter" />
 		<Converters:BooleanToVisibilityCollapsedConverter x:Key="BooleanToVisibilityCollapsedConverter" />
-		<Converters:IsSelectedTabToColorConverter x:Key="IsSelectedTabToColorConverter" />
 		<Converters:IsFavoriteToForegroundConverter x:Key="IsFavoriteToForegroundConverter" />
 		<Converters:UpdateStatusToForegroundConverter x:Key="UpdateStatusToForegroundConverter" />
+		<Converters:UpdateStatusToTextConverter x:Key="UpdateStatusToTextConverter" />
 		<Converters:UpdateStatusToStyleConverter x:Key="UpdateStatusToStyleConverter" />
-		<Converters:ServerRevisionCountToWidthConverter x:Key="ServerRevisionCountToWidthConverter" />
-		<Converters:CountsToPercentageConverter x:Key="CountsToPercentageConverter" />
 		<Converters:VersionMatchesToForegroundConverter x:Key="VersionMatchesToForegroundConverter" />
-        <Converters:HasNotesToForegroundConverter x:Key="HasNotesToForegroundConverter" />
 
-        <Style TargetType="Button" x:Key="MetroTextButtonStyle">
+		<Style TargetType="Button" x:Key="MetroTextButtonStyle">
 			<Setter Property="Foreground" Value="#CCC" />
 			<Setter Property="Cursor" Value="Hand" />
 			<Style.Triggers>
@@ -107,10 +102,10 @@
 			</Setter>
 			<Style.Triggers>
 				<Trigger Property="SortDirection" Value="Ascending">
-                    <Setter Property="Foreground" Value="#0784B5" />
+					<Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-                    <Setter Property="Foreground" Value="#0784B5" />
+					<Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 				<MultiTrigger>
 					<MultiTrigger.Conditions>
@@ -185,7 +180,7 @@
                     <Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-                    <Setter Property="Foreground" Value="#0784B5" />
+					<Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 			</Style.Triggers>
 		</Style>

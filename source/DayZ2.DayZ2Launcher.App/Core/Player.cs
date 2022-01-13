@@ -1,26 +1,26 @@
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-    public class Player
-    {
-        private readonly Server _server;
+	public class Player
+	{
+		private readonly Server _server;
 
-        public Player(Server server)
-        {
-            _server = server;
-        }
+		public Player(Server server)
+		{
+			_server = server;
+		}
 
-        public string Hash
-        {
-            get { return _server.Id + "(" + Name + ")"; }
-        }
+		public string Hash
+		{
+			get { return _server.Id + "(" + Name + ")"; }
+		}
 
-        public string Name { get; set; }
-        public int Score { get; set; }
-        public int Deaths { get; set; }
+		public string Name { get; set; }
+		public int Score { get; set; }
+		public int Deaths { get; set; }
 
-        public Server Server
-        {
-            get { return _server; }
-        }
-    }
+		public Server Server
+		{
+			get { return _server; }
+		}
+	}
 }

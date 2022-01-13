@@ -31,7 +31,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
             }
         }
 
-        public Version DayZLauncherVersion
+        public Version LauncherVersion
         {
             get
             {

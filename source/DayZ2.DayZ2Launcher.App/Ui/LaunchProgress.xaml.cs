@@ -12,7 +12,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
     {
         public bool InstallSuccessful = false;
 
-        public LaunchProgress(Window ownerWnd, MetaGameType gameType, IEnumerable<MetaAddon> addOns)
+        public LaunchProgress(Window ownerWnd, MetaGameType gameType)
         {
             Owner = ownerWnd;
             InitializeComponent();
@@ -20,7 +20,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
             Loaded += (sender, args) =>
             {
                 Activate();
-                var ctx = new LaunchProgressViewModel(gameType, addOns);
+                var ctx = new LaunchProgressViewModel(gameType);
                 ctx.Dispatcher = Dispatcher;
                 this.DataContext = ctx;
                 ctx.OnRequestClose += (snd, evt) =>

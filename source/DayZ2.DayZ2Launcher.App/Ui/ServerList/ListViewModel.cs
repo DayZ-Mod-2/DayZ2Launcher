@@ -41,7 +41,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 
         public void Handle(ServerUpdated message)
         {
-            if (message.SupressRefresh)
+            if (message.SuppressRefresh)
                 return;
 
             Server theServer = message.Server;

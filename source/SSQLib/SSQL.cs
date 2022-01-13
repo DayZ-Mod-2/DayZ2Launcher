@@ -97,14 +97,18 @@ namespace SSQLib
             //Create an empty buffer
             byte[] buf = null;
 
-            //Create a new packet and request
-            Packet requestPacket = new Packet();
-            requestPacket.Data = "TSource Engine Query";
+            byte[] request = Encoding.ASCII.GetBytes("TSource Engine Query" + '\0');
+            request = new byte[] { 255, 255, 255, 255 }.Concat(request).ToArray();
 
             try
             {
                 //Attempt to get the server info
-                buf = SocketUtils.getInfo(_ipEnd, requestPacket);
+                buf = SocketUtils.getInfo(_ipEnd, request);
+                if (buf.Length == 5 && buf[0] == 'A')
+                {
+                    byte[] challenge = buf.Skip(1).Take(4).ToArray();
+                    buf = SocketUtils.getInfo(_ipEnd, request.Concat(challenge).ToArray());
+                }
             }
             catch (SSQLServerException e)
             {

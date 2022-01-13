@@ -1,295 +1,443 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Data;
-using Caliburn.Micro;
 using DayZ2.DayZ2Launcher.App.Core;
+using UpdateStatus = DayZ2.DayZ2Launcher.App.Core.UpdateStatus;
+#pragma warning disable CS4014  // running async from sync
 
 namespace DayZ2.DayZ2Launcher.App.Ui
 {
-    public class UpdatesViewModel : ViewModelBase,
-        IHandle<ServerUpdated>
-    {
-        //private string STATUS_INPROGRESS = "STATUS_INPROGRESS";
-        //private string STATUS_ERROR = "STATUS_ERROR";
-        //private string STATUS_DEFAULT = "STATUS_DEFAULT";
-        private readonly Dictionary<Server, VersionSnapshot> _processedServers = new Dictionary<Server, VersionSnapshot>();
-        private bool _isVisible;
-        private LocatorErrorClass _locatorError;
-        private int _processedCount;
-        private ObservableCollection<VersionStatistic> _rawArma2VersionStats = new ObservableCollection<VersionStatistic>();
-        private ObservableCollection<VersionStatistic> _rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
+	public class UpdatesViewModel : ViewModelBase
+	{
+		private readonly CancellationToken m_cancellationToken;
 
-        public UpdatesViewModel(GameLauncher gameLauncher)
-        {
-            Arma2VersionStats = CollectionViewSource.GetDefaultView(_rawArma2VersionStats) as ListCollectionView;
-            Arma2VersionStats.SortDescriptions.Add(new SortDescription("Count", ListSortDirection.Descending));
+		private readonly LauncherUpdater m_launcherUpdater = new LauncherUpdater();
+		private readonly ModUpdater m_modUpdater = new ModUpdater();
+		private readonly ServerUpdater m_serverUpdater = new ServerUpdater();
+		private readonly MotdUpdater m_motdUpdater = new MotdUpdater();
 
-            DayZVersionStats = CollectionViewSource.GetDefaultView(_rawDayZVersionStats) as ListCollectionView;
-            DayZVersionStats.SortDescriptions.Add(new SortDescription("Count", ListSortDirection.Descending));
+		public UpdatesViewModel(GameLauncher_old gameLauncher)
+		{
+			// TODO: when to cancel this?
+			var source = new CancellationTokenSource();
+			m_cancellationToken = source.Token;
 
-            LocalMachineInfo = LocalMachineInfo.Current;
-            CalculatedGameSettings = CalculatedGameSettings.Current;
-            DayZLauncherUpdater = new DayZLauncherUpdater();
-            Arma2Updater = new Arma2Updater();
-            DayZUpdater = new DayZUpdater(gameLauncher);
+			CalculatedGameSettings = CalculatedGameSettings.Current;
 
-            DayZLauncherUpdater.PropertyChanged += AnyModelPropertyChanged;
-            Arma2Updater.PropertyChanged += AnyModelPropertyChanged;
-            DayZUpdater.PropertyChanged += AnyModelPropertyChanged;
-        }
+			Task.Run(async () =>
+			{
+				while (true)
+				{
+					DayZTorrentStatus = m_modUpdater.CurrentStatus();
+					await Task.Delay(100, m_cancellationToken);
+				}
+			}, m_cancellationToken);
 
-        public string Status
-        {
-            get
-            {
-                if (DayZLauncherUpdater.Status == DayZLauncherUpdater.STATUS_CHECKINGFORUPDATES
-                    || Arma2Updater.Status == DayZLauncherUpdater.STATUS_CHECKINGFORUPDATES
-                    || DayZUpdater.Status == DayZLauncherUpdater.STATUS_CHECKINGFORUPDATES)
-                    return DayZLauncherUpdater.STATUS_DOWNLOADING;
+			// TODO: maybe check for updates on a timer too
+			async Task Init()
+			{
+				await CheckForUpdatesAsync();
+				await m_modUpdater.StartAsync("dayz2", m_cancellationToken);  // TODO: mod name
+			}
+			Init();
+		}
 
-                if (DayZLauncherUpdater.VersionMismatch
-                    || Arma2Updater.VersionMismatch
-                    || DayZUpdater.VersionMismatch)
-                    return DayZLauncherUpdater.STATUS_OUTOFDATE;
+		private string m_motd;
+		public string Motd
+		{
+			get => m_motd;
+			set
+			{
+				m_motd = value;
+				PropertyHasChanged(nameof(Motd));
+			}
+		}
 
-                if (!DayZLauncherUpdater.VersionMismatch
-                    && !Arma2Updater.VersionMismatch
-                    && !DayZUpdater.VersionMismatch)
-                    return DayZLauncherUpdater.STATUS_UPTODATE;
+		private IList<ServerListInfo> m_servers;
+		public IList<ServerListInfo> Servers
+		{
+			get => m_servers;
+			set
+			{
+				m_servers = value;
+				PropertyHasChanged(nameof(Servers));
+			}
+		}
 
-                return "Error";
-            }
-        }
+		public struct UpdateInfo
+		{
+			public readonly UpdateStatus Status;
+			public readonly string Text;
 
-        public DayZLauncherUpdater DayZLauncherUpdater { get; private set; }
-        public Arma2Updater Arma2Updater { get; private set; }
-        public DayZUpdater DayZUpdater { get; private set; }
-        public LocalMachineInfo LocalMachineInfo { get; private set; }
-        public CalculatedGameSettings CalculatedGameSettings { get; private set; }
-        public ListCollectionView Arma2VersionStats { get; private set; }
-        public ListCollectionView DayZVersionStats { get; private set; }
+			public UpdateInfo(UpdateStatus status, string text)
+			{
+				Status = status;
+				Text = text;
+			}
+		}
 
-        public bool IsVisible
-        {
-            get => _isVisible;
-            set
-            {
-                _isVisible = value;
-                PropertyHasChanged("IsVisible");
-            }
-        }
+		UpdateInfo m_overallStatus = new UpdateInfo(UpdateStatus.Checking, null);
+		public UpdateInfo OverallStatus
+		{
+			get => m_overallStatus;
+			set
+			{
+				m_overallStatus = value;
+				PropertyHasChanged(nameof(OverallStatus));
+			}
+		}
 
-        public LocatorErrorClass LocatorError
-        {
-            get => _locatorError;
-            set
-            {
-                _locatorError = value;
-                PropertyHasChanged("LocatorError");
-            }
-        }
+		void UpdateOverallStatus()
+		{
+			var statusList = new List<UpdateInfo>() { LauncherStatus, DayZStatus };
+			UpdateInfo current = new UpdateInfo(UpdateStatus.UpToDate, "");
+			foreach (var status in statusList)
+			{
+				switch (status.Status)
+				{
+					case UpdateStatus.UpToDate:
+						break;
+					case UpdateStatus.Checking:
+					case UpdateStatus.OutOfDate:
+						if (current.Status != UpdateStatus.Error)
+						{
+							current = status;
+						}
 
-        public int ProcessedCount
-        {
-            get => _processedCount;
-            set
-            {
-                _processedCount = value;
-                PropertyHasChanged("ProcessedCount");
-            }
-        }
+						break;
+					case UpdateStatus.Error:
+						OverallStatus = current;
+						return;
+				}
+			}
+			OverallStatus = current;
+		}
 
-        public void Handle(ServerUpdated message)
-        {
-            VersionStatistic existingDayZStatistic = null;
-            string dayZVersion = null;
-            if (message.Server.DayZVersion != null)
-            {
-                dayZVersion = message.Server.DayZVersion;
-                if (_rawDayZVersionStats != null)
-                    existingDayZStatistic =
-                        _rawDayZVersionStats.FirstOrDefault(x => x.Version.Equals(dayZVersion, StringComparison.OrdinalIgnoreCase));
-            }
+		UpdateInfo m_launcherStatus = new UpdateInfo(UpdateStatus.Checking, null);
+		public UpdateInfo LauncherStatus
+		{
+			get => m_launcherStatus;
+			set
+			{
+				m_launcherStatus = value;
+				UpdateOverallStatus();
+				PropertyHasChanged(nameof(LauncherStatus));
+			}
+		}
 
-            VersionStatistic existingArma2Statistic = null;
-            string arma2Version = null;
-            if (message.Server.Arma2Version != null)
-            {
-                arma2Version = message.Server.Arma2Version.Build.ToString();
-                if (_rawArma2VersionStats != null)
-                    existingArma2Statistic =
-                        _rawArma2VersionStats.FirstOrDefault(x => x.Version.Equals(arma2Version, StringComparison.OrdinalIgnoreCase));
-            }
+		UpdateInfo m_dayzStatus = new UpdateInfo(UpdateStatus.Checking, null);
+		public UpdateInfo DayZStatus
+		{
+			get => m_dayzStatus;
+			set
+			{
+				m_dayzStatus = value;
+				UpdateOverallStatus();
+				PropertyHasChanged(nameof(DayZStatus));
+			}
+		}
 
-            //If we've seen this server (or its gone), decrement what it was last time
-            bool serverWasProcessed = _processedServers.ContainsKey(message.Server);
-            if (serverWasProcessed || message.IsRemoved)
-            {
-                if (existingDayZStatistic != null)
-                    existingDayZStatistic.Count--;
-                if (existingArma2Statistic != null)
-                    existingArma2Statistic.Count--;
-            }
+		private string m_launcherLatestVersion;
+		public string LauncherLatestVersion
+		{
+			get => m_launcherLatestVersion;
+			set
+			{
+				m_launcherLatestVersion = value;
+				PropertyHasChanged(nameof(LauncherLatestVersion));
+			}
+		}
 
-            if (_rawDayZVersionStats == null)
-                _rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
+		private string m_launcherCurrentVersion;
+		public string LauncherCurrentVersion
+		{
+			get => m_launcherCurrentVersion;
+			set
+			{
+				m_launcherCurrentVersion = value;
+				PropertyHasChanged(nameof(LauncherCurrentVersion));
+			}
+		}
 
-            if (existingDayZStatistic == null && !message.IsRemoved)
-            {
-                if (dayZVersion != null)
-                    _rawDayZVersionStats.Add(new VersionStatistic { Version = dayZVersion, Count = 1, Parent = this });
-            }
-            else if (existingDayZStatistic != null)
-            {
-                if (!message.IsRemoved)
-                    existingDayZStatistic.Count++;
+		private string m_dayzLatestVersion;
+		public string DayZLatestVersion
+		{
+			get => m_dayzLatestVersion;
+			set
+			{
+				m_dayzLatestVersion = value;
+				PropertyHasChanged(nameof(DayZLatestVersion));
+			}
+		}
 
-                _rawDayZVersionStats.Remove(existingDayZStatistic);
-                _rawDayZVersionStats.Add(existingDayZStatistic);
-            }
+		private string m_dayzCurrentVersion;
+		public string DayZCurrentVersion
+		{
+			get => m_dayzCurrentVersion;
+			set
+			{
+				m_dayzCurrentVersion = value;
+				PropertyHasChanged(nameof(DayZCurrentVersion));
+			}
+		}
 
-            if (_rawArma2VersionStats == null)
-                _rawArma2VersionStats = new ObservableCollection<VersionStatistic>();
+		string m_dayzTorrentStatus = "";
+		public string DayZTorrentStatus
+		{
+			get => m_dayzTorrentStatus;
+			set
+			{
+				m_dayzTorrentStatus = value;
+				PropertyHasChanged(nameof(DayZTorrentStatus));
+			}
+		}
 
-            if (existingArma2Statistic == null && !message.IsRemoved)
-            {
-                if (arma2Version != null)
-                    _rawArma2VersionStats.Add(new VersionStatistic { Version = arma2Version, Count = 1, Parent = this });
-            }
-            else if (existingArma2Statistic != null)
-            {
-                if (!message.IsRemoved)
-                    existingArma2Statistic.Count++;
+		public LocalMachineInfo LocalMachineInfo { get; private set; }
+		public CalculatedGameSettings CalculatedGameSettings { get; private set; }
+		public ListCollectionView DayZVersionStats { get; private set; }
 
-                _rawArma2VersionStats.Remove(existingArma2Statistic);
-                _rawArma2VersionStats.Add(existingArma2Statistic);
-            }
+		private bool m_canInstallLauncher;
+		public bool CanInstallLauncher
+		{
+			get => m_canInstallLauncher;
+			private set
+			{
+				m_canInstallLauncher = value;
+				PropertyHasChanged(nameof(CanInstallLauncher));
+			}
+		}
 
-            if (!serverWasProcessed && !message.IsRemoved)
-            {
-                _processedServers.Add(message.Server, new VersionSnapshot(message.Server));
-                ProcessedCount++;
-            }
-        }
+		private bool m_canRestartLauncher;
+		public bool CanRestartLauncher
+		{
+			get => m_canRestartLauncher;
+			private set
+			{
+				m_canRestartLauncher = value;
+				PropertyHasChanged(nameof(CanRestartLauncher));
+			}
+		}
 
-        private void AnyModelPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            PropertyHasChanged("Status");
-        }
+		private bool m_canInstallMod;
+		public bool CanInstallMod
+		{
+			get => m_canInstallMod;
+			private set
+			{
+				m_canInstallMod = value;
+				PropertyHasChanged(nameof(CanInstallMod));
+			}
+		}
 
-        public event AsyncCompletedEventHandler LocatorChanged = (o, e) => { };
+		private bool m_canCheckForUpdates;
+		public bool CanCheckForUpdates
+		{
+			get => m_canCheckForUpdates;
+			private set
+			{
+				m_canCheckForUpdates = value;
+				PropertyHasChanged(nameof(CanCheckForUpdates));
+			}
+		}
 
-        public void CheckForUpdates()
-        {
-            CalculatedGameSettings.Current.Update();
-            LocalMachineInfo.Current.Update();
+		private bool m_canLaunchGame;
+		public bool CanLaunchGame
+		{
+			get => m_canLaunchGame;
+			private set
+			{
+				m_canLaunchGame = value;
+				PropertyHasChanged(nameof(CanLaunchGame));
+			}
+		}
 
-            DayZLauncherUpdater.CheckForUpdate();
+		private bool m_canVerifyIntegrity = true;
+		public bool CanVerifyIntegrity
+		{
+			get => m_canVerifyIntegrity;
+			private set
+			{
+				m_canVerifyIntegrity = value;
+				PropertyHasChanged(nameof(CanVerifyIntegrity));
+			}
+		}
 
-            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-            using (var wc = new WebClient())
-            {
-                wc.DownloadStringCompleted += (sender, evt) =>
-                {
-                    if (evt.Cancelled)
-                    {
-                        LocatorError = new LocatorErrorClass("Check cancelled", "Locator info fetch cancelled.");
-                        LocatorChanged(this, evt);
-                    }
-                    else if (evt.Error != null)
-                    {
-                        LocatorError = new LocatorErrorClass("Locator fetch error", evt.Error.Message);
-                        LocatorChanged(this, evt);
-                    }
-                    else
-                    {
-                        LocatorError = null;
-                        LocatorInfo locator = null;
-                        try
-                        {
-                            locator = LocatorInfo.LoadFromString(evt.Result);
-                        }
-                        catch (Exception ex)
-                        {
-                            locator = null;
-                            LocatorError = new LocatorErrorClass("Locator parse error", ex.Message);
-                            LocatorChanged(this, new AsyncCompletedEventArgs(ex, false, locator));
-                        }
-                        CalculatedGameSettings.Current.Locator = locator;
+		private bool m_isVisible;
+		public bool IsVisible
+		{
+			get => m_isVisible;
+			set
+			{
+				m_isVisible = value;
+				PropertyHasChanged(nameof(IsVisible));
+			}
+		}
 
-                        if (locator != null)
-                        {
-                            Arma2Updater.CheckForUpdates(locator.Patches);
-                            DayZUpdater.CheckForUpdates(locator.Mods);
-                            LocatorChanged(this, new AsyncCompletedEventArgs(null, false, locator));
-                        }
-                    }
-                };
+		/*
+		public void Handle(ServerUpdated message)
+		{
+			VersionStatistic existingDayZStatistic = null;
+			string dayZVersion = null;
+			if (message.Server.DayZVersion != null)
+			{
+				dayZVersion = message.Server.DayZVersion;
+				if (_rawDayZVersionStats != null)
+					existingDayZStatistic =
+						_rawDayZVersionStats.FirstOrDefault(x => x.Version.Equals(dayZVersion, StringComparison.OrdinalIgnoreCase));
+			}
 
-                string locatorUrl = "https://www.perry-swift.de/dayz2/locator.json";
-                string customBranch = UserSettings.Current.GameOptions.CustomBranchName;
-                if (!string.IsNullOrWhiteSpace(customBranch))
-                {
-                    locatorUrl += "/" + Uri.EscapeUriString(customBranch.Trim());
+			//If we've seen this server (or its gone), decrement what it was last time
+			bool serverWasProcessed = _processedServers.ContainsKey(message.Server);
+			if (serverWasProcessed || message.IsRemoved)
+			{
+				if (existingDayZStatistic != null)
+					existingDayZStatistic.Count--;
+			}
 
-                    string branchPass = UserSettings.Current.GameOptions.CustomBranchPass;
-                    if (!string.IsNullOrEmpty(branchPass))
-                        locatorUrl += "?pass=" + Uri.EscapeDataString(branchPass);
-                }
-                wc.DownloadStringAsync(new Uri(locatorUrl));
-            }
-        }
+			if (_rawDayZVersionStats == null)
+				_rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
 
-        public class LocatorErrorClass
-        {
-            private readonly string _caption;
-            private readonly string _message;
+			if (existingDayZStatistic == null && !message.IsRemoved)
+			{
+				if (dayZVersion != null)
+					_rawDayZVersionStats.Add(new VersionStatistic { Version = dayZVersion, Count = 1, Parent = this });
+			}
+			else if (existingDayZStatistic != null)
+			{
+				if (!message.IsRemoved)
+					existingDayZStatistic.Count++;
 
-            public LocatorErrorClass(string caption, string message)
-            {
-                _caption = caption;
-                _message = message;
-            }
+				_rawDayZVersionStats.Remove(existingDayZStatistic);
+				_rawDayZVersionStats.Add(existingDayZStatistic);
+			}
 
-            public string Caption => _caption;
+			if (!serverWasProcessed && !message.IsRemoved)
+			{
+				_processedServers.Add(message.Server, new VersionSnapshot(message.Server));
+				ProcessedCount++;
+			}
+		}
+		*/
 
-            public string Message => _message;
-        }
-    }
+		private async Task ReconfigureTorrentEngineAsync()
+		{
+			await m_modUpdater.ReconfigureTorrentEngineAsync();
+		}
 
-    public class VersionStatistic : BindableBase
-    {
-        private int _count;
-        public string Version { get; set; }
+		public void ReconfigureTorrentEngine()
+		{
+			ReconfigureTorrentEngineAsync();
+		}
 
-        public int Count
-        {
-            get { return _count; }
-            set
-            {
-                _count = value;
-                PropertyHasChanged("Count");
-            }
-        }
+		private async Task CheckForLauncherUpdatesAsync()
+		{
+			await m_launcherUpdater.CheckForUpdateAsync(m_cancellationToken);
+			CanInstallLauncher = m_launcherUpdater.Status == UpdateStatus.OutOfDate;
+			LauncherLatestVersion = m_launcherUpdater.LatestVersion.ToString();
+			LauncherCurrentVersion = m_launcherUpdater.CurrentVersion.ToString();
+			LauncherStatus = new UpdateInfo(m_launcherUpdater.Status, null);
+		}
 
-        public UpdatesViewModel Parent { get; set; }
-    }
+		private async Task CheckForModUpdatesAsync()
+		{
+			CanInstallMod = false;
+			await m_modUpdater.CheckForUpdateAsync("dayz2", m_cancellationToken);
+			CanVerifyIntegrity = m_modUpdater.Status == UpdateStatus.UpToDate && !m_modUpdater.IsRunning;
+			CanInstallMod = m_modUpdater.Status == UpdateStatus.OutOfDate && !m_modUpdater.IsRunning;
+			DayZLatestVersion = m_modUpdater.LatestVersion.ToString();
+			DayZCurrentVersion = m_modUpdater.CurrentVersion.ToString();
+			DayZStatus = new UpdateInfo(m_modUpdater.Status, null);
+		}
 
-    public class VersionSnapshot
-    {
-        public VersionSnapshot(Server server)
-        {
-            if (server.DayZVersion != null)
-                DayZVersion = server.DayZVersion;
-            if (server.Arma2Version != null)
-                Arma2Version = server.Arma2Version.Build.ToString();
-        }
+		private async Task CheckForMotdUpdatesAsync()
+		{
+			if (await m_motdUpdater.CheckForUpdateAsync(m_cancellationToken))
+			{
+				Motd = m_motdUpdater.Motd;
+			}
+		}
 
-        public string DayZVersion { get; set; }
-        public string Arma2Version { get; set; }
-    }
+		private async Task CheckForServerListUpdates()
+		{
+			if (await m_serverUpdater.CheckForUpdateAsync(m_cancellationToken))
+			{
+				Servers = m_serverUpdater.ServerList;
+			}
+		}
+
+		private async Task CheckForUpdatesAsync()
+		{
+			try
+			{
+				CanCheckForUpdates = false;
+				await Task.WhenAll(
+					CheckForLauncherUpdatesAsync(),
+					CheckForModUpdatesAsync(),
+					CheckForMotdUpdatesAsync(),
+					CheckForServerListUpdates());
+				await Task.Delay(100, m_cancellationToken);  // give it a tiny cooldown to stop users spamming it
+			}
+			catch (Exception ex)
+			{
+				DayZStatus = new UpdateInfo(UpdateStatus.Error, ex.Message);
+			}
+			finally
+			{
+				CanCheckForUpdates = true;
+			}
+		}
+
+		private async Task InstallLatestModVersionAsync()
+		{
+			try
+			{
+				CanInstallMod = false;
+				CanLaunchGame = false;
+				CanVerifyIntegrity = false;
+				m_modUpdater.IsRunning = true;
+				await m_modUpdater.UpdateAsync("dayz2", m_cancellationToken);  // TODO: mod name
+				DayZCurrentVersion = m_modUpdater.CurrentVersion.ToString();
+			}
+			catch (Exception ex)
+			{
+				DayZStatus = new UpdateInfo(UpdateStatus.Error, ex.Message);
+			}
+			finally
+			{
+				m_modUpdater.IsRunning = false;
+				CanLaunchGame = true;
+				CanVerifyIntegrity = true;
+			}
+		}
+
+		public void CheckForUpdates()
+		{
+			CheckForUpdatesAsync();
+		}
+
+		public void InstallLatestModVersion()
+		{
+			InstallLatestModVersionAsync();
+		}
+
+		private async Task VerifyIntegrityAsync()
+		{
+			try
+			{
+				CanVerifyIntegrity = false;
+				m_modUpdater.IsRunning = true;
+				await m_modUpdater.VerifyIntegrityAsync("dayz2", m_cancellationToken);  // TODO: mod name
+				await Task.Delay(500, m_cancellationToken);  // give it a tiny cooldown to stop users spamming it
+			}
+			finally
+			{
+				m_modUpdater.IsRunning = false;
+				CanVerifyIntegrity = true;
+			}
+		}
+
+		public void VerifyIntegrity() => VerifyIntegrityAsync();
+	}
 }
