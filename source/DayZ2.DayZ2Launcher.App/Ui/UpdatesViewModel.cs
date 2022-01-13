@@ -13,7 +13,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 	{
 		private readonly CancellationToken m_cancellationToken;
 
-		private readonly LauncherUpdater m_launcherUpdater = new LauncherUpdater();
+		private readonly LauncherUpdater_old m_launcherUpdater = new LauncherUpdater_old();
 		private readonly ModUpdater m_modUpdater = new ModUpdater();
 		private readonly ServerUpdater m_serverUpdater = new ServerUpdater();
 		private readonly MotdUpdater m_motdUpdater = new MotdUpdater();
