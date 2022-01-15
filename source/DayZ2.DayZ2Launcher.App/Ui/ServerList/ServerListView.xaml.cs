@@ -1,6 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
+using DayZ2.DayZ2Launcher.App.UI.ServerList;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
@@ -17,9 +19,9 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 			InitializeComponent();
 		}
 
-		private void RowDoubleClick(object sender, RoutedEventArgs e)
+		private void ServerDoubleClick(object sender, MouseButtonEventArgs e)
 		{
-			((ServerViewModel)((DataGridRow)sender).DataContext).Join();
+			((ServerViewModel)((ContentControl)sender).DataContext).Join();
 		}
 
 		private void RowKeyDown(object sender, RoutedEventArgs e)

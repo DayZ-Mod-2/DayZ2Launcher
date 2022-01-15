@@ -29,9 +29,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			});
 			CurrentTab = Tabs.First();
 
-			// SettingsViewModel = new SettingsViewModel();
-			// UpdatesViewModel = new UpdatesViewModel(GameLauncher, m_cancellationToken);
-
 			SettingsViewModel.TorrentSettingsChanged += (sender, args) =>
 			{
 				UpdatesViewModel.ReconfigureTorrentEngine();

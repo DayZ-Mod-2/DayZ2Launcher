@@ -40,7 +40,14 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				}
 			};
 
-			return process.Start();
+			bool succeeded = process.Start();
+
+			if (succeeded && UserSettings.Current.GameOptions.CloseDayZLauncher)
+			{
+				// TODO: shutdown
+			}
+
+			return succeeded;
 		}
 
 		private static string GetLaunchArguments(Server? server)

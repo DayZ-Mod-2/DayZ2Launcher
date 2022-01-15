@@ -315,7 +315,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				AllowPortForwarding = torrentOptions.EnableUpnp,
 				AutoSaveLoadDhtCache = true,
 				AutoSaveLoadFastResume =
-					!UserSettings.Current.TorrentOptions.DisableFastResume, // TODO: disable on fullSystemCheck?
+					!UserSettings.Current.TorrentOptions.DisableFastResume,
 				CacheDirectory = UserSettings.TorrentJunkPath,
 				DhtPort = torrentOptions.ListeningPort,
 				ListenPort = torrentOptions.ListeningPort,

@@ -127,6 +127,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="ReusableTasks" Version="2.0.1" />
     <PackageReference Include="SharpCompress" Version="0.30.1" />
+    <PackageReference Include="SharpVectors" Version="1.7.7" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
@@ -141,6 +142,12 @@
     <Compile Remove="Core\DayZLauncherUpdater.cs" />
     <Compile Remove="Core\JsonExtensions.cs" />
     <Compile Remove="Core\MonoTorrentExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\Icons\refresh.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\refresh.svg" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SteamQueryNet\SteamQueryNet\SteamQueryNet\SteamQueryNet.csproj" />

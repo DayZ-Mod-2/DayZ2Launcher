@@ -7,8 +7,8 @@ namespace DayZ2.DayZ2Launcher.App.Ui.Converters
 {
 	public class VersionMatchesToForegroundConverter : IValueConverter
 	{
-		public static SolidColorBrush IsSame = new SolidColorBrush(Colors.AliceBlue);
-		public static SolidColorBrush IsDifferent = new SolidColorBrush(Color.FromArgb(255, 153, 153, 153));
+		private static SolidColorBrush IsSame = new (Colors.AliceBlue);
+		private static SolidColorBrush IsDifferent = new (Color.FromArgb(255, 153, 153, 153));
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

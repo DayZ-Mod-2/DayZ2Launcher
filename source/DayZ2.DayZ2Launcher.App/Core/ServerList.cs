@@ -134,17 +134,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 	{
 		public List<Server> Servers { get; private set; } = new();
 
-		//public IList<Server> Servers { get; private set; }
-		public IList<Server> FilteredServers { get; private set; }
-
-		public bool IsRefreshing { get; private set; }
-
 		public event EventHandler<ServerDiscoveredEventArgs> ServerDiscovered;
-
-		public void Join(int index)
-		{
-
-		}
 
 		public void SetServers(IList<ServerListInfo> servers)
 		{
@@ -157,28 +147,16 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
-		public void ApplyFilter(Func<Server, bool> filter)
+		public async Task RefreshAllAsync(IProgress<int> progress, CancellationToken cancellationToken)
 		{
-			FilteredServers = Servers.Where(filter).ToArray();
-		}
+			int i = 0;
+			async Task Refresh(Server s)
+			{
+				await s.RefreshAsync(cancellationToken);
+				progress.Report(++i);
+			}
 
-		public void ResetFilters()
-		{
-			FilteredServers = Servers;
-		}
-
-		public async Task RefreshAsync(int index, CancellationToken cancellationToken)
-		{
-			IsRefreshing = true;
-			await Servers[index].RefreshAsync(cancellationToken);
-			IsRefreshing = false;
-		}
-
-		public async Task RefreshAllAsync(CancellationToken cancellationToken)
-		{
-			IsRefreshing = true;
-			await Task.WhenAll(Servers.Select(s => s.RefreshAsync(cancellationToken)));
-			IsRefreshing = false;
+			await Task.WhenAll(Servers.Select(Refresh));
 		}
 	}
 }

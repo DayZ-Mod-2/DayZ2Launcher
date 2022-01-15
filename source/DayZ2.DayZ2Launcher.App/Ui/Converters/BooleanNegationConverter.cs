@@ -4,21 +4,15 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Data;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.Converters
 {
-	class BooleanToVisibilityConverter : IValueConverter
+	internal class BooleanNegationConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value != null)
-			{
-				return (bool)value ? Visibility.Visible : Visibility.Hidden;
-			}
-
-			return Visibility.Hidden;
+			return !(bool?)value;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

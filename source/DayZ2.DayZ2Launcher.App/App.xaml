@@ -11,7 +11,9 @@
 		<Converters:TimeToTextConverter x:Key="TimeToTextConverter" />
 		<Converters:TimeToColorConverter x:Key="TimeToColorConverter" />
 		<Converters:ServerFullnessToColorConverter x:Key="ServerFullnessToColorConverter" />
+		<Converters:ServerResponsivenessToForegroundConverter x:Key="ServerResponsivenessToForegroundConverter" />
 		<Converters:BooleanToSelectedOptionColorConverter x:Key="BooleanToSelectedOptionColorConverter" />
+		<Converters:BooleanNegationConverter x:Key="BooleanNegationConverter" />
 		<Converters:NotNullToVisibilityConverter x:Key="NotNullToVisibilityConverter" />
 		<Converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter" />
 		<Converters:NonZeroToVisibilityHiddenConverter x:Key="NonZeroToVisibilityHiddenConverter" />

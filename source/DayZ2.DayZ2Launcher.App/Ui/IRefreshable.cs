@@ -1,7 +1,10 @@
 using System.ComponentModel;
 
-interface IRefreshable : INotifyPropertyChanged
+namespace DayZ2.DayZ2Launcher.App.Ui
 {
-	bool IsRefreshing { get; }
-	void Refresh();
+	interface IRefreshable : INotifyPropertyChanged
+	{
+		bool IsRefreshing { get; }
+		void Refresh();
+	}
 }

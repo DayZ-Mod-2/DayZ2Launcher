@@ -329,7 +329,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				CanVerifyIntegrity = false;
 				m_modUpdater.IsRunning = true;
 				await m_modUpdater.UpdateAsync("dayz2", m_cancellationToken);  // TODO: mod name
-				DayZCurrentVersion = m_modUpdater.CurrentVersion.ToString();
+				await CheckForModUpdatesAsync();
 			}
 			catch (Exception ex)
 			{

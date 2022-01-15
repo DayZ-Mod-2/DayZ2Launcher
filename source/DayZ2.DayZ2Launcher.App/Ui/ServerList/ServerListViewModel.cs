@@ -2,26 +2,34 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Forms;
 using DayZ2.DayZ2Launcher.App.Core;
+using DayZ2.DayZ2Launcher.App.UI.ServerList;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 {
 	public class ServerListViewModel : ViewModelBase
 	{
+		public class ServerRefreshProgress : IProgress<int>
+		{
+			public int CurrentProgress { get; set; }
+
+			public void Report(int progress)
+			{
+				CurrentProgress = progress;
+			}
+		}
+
 		private readonly CancellationToken m_cancellationToken;
 
-		readonly IServiceProvider m_serviceProvider;
-		readonly GameLauncher m_gameLauncher;
 		readonly Core.ServerList m_serverList = new();
 
-		public ServerListViewModel(IServiceProvider services, GameLauncher gameLauncher, AppCancellation cancellation)
+		public ServerListViewModel(IServiceProvider services, AppCancellation cancellation)
 		{
-			m_serviceProvider = services;
-			m_gameLauncher = gameLauncher;
 			m_cancellationToken = cancellation.Token;
 
 			Title = "Servers";
@@ -31,8 +39,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 
 			m_serverList.ServerDiscovered += (object sender, ServerDiscoveredEventArgs e) =>
 			{
-				//Servers.Add(new ServerViewModel(gameLauncher, e.Server, m_cancellationToken));
-				Servers.Add(m_serviceProvider.CreateInstance<ServerViewModel>(e.Server));
+				Servers.Add(services.CreateInstance<ServerViewModel>(e.Server));
 			};
 
 			// FiltersViewModel.Filters.PublishFilter();
@@ -43,9 +50,8 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 
 		public ListCollectionView FilteredServers { get; set; }
 		public ObservableCollection<ServerViewModel> Servers { get; private set; } = new();
-		//public ObservableCollectionProxy<ServerViewModel, Server> Servers { get; private set; }
 
-		private int m_processedServers;
+		private int m_processedServers = 3;
 		public int ProcessedServers
 		{
 			get => m_processedServers;
@@ -59,23 +65,28 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 			set => SetValue(ref m_totalServers, value);
 		}
 
-		private bool m_canRefresh = true;
+		private bool m_canRefresh = false;
 		public bool CanRefresh
 		{
 			get => m_canRefresh;
-			set => SetValue(ref m_canRefresh, value);
+			set
+			{
+				m_canRefresh = value;
+				OnPropertyChanged(nameof(CanRefresh), nameof(IsRunning));
+			}
 		}
 
 		public bool IsRunning => !CanRefresh;
 
 		private async Task RefreshAllAsync()
 		{
-			//Servers.Clear();
-
 			try
 			{
 				CanRefresh = false;
-				await m_serverList.RefreshAllAsync(m_cancellationToken);
+				ProcessedServers = 0;
+				await m_serverList.RefreshAllAsync(
+					new Progress<int>(p => ProcessedServers = p),
+					m_cancellationToken);
 				//await foreach (Server server in m_serverList.DiscoverAsync(m_cancellationToken))
 				//{
 				//	Servers.Add(new ServerViewModel(server, m_cancellationToken));
@@ -87,8 +98,14 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 			}
 		}
 
+		private void Server_RefreshFinished(object sender, EventArgs e)
+		{
+			throw new NotImplementedException();
+		}
+
 		public void SetServers(IList<ServerListInfo> servers)
 		{
+			TotalServers = servers.Count;
 			m_serverList.SetServers(servers);
 			RefreshAll();
 		}

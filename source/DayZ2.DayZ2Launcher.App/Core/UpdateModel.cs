@@ -465,13 +465,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				await m_resourceLocator.GetStringAsync(mod.LatestVersionContent, cancellationToken));
 			mod.Torrents = await Task.WhenAll(resources.Select(n => AddTorrentAsync(n, cancellationToken)));
 
+			// wait for all torrents to finish and then stop them to close file handles for extraction
 			await Task.WhenAll(m_torrentClient.Torrents().Select(t => t.CompletionTask.Task));
-
-			// have to stop them individually, the lib doesn't like bulk stopping
-			foreach (Torrent torrent in mod.Torrents)
-			{
-				await RemoveTorrentAsync(torrent, cancellationToken);
-			}
+			await Task.WhenAll(mod.Torrents.Select(t => RemoveTorrentAsync(t, cancellationToken)));
 
 			await ExtractModAsync(mod, cancellationToken);
 			await Task.WhenAll(mod.Torrents.Select(n => AddTorrentAsync(n, cancellationToken)));
@@ -539,7 +535,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				case TorrentClient.Status.Stopped:
 					return "Stopped";
 				case TorrentClient.Status.Downloading:
-					return $"Progress: {p.DownloadProgress:P}\n{ProgressToString(p.DownloadedSize)} / {ProgressToString(p.TotalSize)}\nLeeching({p.SeedCount}): {ProgressToString(p.DownloadSpeed)}/s\nSeeding({p.SeedCount}): {ProgressToString(p.UploadSpeed)}/s";
+					return $"Progress: {p.DownloadProgress:P}\n{ProgressToString(p.DownloadedSize)} / {ProgressToString(p.TotalSize)}\nLeeching({p.SeedCount}): {ProgressToString(p.DownloadSpeed)}/s\nSeeding({p.LeechCount}): {ProgressToString(p.UploadSpeed)}/s";
 				case TorrentClient.Status.Checking:
 					return $"Checking: {p.HashingProgress:P}";
 				case TorrentClient.Status.Error:

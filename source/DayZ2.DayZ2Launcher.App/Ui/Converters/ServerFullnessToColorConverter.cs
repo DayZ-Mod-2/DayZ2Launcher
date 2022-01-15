@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
 using DayZ2.DayZ2Launcher.App.Core;
+using DayZ2.DayZ2Launcher.App.UI.ServerList;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.Converters
 {

@@ -12,87 +12,104 @@ using Microsoft.Extensions.DependencyInjection;
 using DayZ2.DayZ2Launcher.App.Core;
 using DayZ2.DayZ2Launcher.App.Ui;
 
-public struct Rational
+namespace DayZ2.DayZ2Launcher.App.UI.ServerList
 {
-	public int Numerator { get; private set; }
-	public int Denominator { get; private set; }
-
-	public Rational(int numerator, int denominator)
+	public struct Rational : IComparable
 	{
-		Numerator = numerator;
-		Denominator = denominator;
-	}
+		public int Numerator { get; private set; }
+		public int Denominator { get; private set; }
 
-	public void Deconstruct(out int numerator, out int denominator)
-	{
-		numerator = Numerator;
-		denominator = Denominator;
-	}
-
-	public override string ToString() => $"{Numerator}/{Denominator}";
-}
-
-public class ServerViewModel : ViewModelBase, IRefreshable
-{
-	readonly Server m_server;
-	readonly GameLauncher m_gameLauncher;
-	readonly CancellationToken m_cancellationToken;
-
-	public IList<Player> Players => m_server.Players;
-	public string Name => m_server.IsResponding ? m_server.Name : m_server.Hostname;
-	public ServerPerspective Perspective => m_server.Perspective;
-	public long? Ping => m_server.IsResponding ? m_server.Ping : null;
-	public Rational Fullness => new Rational(m_server.PlayerCount, m_server.Slots);
-
-	private bool m_isRefreshing;
-	public bool IsRefreshing
-	{
-		get => m_isRefreshing;
-		private set => SetValue(ref m_isRefreshing, value);
-	}
-
-	public ServerViewModel(Server server, GameLauncher gameLauncher, AppCancellation cancellation)
-	{
-		m_server = server;
-		m_gameLauncher = gameLauncher;
-		m_cancellationToken = cancellation.Token;
-
-		m_server.RefreshStarted += (object sender, EventArgs e) => IsRefreshing = true;
-		m_server.RefreshFinished += (object sender, EventArgs e) => IsRefreshing = false;
-
-		m_server.Refreshed += (object sender, EventArgs e) =>
+		public Rational(int numerator, int denominator)
 		{
-			OnPropertyChanged(nameof(Players));
-			OnPropertyChanged(nameof(Name));
-			OnPropertyChanged(nameof(Perspective));
-			OnPropertyChanged(nameof(Ping));
-			OnPropertyChanged(nameof(Fullness));
-		};
-	}
-
-	public void Refresh()
-	{
-		async Task RefreshAsync()
-		{
-			try
-			{
-				await m_server.RefreshAsync(m_cancellationToken);
-			}
-			catch (TimeoutException)
-			{
-			}
-			catch (OperationCanceledException)
-			{
-			}
+			Numerator = numerator;
+			Denominator = denominator;
 		}
-		RefreshAsync();
+
+		public void Deconstruct(out int numerator, out int denominator)
+		{
+			numerator = Numerator;
+			denominator = Denominator;
+		}
+
+		public int CompareTo(object obj)
+		{
+			if (obj == null) return 1;
+
+			Rational other = (Rational)obj;
+			if (this.Numerator > other.Numerator)
+				return -1;
+			if (this.Numerator < other.Numerator)
+				return 1;
+			return 0;
+		}
+
+		public override string ToString() => $"{Numerator}/{Denominator}";
 	}
 
-	public void Join()
+	public class ServerViewModel : ViewModelBase, IRefreshable
 	{
-		if (m_gameLauncher.CanLaunch)
+		readonly Server m_server;
+		readonly GameLauncher m_gameLauncher;
+		readonly CancellationToken m_cancellationToken;
+
+		public bool IsResponding => m_server.IsResponding;
+		public IList<Player> Players => m_server.IsResponding ? m_server.Players : new List<Player>();
+		public string Name => m_server.IsResponding ? m_server.Name : m_server.Hostname;
+		public ServerPerspective Perspective => m_server.Perspective;
+		public long? Ping => m_server.IsResponding ? m_server.Ping : null;
+		public Rational Fullness => m_server.IsResponding ? new(m_server.PlayerCount, m_server.Slots) : new(0, 0);
+
+		private bool m_isRefreshing;
+		public bool IsRefreshing
 		{
-			m_gameLauncher.LaunchGame(m_server);
+			get => m_isRefreshing;
+			private set => SetValue(ref m_isRefreshing, value);
+		}
+
+		public ServerViewModel(Server server, GameLauncher gameLauncher, AppCancellation cancellation)
+		{
+			m_server = server;
+			m_gameLauncher = gameLauncher;
+			m_cancellationToken = cancellation.Token;
+
+			m_server.RefreshStarted += (object sender, EventArgs e) => IsRefreshing = true;
+			m_server.RefreshFinished += (object sender, EventArgs e) => IsRefreshing = false;
+
+			m_server.Refreshed += (object sender, EventArgs e) =>
+			{
+				OnPropertyChanged(nameof(IsResponding));
+				OnPropertyChanged(nameof(Players));
+				OnPropertyChanged(nameof(Name));
+				OnPropertyChanged(nameof(Perspective));
+				OnPropertyChanged(nameof(Ping));
+				OnPropertyChanged(nameof(Fullness));
+			};
+		}
+
+		public void Refresh()
+		{
+			async Task RefreshAsync()
+			{
+				try
+				{
+					await m_server.RefreshAsync(m_cancellationToken);
+				}
+				catch (TimeoutException)
+				{
+				}
+				catch (OperationCanceledException)
+				{
+				}
+			}
+			RefreshAsync();
+		}
+
+		public void Join()
+		{
+			if (m_gameLauncher.CanLaunch)
+			{
+				m_gameLauncher.LaunchGame(m_server);
+			}
 		}
 	}
 }

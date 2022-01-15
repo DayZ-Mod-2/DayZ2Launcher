@@ -40,11 +40,13 @@
 				          IsChecked="{Binding Settings.GameOptions.CloseDayZLauncher, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0" />
+				<!--
 				<CheckBox Content="Launch using Steam" Grid.Row="2" Grid.Column="0"
 				          IsChecked="{Binding Settings.GameOptions.LaunchUsingSteam, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0"
 				          IsEnabled="False" />
+				-->
 				<CheckBox Content="Always run full systems check (no fast-resume)" Grid.Row="2" Grid.Column="1"
 				          IsChecked="{Binding Settings.TorrentOptions.DisableFastResume, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
