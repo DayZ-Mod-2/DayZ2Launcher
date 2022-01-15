@@ -1,0 +1,3 @@
+[submodule "source/SteamQueryNet"]
+	path = source/SteamQueryNet
+	url = https://github.com/razaqq/SteamQueryNet

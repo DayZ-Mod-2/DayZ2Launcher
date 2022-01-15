@@ -1,34 +1,53 @@
-﻿using DayZ2.DayZ2Launcher.App.Core;
+﻿using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using DayZ2.DayZ2Launcher.App.Core;
 
 namespace DayZ2.DayZ2Launcher.App.Ui
 {
-	public abstract class ViewModelBase : BindableBase
+	public abstract class ViewModelBase : INotifyPropertyChanged
 	{
-		private bool _isSelected;
-		private string _title;
+		public event PropertyChangedEventHandler PropertyChanged;
+		private bool m_isSelected;
+		private string m_title;
 
 		protected ViewModelBase()
 		{
-			App.Events.Subscribe(this);
+		}
+
+		protected void SetValue<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+		{
+			if (field == null && value == null || (field?.Equals(value) ?? false))
+			{
+				return;
+			}
+
+			field = value;
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
 		public string Title
 		{
-			get { return _title; }
-			set
-			{
-				_title = value;
-				PropertyHasChanged("Title");
-			}
+			get => m_title;
+			set => SetValue(ref m_title, value);
 		}
 
 		public bool IsSelected
 		{
-			get { return _isSelected; }
-			set
+			get => m_isSelected;
+			set => SetValue(ref m_isSelected, value);
+		}
+
+		protected void OnPropertyChanged(string name)
+		{
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+		}
+
+		protected void OnPropertyChanged(params string[] names)
+		{
+			if (PropertyChanged != null)
 			{
-				_isSelected = value;
-				PropertyHasChanged("IsSelected");
+				foreach (string name in names)
+					PropertyChanged(this, new PropertyChangedEventArgs(name));
 			}
 		}
 	}

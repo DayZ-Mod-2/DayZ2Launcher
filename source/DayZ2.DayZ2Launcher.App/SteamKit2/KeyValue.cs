@@ -672,7 +672,7 @@ namespace SteamKit2
 				}
 				catch (InvalidDataException ex)
 				{
-					throw new InvalidDataException(string.Format("An exception ocurred while reading KV '{0}'", current.Name), ex);
+					throw new InvalidDataException($"An exception occurred while reading KV '{current.Name}'", ex);
 				}
 
 				Children.Add(current);

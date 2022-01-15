@@ -4,61 +4,89 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-	class GameLauncher
+	public class GameLauncher
 	{
-		public bool IsLaunching { get; set; }
+		public bool CanLaunch { get; set; }
 
-		/*
-		public static async Task<bool> LaunchGame(Server server, string[] mods)
+#nullable enable
+		public bool LaunchGame(Server? server)
 		{
+			bool battleye = server?.Battleye ?? true;
+			// TODO: does the battleye version require additional args "0 0"?
+			string exe = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, battleye ? "ArmA2OA_BE.exe" : "ArmA2OA.exe");
+
+			if (!File.Exists(exe))
+			{
+				MessageBox.Show($"Executable file does not exist: {exe}", "Launch Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				return false;
+			}
+
+			string args = GetLaunchArguments(server);
+
+			var process = new Process()
+			{
+				StartInfo =
+				{
+					FileName = exe,
+					UseShellExecute = true,
+					Arguments = args,
+					WorkingDirectory = CalculatedGameSettings.Current.Arma2OAPath
+				}
+			};
+
+			return process.Start();
+		}
+
+		private static string GetLaunchArguments(Server? server)
+		{
+			List<string> args = new()
+			{
+				"-noSplash"
+				,"-noFilePatching"
+			};
+
+			// TODO: dont hardcode mod name
+			args.Add($"-mod={Path.Combine(UserSettings.ContentDataPath, "@DayZ2")}");
+			// args.Add(new StringBuilder().Append("-mods=").AppendJoin(';', server.Mods).ToString());
+
+
+			if (UserSettings.Current.GameOptions.WindowedMode)
+				args.Add("-window");
+
+			if (UserSettings.Current.GameOptions.MultiGpu)
+				args.Add("-winxp");
+
+			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.AdditionalStartupParameters))
+				args.Add(UserSettings.Current.GameOptions.AdditionalStartupParameters);
+
 			if (server != null)
 			{
-
+				args.Add($"-connect={server.Hostname}");
+				args.Add($"-port={server.GamePort}");
 			}
 
-			if (UserSettings.Current.GameOptions.LaunchUsingSteam)
-			{
-				
-			}
+			return new StringBuilder().AppendJoin(' ', args).ToString();
 		}
-
-		private static async Task<bool> LaunchGameSteam()
-		{
-			string manifest = Path.Combine(LocalMachineInfo.Current.SteamPath, "steamapps", "appmanifest_33930.acf");
-
-			if (!File.Exists(manifest))
-			{
-
-			}
-		}
-
-		private static async Task<bool> LaunchGameExe()
-		{
-
-		}
-
-		private static string GetLaunchArguments(Server server)
-		{
-
-		}
+#nullable disable
 
 		public static bool IsRunning()
 		{
-			return false;
+			return Process.GetProcessesByName("arma2oa").Any();
 		}
 
-		public static Task CloseGame()
+		public static async Task CloseGame(CancellationToken cancellationToken)
 		{
 			foreach (Process process in Process.GetProcessesByName("arma2oa"))
 			{
 				process.Kill();
-				process.WaitForExit();
+				await process.WaitForExitAsync(cancellationToken);
 			}
 		}
-		*/
 	}
 }

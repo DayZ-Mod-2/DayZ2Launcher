@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
+using DayZ2.DayZ2Launcher.App.Ui;
 using Microsoft.Win32;
 using SteamKit2;
 
@@ -10,7 +11,8 @@ using SteamKit2;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-	public class LocalMachineInfo : BindableBase
+#pragma warning disable CA1416 // Validate platform compatibility
+	public class LocalMachineInfo : ViewModelBase
 	{
 		private static LocalMachineInfo _current;
 		private string _arma2OaPath;
@@ -46,7 +48,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			private set
 			{
 				_arma2Path = value;
-				PropertyHasChanged("Arma2Path");
+				OnPropertyChanged(new[] { "Arma2Path" });
 			}
 		}
 
@@ -56,7 +58,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			private set
 			{
 				_arma2OaPath = value;
-				PropertyHasChanged("Arma2OAPath");
+				OnPropertyChanged(new[] { "Arma2OAPath" });
 			}
 		}
 
@@ -66,7 +68,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			private set
 			{
 				_steamPath = value;
-				PropertyHasChanged("SteamPath");
+				OnPropertyChanged(new[] { "SteamPath" });
 			}
 		}
 
@@ -265,4 +267,5 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 	}
+#pragma warning restore CA1416 // Validate platform compatibility
 }

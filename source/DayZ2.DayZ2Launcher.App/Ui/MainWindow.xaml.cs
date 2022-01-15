@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Globalization;
-using System.Net;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Threading;
-using Caliburn.Micro;
 using DayZ2.DayZ2Launcher.App.Core;
-using DayZ2.DayZ2Launcher.App.Ui.Controls;
 
 namespace DayZ2.DayZ2Launcher.App.Ui
 {
@@ -24,7 +16,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		public MainWindow()
 		{
 			InitializeComponent();
-			App.Events.Subscribe(this);
 
 			KeyUp += OnKeyUp;
 
@@ -33,16 +24,12 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				if (UserSettings.Current.WindowSettings != null)
 					UserSettings.Current.WindowSettings.Apply(this);
 
-				var vm = new MainWindowViewModel();
-				DataContext = vm;
-
-				//this will activate the window and do any command from cmdline if it exists
-				App.Events.Publish(new App.LaunchCommandString(App.GetQueryParams()));
+				// var vm = new MainWindowViewModel();
+				// DataContext = vm;
 			};
 			Closing += (sender, args) =>
 			{
-				App.Events.Unsubscribe(this);
-
+				ViewModel.Shutdown();
 				UserSettings.Current.WindowSettings = WindowSettings.Create(this);
 				UserSettings.Current.Save();
 			};
@@ -113,7 +100,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		private void RefreshAll_Click(object sender, RoutedEventArgs e)
 		{
-			ViewModel.ServerList.UpdateAll();
+			ViewModel.ServerListViewModel.RefreshAll();
 		}
 
 		private void Settings_Click(object sender, RoutedEventArgs e)
@@ -138,10 +125,13 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
 		{
+			ViewModel.GameLauncher.LaunchGame(null);
+			/*
 			var buttonObj = (FrameworkElement)sender;
 			var buttonContext = (GameLauncher_old.ButtonInfo)buttonObj.DataContext;
 
-			ViewModel.Launcher.LaunchGame(this, buttonContext.Argument);
+			ViewModel.GameLauncher.LaunchGame(this, buttonContext.Argument);
+			*/
 		}
 
 		private void DiscordImage_Click(object sender, RoutedEventArgs e)
@@ -153,16 +143,18 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		{
 		}
 
-		public class LaunchRoutedCommand
+		public void BringToForeground()
 		{
-			public NameValueCollection Data;
-			public Window SourceWindow;
-
-			public LaunchRoutedCommand(NameValueCollection data, Window mainWnd)
+			if (WindowState == WindowState.Minimized || Visibility == Visibility.Hidden)
 			{
-				Data = data;
-				SourceWindow = mainWnd;
+				Show();
+				WindowState = WindowState.Normal;
 			}
+
+			Activate();
+			Topmost = true;
+			Topmost = false;
+			Focus();
 		}
 	}
 }

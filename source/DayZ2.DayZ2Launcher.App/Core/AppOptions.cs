@@ -1,9 +1,10 @@
 using System.Runtime.Serialization;
+using DayZ2.DayZ2Launcher.App.Ui;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
 	[DataContract]
-	public class AppOptions : BindableBase
+	public class AppOptions : ViewModelBase
 	{
 		[DataMember] private bool _lowPingRate;
 
@@ -13,7 +14,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_lowPingRate = value;
-				PropertyHasChanged("LowPingRate");
+				OnPropertyChanged(new[] { "LowPingRate" });
 				UserSettings.Current.Save();
 			}
 		}

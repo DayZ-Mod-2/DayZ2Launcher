@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31727.386
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "DayZ2.DayZ2Launcher.App\App.csproj", "{84CB1B33-1E5C-4F82-B299-A406B85282ED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SSQLib", "SSQLib\SSQLib.csproj", "{3F273B18-3C15-420B-BD8F-DED3E4E52996}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SteamQueryNet", "SteamQueryNet\SteamQueryNet\SteamQueryNet\SteamQueryNet.csproj", "{34C767F7-F495-45B9-B09A-4BF939523D6C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,24 +35,24 @@ Global
 		{84CB1B33-1E5C-4F82-B299-A406B85282ED}.Stats|Mixed Platforms.Build.0 = Release|x86
 		{84CB1B33-1E5C-4F82-B299-A406B85282ED}.Stats|x86.ActiveCfg = Release|x86
 		{84CB1B33-1E5C-4F82-B299-A406B85282ED}.Stats|x86.Build.0 = Release|x86
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Debug|x86.Build.0 = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|x86.ActiveCfg = Release|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Release|x86.Build.0 = Release|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Any CPU.Build.0 = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|x86.ActiveCfg = Debug|Any CPU
-		{3F273B18-3C15-420B-BD8F-DED3E4E52996}.Stats|x86.Build.0 = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Debug|x86.Build.0 = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Release|x86.ActiveCfg = Release|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Release|x86.Build.0 = Release|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Stats|Any CPU.ActiveCfg = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Stats|Any CPU.Build.0 = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Stats|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Stats|Mixed Platforms.Build.0 = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Stats|x86.ActiveCfg = Debug|Any CPU
+		{34C767F7-F495-45B9-B09A-4BF939523D6C}.Stats|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

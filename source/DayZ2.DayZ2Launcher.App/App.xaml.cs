@@ -4,171 +4,113 @@ using System.IO;
 using System.IO.Pipes;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
-using Caliburn.Micro;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using DayZ2.DayZ2Launcher.App.Core;
+using DayZ2.DayZ2Launcher.App.Ui;
 
 namespace DayZ2.DayZ2Launcher.App
 {
+	public class AppCancellation
+	{
+		public CancellationToken Token { get; private set; }
+
+		public AppCancellation(CancellationToken token)
+		{
+			Token = token;
+		}
+	}
+
 	public partial class App : Application
 	{
-		public static EventAggregator Events = new EventAggregator();
-		private static string[] _exeArguments;
-		private bool _isUncaughtUiThreadException;
+		readonly ServiceProvider m_serviceProvider;
+		readonly CancellationTokenSource m_cancellationTokenSource = new();
 
-		private string _pipeName;
+		bool m_isUncaughtUiThreadException;
 
-		private void StartPipeServer()
+		public App()
 		{
-			var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 2, PipeTransmissionMode.Message,
-				PipeOptions.Asynchronous);
-			pipeServer.BeginWaitForConnection(NewPipeConnection, pipeServer);
+			ServiceCollection services = new();
+			ConfigureServices(services);
+
+			services.AddSingleton<IServiceProvider>(sp => sp);
+			m_serviceProvider = services.BuildServiceProvider();
 		}
 
-		private void PipeReadCallback(IAsyncResult iar)
+		bool TryStartUniqueInstance()
 		{
-			var details = (ReadParams)iar.AsyncState;
-			NamedPipeServerStream pipeSvr = details.PipeSvr;
-			MemoryStream memStr = details.MessageStr;
-			byte[] readBuffer = details.ReadBuffer;
+			const string EventGuid = "{a08c9217-041a-4d36-80a4-604d616c637b}";
+			const string MutexGuid = "{5ffa3650-2e03-456f-8903-6ec964b2161b}";
 
-			int numBytes = pipeSvr.EndRead(iar);
+			string userId;
+			using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+				userId = identity.User?.ToString() ?? "null";
 
-			if (numBytes > 0)
-				memStr.Write(readBuffer, 0, numBytes);
+			string eventName = $"DayzLauncher-EVENT-{{{EventGuid}}}-{{{userId}}}";
+			string mutexName = $"DayzLauncher-MUTEX-{{{MutexGuid}}}-{{{userId}}}";
 
-			if (pipeSvr.IsMessageComplete)
+			var sharedEvent = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+
+			bool wasCreated;
+			var sharedMutex = new Mutex(true, mutexName, out wasCreated);
+
+			if (!wasCreated)
 			{
-				byte[] memBytes = memStr.ToArray();
-				memStr.Dispose();
-
-				string recvStr = Encoding.UTF8.GetString(memBytes, 0, memBytes.Length);
-				Events.Publish(new LaunchCommandString(recvStr));
-
-				pipeSvr.Close();
-			}
-			else
-				pipeSvr.BeginRead(readBuffer, 0, readBuffer.Length, PipeReadCallback, details);
-		}
-
-		private void NewPipeConnection(IAsyncResult iar)
-		{
-			var pipSvr = (NamedPipeServerStream)iar.AsyncState;
-			try
-			{
-				pipSvr.EndWaitForConnection(iar);
-
-				var messageStr = new MemoryStream(4096);
-				var readBuffer = new byte[4096];
-				pipSvr.BeginRead(readBuffer, 0, readBuffer.Length,
-					PipeReadCallback, new ReadParams(pipSvr, messageStr, readBuffer));
-
-				StartPipeServer();
-			}
-			catch (ObjectDisposedException)
-			{
-			} //happens if no connection happened
-		}
-
-		private static string QueryParamsFromArgs(string[] whichArgs)
-		{
-			var args = new List<string>();
-			foreach (string arg in whichArgs)
-			{
-				string[] tokens = arg.Split('=');
-				for (int i = 0; i < tokens.Length; i++)
-					tokens[i] = Uri.EscapeDataString(tokens[i]);
-
-				args.Add(string.Join("=", tokens));
+				sharedEvent.Set();
+				return false;
 			}
 
-			return string.Join("&", args);
-		}
-
-		public static string GetQueryParams()
-		{
-			string queryString = null;
-			/*
-			if (ApplicationDeployment.IsNetworkDeployed)
+			// The mutex must be kept alive.
+			var thread = new Thread((object mutex) =>
 			{
-				Uri actUri = ApplicationDeployment.CurrentDeployment.ActivationUri;
-				if (actUri != null)
-					queryString = actUri.Query;
-				else
+				while (sharedEvent.WaitOne())
 				{
-					try
-					{
-						string[] actData = AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData;
-						queryString = QueryParamsFromArgs(actData);
-					}
-					catch (Exception)
-					{
-						queryString = null;
-					}
+					Current.Dispatcher.BeginInvoke(() => ((MainWindow)Current.MainWindow).BringToForeground());
 				}
-			}
-			else
-				queryString = QueryParamsFromArgs(_exeArguments);
-			*/
+			});
 
-			if (queryString == null)
-				return "";
-			return queryString;
+			thread.IsBackground = true;
+			thread.Start(sharedMutex);
+
+			return true;
 		}
 
 		protected override void OnStartup(StartupEventArgs e)
 		{
-			if (e.Args == null)
-				_exeArguments = new string[0];
-			else
-				_exeArguments = e.Args;
-
-			AppDomain.CurrentDomain.UnhandledException += UncaughtThreadException;
-			DispatcherUnhandledException += UncaughtUiThreadException;
-
-			using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-				_pipeName = String.Format("DayZLauncher_{{{0}}}_Instance", identity.User);
-
-			bool secondInstance = false;
-			using (var pipeConn = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out))
-			{
-				try
-				{
-					const int timeoutMs = 100;
-					pipeConn.Connect(timeoutMs);
-					pipeConn.ReadMode = PipeTransmissionMode.Message;
-
-					string queryString = GetQueryParams();
-					if (!string.IsNullOrEmpty(queryString))
-					{
-						byte[] bytesToWrite = Encoding.UTF8.GetBytes(queryString);
-						pipeConn.Write(bytesToWrite, 0, bytesToWrite.Length);
-						pipeConn.WaitForPipeDrain();
-					}
-					secondInstance = true;
-
-					pipeConn.Close();
-				}
-				catch (TimeoutException)
-				{
-				}
-			}
-
-			if (secondInstance) //already sent message to pipe
+			if (!TryStartUniqueInstance())
 			{
 				Shutdown();
 				return;
 			}
 
-			//we are the only app, start the server
-			StartPipeServer();
-
 			LocalMachineInfo.Current.Update();
+
 			base.OnStartup(e);
 		}
 
-		private void UncaughtException(Exception ex)
+		void ApplicationStartup(object sender, StartupEventArgs e)
+		{
+			var mainWindow = new MainWindow
+			{
+				DataContext = m_serviceProvider.CreateInstance<MainWindowViewModel>()
+			};
+			mainWindow.Show();
+		}
+
+		void ConfigureServices(ServiceCollection services)
+		{
+			services.AddSingleton(new AppCancellation(m_cancellationTokenSource.Token));
+			services.AddSingleton<ResourceLocator>();
+			services.AddSingleton<GameLauncher>();
+			services.AddSingleton<ModUpdater>();
+		}
+
+
+		void UncaughtException(Exception ex)
 		{
 			MessageBox.Show(
 				"It wasn't your fault, but something went really wrong.\r\nThe application will now exit\r\nException Details:\r\n" +
@@ -176,40 +118,16 @@ namespace DayZ2.DayZ2Launcher.App
 				"Unhandled exception", MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 
-		private void UncaughtUiThreadException(object sender, DispatcherUnhandledExceptionEventArgs e)
+		void UncaughtUiThreadException(object sender, DispatcherUnhandledExceptionEventArgs e)
 		{
-			_isUncaughtUiThreadException = true;
+			m_isUncaughtUiThreadException = true;
 			UncaughtException(e.Exception);
 		}
 
-		private void UncaughtThreadException(object sender, UnhandledExceptionEventArgs e)
+		void UncaughtThreadException(object sender, UnhandledExceptionEventArgs e)
 		{
-			if (!_isUncaughtUiThreadException)
+			if (!m_isUncaughtUiThreadException)
 				UncaughtException(e.ExceptionObject as Exception);
-		}
-
-		public sealed class LaunchCommandString
-		{
-			public string QueryString;
-
-			public LaunchCommandString(string queryString)
-			{
-				QueryString = queryString;
-			}
-		}
-
-		private class ReadParams
-		{
-			public readonly MemoryStream MessageStr;
-			public readonly NamedPipeServerStream PipeSvr;
-			public readonly byte[] ReadBuffer;
-
-			public ReadParams(NamedPipeServerStream pipeSvr, MemoryStream msgStr, byte[] readBuffer)
-			{
-				PipeSvr = pipeSvr;
-				MessageStr = msgStr;
-				ReadBuffer = readBuffer;
-			}
 		}
 	}
 }

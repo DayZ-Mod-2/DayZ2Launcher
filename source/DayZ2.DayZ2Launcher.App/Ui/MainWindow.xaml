@@ -10,10 +10,6 @@
         MouseDoubleClick="MainWindow_OnMouseDoubleClick"
         Style="{StaticResource MainWindowStyle}">
 
-	<Window.DataContext>
-		<Ui:MainWindowViewModel/>
-	</Window.DataContext>
-
 	<Border Background="#222222"
 	        BorderBrush="#BBBBBB"
 	        x:Name="VisualRoot"
@@ -141,27 +137,27 @@
 
 						<StackPanel
 							Orientation="Horizontal"
-							Visibility="{Binding ServerList.DownloadingServerList, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, ConverterParameter=true}">
+							Visibility="{Binding ServerListViewModel.CanRefresh, Converter={StaticResource BooleanToVisibilityConverter}}">
 							<StackPanel Orientation="Horizontal"
 							            HorizontalAlignment="Right"
-							            Visibility="{Binding ServerList.RefreshAllBatch.UnprocessedServersCount, Converter={StaticResource CountToVisibilityConverter}}">
+							            Visibility="{Binding ServerListViewModel.IsRunning, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}">
 								<Path
 									Data="F1M2278.07,1272.94C2265.47,1272.94,2254.91,1281.77,2252.19,1293.55L2241.99,1293.43 2255.8,1315.74 2270.14,1293.77 2260.66,1293.66C2263.13,1286.36 2269.96,1281.07 2278.07,1281.07 2288.24,1281.07 2296.52,1289.35 2296.52,1299.52 2296.52,1309.7 2288.24,1317.98 2278.07,1317.98 2274.31,1317.98 2270.81,1316.84 2267.89,1314.9L2263.45,1321.7C2267.65,1324.48 2272.67,1326.11 2278.07,1326.11 2292.73,1326.11 2304.65,1314.18 2304.65,1299.52 2304.65,1284.87 2292.73,1272.94 2278.07,1272.94"
 									Stretch="Uniform"
 									Fill="#06688F"
 									Width="14" Height="14" Margin="0,3,5,0" />
-                                <TextBlock Text="{Binding ServerList.RefreshAllBatch.InProgressText}" Foreground="#06688F" FontSize="14" />
+								<TextBlock Text="Refreshing all servers..." Foreground="#06688F" FontSize="14" />
                                 <TextBlock Text="( " Foreground="#06688F" FontSize="12" Margin="0 2 0 0" />
-								<TextBlock Text="{Binding ServerList.RefreshAllBatch.ProcessedServersCount}" Foreground="#FFF" Margin="0 2 0 0"
+								<TextBlock Text="{Binding ServerListViewModel.ProcessedServers}" Foreground="#FFF" Margin="0 2 0 0"
 								           FontSize="12" />
 								<TextBlock Text=" / " Foreground="#FFF" FontSize="12" Margin="0 2 0 0" />
-                                <TextBlock Text="{Binding ServerList.RefreshAllBatch.TotalCount}" Foreground="#06688F" FontSize="12"
+                                <TextBlock Text="{Binding ServerListViewModel.TotalServers}" Foreground="#06688F" FontSize="12"
 								           Margin="0 2 0 0" />
                                 <TextBlock Text=" )" Foreground="#06688F" FontSize="12" Margin="0 2 0 0" />
 							</StackPanel>
 							<Button Click="RefreshAll_Click"
 							        HorizontalAlignment="Right"
-							        Visibility="{Binding ServerList.RefreshAllBatch.UnprocessedServersCount, Converter={StaticResource ZeroToVisibilityConverter}}"
+							        Visibility="{Binding ServerListViewModel.CanRefresh, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 							        Margin="0 0 0 0"
 							        Style="{StaticResource MetroTextButtonStyle}">
 								<Button.Template>
@@ -184,19 +180,6 @@
 									</ControlTemplate>
 								</Button.Template>
 							</Button>
-						</StackPanel>
-
-						<StackPanel
-							Orientation="Horizontal"
-							Visibility="{Binding ServerList.DownloadingServerList, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}">
-
-							<Path
-								Data="F1M624.846,564.374L624.846,546.742 645.182,567.074 645.182,527.111 658.123,527.111 658.123,566.933 678.352,546.705 678.321,564.374 651.584,591.111 624.846,564.374z"
-								Stretch="Uniform" Fill="#06688F" Width="14" Height="14" Margin="0,3,3,0" />
-							<TextBlock Text="downloading server list... "
-							           Foreground="#06688F"
-							           FontSize="14"
-							           TextAlignment="Right" />
 						</StackPanel>
 
 						<Button
@@ -276,9 +259,9 @@
 					Background="Transparent"
 					Foreground="#0784B5"
 					Margin="-30 0 -20 0"
-					Visibility="{Binding ServerList.RefreshAllBatch.UnprocessedServersCount, Converter={StaticResource NonZeroToVisibilityHiddenConverter}}"
-					Maximum="{Binding ServerList.RefreshAllBatch.TotalCount, FallbackValue=0}"
-					Value="{Binding ServerList.RefreshAllBatch.ProcessedServersCount, FallbackValue=0}" />
+					Visibility="{Binding ServerListViewModel.IsRunning, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+					Maximum="{Binding ServerListViewModel.TotalServers, FallbackValue=0}"
+					Value="{Binding ServerListViewModel.ProcessedServers, FallbackValue=0}" />
 
 				<ListBox ItemsSource="{Binding Tabs}"
 				         Grid.Row="1"
@@ -359,6 +342,13 @@
 								</Canvas>
 							</Canvas>
 						</Border>
+
+					<StackPanel Grid.Column="2">
+						<Button Margin="5,0,0,0" Click="LaunchGameButton_Click" Style="{StaticResource MetroButtonStyle}" Height="23"
+						        Background="#444444" Foreground="#06688F" Cursor="Hand" Content="Launch DayZ2 (No Server)" />
+						</StackPanel>
+
+						<!--
 						<ItemsControl Grid.Column="2" ItemsSource="{Binding Launcher.LaunchButtons}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
@@ -372,6 +362,7 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
+						-->
 					</Grid>
 				</Grid>
 			</Grid>

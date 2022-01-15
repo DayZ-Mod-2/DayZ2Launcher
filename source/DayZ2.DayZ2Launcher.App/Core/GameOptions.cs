@@ -1,9 +1,10 @@
 using System.Runtime.Serialization;
+using DayZ2.DayZ2Launcher.App.Ui;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
 	[DataContract]
-	public class GameOptions : BindableBase
+	public class GameOptions : ViewModelBase
 	{
 		[DataMember] private string _additionalStartupParameters;
 		[DataMember] private string _arma2DirectoryOverride;
@@ -23,7 +24,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_additionalStartupParameters = value;
-				PropertyHasChanged("AdditionalStartupParameters");
+				OnPropertyChanged(new[] { "AdditionalStartupParameters" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -34,7 +35,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_launchUsingSteam = value;
-				PropertyHasChanged("LaunchUsingSteam");
+				OnPropertyChanged(new[] { "LaunchUsingSteam" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -47,7 +48,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_arma2OASteamUpdate = value;
-				PropertyHasChanged("Arma2OASteamUpdate");
+				OnPropertyChanged(new[] { "Arma2OASteamUpdate" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -58,7 +59,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_windowedMode = value;
-				PropertyHasChanged("WindowedMode");
+				OnPropertyChanged(new[] { "WindowedMode" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -69,7 +70,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_multiGpu = value;
-				PropertyHasChanged("MultiGpu");
+				OnPropertyChanged(new[] { "MultiGpu" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -80,7 +81,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_closeDayZLauncher = value;
-				PropertyHasChanged("CloseDayZLauncher");
+				OnPropertyChanged(new[] { "CloseDayZLauncher" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -91,7 +92,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_arma2DirectoryOverride = value;
-				PropertyHasChanged("Arma2DirectoryOverride");
+				OnPropertyChanged(new[] { "Arma2DirectoryOverride" });
 				UserSettings.Current.Save();
 				CalculatedGameSettings.Current.Update();
 			}
@@ -103,7 +104,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_arma2OaDirectoryOverride = value;
-				PropertyHasChanged("Arma2OADirectoryOverride");
+				OnPropertyChanged(new[] { "Arma2OADirectoryOverride" });
 				UserSettings.Current.Save();
 				CalculatedGameSettings.Current.Update();
 			}
@@ -115,7 +116,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_customBranchName = value;
-				PropertyHasChanged("CustomBranchName");
+				OnPropertyChanged(new[] { "CustomBranchName" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -126,7 +127,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_customBranchPass = value;
-				PropertyHasChanged("CustomBranchPass");
+				OnPropertyChanged(new[] { "CustomBranchPass" });
 				UserSettings.Current.Save();
 			}
 		}
@@ -137,7 +138,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set
 			{
 				_twentyFourHourTimeFormat = value;
-				PropertyHasChanged("TwentyFourHourTimeFormat");
+				OnPropertyChanged(new[] { "TwentyFourHourTimeFormat" });
 				UserSettings.Current.Save();
 			}
 		}

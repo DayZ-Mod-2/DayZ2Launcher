@@ -43,7 +43,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.Recent
 			set
 			{
 				_servers = value;
-				PropertyHasChanged("Servers");
+				OnPropertyChanged(new[] { "Servers" });
 			}
 		}
 
@@ -105,7 +105,8 @@ namespace DayZ2.DayZ2Launcher.App.Ui.Recent
 
 		private string GetKey(Server server)
 		{
-			return server.Id;
+			// return server.Id;
+			return "";
 		}
 	}
 }

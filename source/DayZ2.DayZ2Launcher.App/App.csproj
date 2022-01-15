@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
     <RootNamespace>DayZ2.DayZ2Launcher.App</RootNamespace>
@@ -117,15 +117,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SSQLib\SSQLib.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Assets\Images\dayz_logo.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Mono.Nat" Version="3.0.2" />
-    <PackageReference Include="MonoTorrent" Version="2.0.3" />
+    <PackageReference Include="MonoTorrent" Version="2.0.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="ReusableTasks" Version="2.0.1" />
     <PackageReference Include="SharpCompress" Version="0.30.1" />
@@ -143,6 +141,9 @@
     <Compile Remove="Core\DayZLauncherUpdater.cs" />
     <Compile Remove="Core\JsonExtensions.cs" />
     <Compile Remove="Core\MonoTorrentExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SteamQueryNet\SteamQueryNet\SteamQueryNet\SteamQueryNet.csproj" />
   </ItemGroup>
   <Target Name="AfterCompile">
     <CallTarget Targets="SignOutput" />

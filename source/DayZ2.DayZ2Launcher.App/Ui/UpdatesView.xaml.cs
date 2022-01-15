@@ -25,11 +25,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			//ViewModel.m_launcherUpdater.RestartNewVersion();
 		}
 
-		public void CheckForUpdates()
-		{
-			CheckNow_Click(this, null);
-		}
-
 		private void InstallLatestVersion_Click(object sender, RoutedEventArgs e)
 		{
 			ViewModel.InstallLatestModVersion();

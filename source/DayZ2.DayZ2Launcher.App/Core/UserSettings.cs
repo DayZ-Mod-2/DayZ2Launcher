@@ -27,7 +27,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		[DataMember] private AppOptions _appOptions = new AppOptions();
 		[DataMember] private List<string> _enabledPlugins = new List<string>();
 		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
-		[DataMember] private Filter _filter = new Filter();
+		[DataMember] private Filters _filter = new Filters();
 		[DataMember] private List<string> _friends = new List<string>();
 		[DataMember] private GameOptions _gameOptions = new GameOptions();
 		[DataMember] private bool _hideAU;
@@ -57,12 +57,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set { _hideAU = !value; }
 		}
 
-		public Filter Filter
+		public Filters Filters
 		{
 			get
 			{
 				if (_filter == null)
-					_filter = new Filter();
+					_filter = new Filters();
 
 				return _filter;
 			}
@@ -433,7 +433,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			if (Favorites.Any(f => f.Matches(server)))
 				return;
 			Favorites.Add(new FavoriteServer(server));
-			App.Events.Publish(new FavoritesUpdated(server));
 			Save();
 		}
 
@@ -443,7 +442,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			if (favorite == null)
 				return;
 			Favorites.Remove(favorite);
-			App.Events.Publish(new FavoritesUpdated(server));
 			Save();
 		}
 
@@ -457,7 +455,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 			RecentServers.Add(recentServer);
 			recentServer.Server = server;
-			App.Events.Publish(new RecentAdded(recentServer));
 			Save();
 		}
 
@@ -485,7 +482,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		private static string GetNoteFileName(Server server)
 		{
-			return Path.Combine(NotesPath, $"{server.QueryHost.Replace(".", "_")}_{server.QueryPort}.txt");
+			return Path.Combine(NotesPath, $"{server.Hostname.Replace(".", "_")}_{server.QueryPort}.txt");
 		}
 
 		public bool HasNotes(Server server)

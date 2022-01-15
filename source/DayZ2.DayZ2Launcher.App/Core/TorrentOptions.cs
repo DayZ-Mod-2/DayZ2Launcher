@@ -1,10 +1,11 @@
 using System;
 using System.Runtime.Serialization;
+using DayZ2.DayZ2Launcher.App.Ui;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
 	[DataContract]
-	public class TorrentOptions : BindableBase
+	public class TorrentOptions : ViewModelBase
 	{
 		[DataMember] private bool _disableFastResume;
 		[DataMember] private bool _enableUpnp = true;
@@ -18,7 +19,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public int ListeningPort
 		{
-			get { return _listeningPort; }
+			get => _listeningPort;
 			set
 			{
 				int oldValue = _listeningPort;
@@ -30,7 +31,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_listeningPort != oldValue)
 				{
-					PropertyHasChanged("ListeningPort");
+					OnPropertyChanged(new[] { "ListeningPort" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -38,13 +39,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public bool RandomizePort
 		{
-			get { return _randomizePort; }
+			get => _randomizePort;
 			set
 			{
 				if (_randomizePort != value)
 				{
 					_randomizePort = value;
-					PropertyHasChanged("RandomizePort");
+					OnPropertyChanged(new[] { "RandomizePort" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -52,13 +53,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public bool EnableUpnp
 		{
-			get { return _enableUpnp; }
+			get => _enableUpnp;
 			set
 			{
 				if (_enableUpnp != value)
 				{
 					_enableUpnp = value;
-					PropertyHasChanged("EnableUpnp");
+					OnPropertyChanged(new[] { "EnableUpnp" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -66,7 +67,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public int MaxDLSpeed
 		{
-			get { return _maxDlSpeed; }
+			get => _maxDlSpeed;
 			set
 			{
 				int oldValue = _maxDlSpeed;
@@ -78,7 +79,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_maxDlSpeed != oldValue)
 				{
-					PropertyHasChanged("MaxDLSpeed");
+					OnPropertyChanged(new[] { "MaxDLSpeed" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -86,7 +87,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public int MaxDLConns
 		{
-			get { return _maxDlConns; }
+			get => _maxDlConns;
 			set
 			{
 				int oldValue = _maxDlConns;
@@ -98,7 +99,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_maxDlConns != oldValue)
 				{
-					PropertyHasChanged("MaxDLConns");
+					OnPropertyChanged(new[] { "MaxDLConns" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -118,7 +119,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public int MaxULSpeed
 		{
-			get { return _maxUlSpeed; }
+			get => _maxUlSpeed;
 			set
 			{
 				int oldValue = _maxUlSpeed;
@@ -130,7 +131,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_maxUlSpeed != oldValue)
 				{
-					PropertyHasChanged("MaxULSpeed");
+					OnPropertyChanged(new[] { "MaxULSpeed" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -138,7 +139,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public int NumULSlots
 		{
-			get { return _numUlSlots; }
+			get => _numUlSlots;
 			set
 			{
 				int oldValue = _numUlSlots;
@@ -150,7 +151,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_numUlSlots != oldValue)
 				{
-					PropertyHasChanged("NumULSlots");
+					OnPropertyChanged(new[] { "NumULSlots" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -170,13 +171,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public bool StopSeeding
 		{
-			get { return _stopSeeding; }
+			get => _stopSeeding;
 			set
 			{
 				if (_stopSeeding != value)
 				{
 					_stopSeeding = value;
-					PropertyHasChanged("StopSeeding");
+					OnPropertyChanged(new[] { "StopSeeding" });
 					UserSettings.Current.Save();
 				}
 			}
@@ -184,13 +185,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public bool DisableFastResume
 		{
-			get { return _disableFastResume; }
+			get => _disableFastResume;
 			set
 			{
 				if (_disableFastResume != value)
 				{
 					_disableFastResume = value;
-					PropertyHasChanged("DisableFastResume");
+					OnPropertyChanged(new[] { "DisableFastResume" });
 					UserSettings.Current.Save();
 				}
 			}

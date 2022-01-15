@@ -1,5 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 {
@@ -8,22 +10,39 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 	/// </summary>
 	public partial class ServerListView : UserControl
 	{
+		ServerListViewModel ViewModel => (ServerListViewModel)DataContext;
+
 		public ServerListView()
 		{
 			InitializeComponent();
 		}
 
-		public ServerListViewModel ViewModel()
+		private void RowDoubleClick(object sender, RoutedEventArgs e)
 		{
-			return (ServerListViewModel)DataContext;
+			((ServerViewModel)((DataGridRow)sender).DataContext).Join();
 		}
 
-		private void ServerListGrid_Loaded(object sender, RoutedEventArgs e)
+		private void RowKeyDown(object sender, RoutedEventArgs e)
 		{
 		}
 
-		private void ServerListGrid_Loaded_1(object sender, RoutedEventArgs e)
+		private void RowKeyUp(object sender, RoutedEventArgs e)
 		{
+		}
+
+		private void PreviewMouseLeftButtonDown(object sender, RoutedEventArgs e)
+		{
+			
+		}
+
+		private void ServerDataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs args)
+		{
+			((DataGrid)sender).UnselectAllCells();
+		}
+
+		private void RefreshAll_Click(object sender, RoutedEventArgs e)
+		{
+			ViewModel.RefreshAll();
 		}
 	}
 }

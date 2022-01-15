@@ -44,41 +44,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		public bool IsVisible
 		{
 			get => _isVisible;
-			set
-			{
-				_isVisible = value;
-				PropertyHasChanged("IsVisible");
-			}
-		}
-
-		public bool IncludeUS
-		{
-			get => Settings.IncludeUS;
-			set
-			{
-				Settings.IncludeUS = value;
-				PropertyHasChanged("IncludeUS");
-			}
-		}
-
-		public bool IncludeEU
-		{
-			get => Settings.IncludeEU;
-			set
-			{
-				Settings.IncludeEU = value;
-				PropertyHasChanged("IncludeEU");
-			}
-		}
-
-		public bool IncludeAU
-		{
-			get => Settings.IncludeAU;
-			set
-			{
-				Settings.IncludeAU = value;
-				PropertyHasChanged("IncludeAU");
-			}
+			set => SetValue(ref _isVisible, value);
 		}
 
 		public bool Arma2DirectoryOverride
@@ -91,7 +57,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				else
 					Settings.GameOptions.Arma2DirectoryOverride = null;
 
-				PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
+				OnPropertyChanged(nameof(Arma2Directory), nameof(Arma2DirectoryOverride));
 			}
 		}
 
@@ -109,7 +75,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			{
 				Settings.GameOptions.Arma2DirectoryOverride = value;
 
-				PropertyHasChanged("Arma2Directory");
+				OnPropertyChanged(new[] { "Arma2Directory" });
 			}
 		}
 
@@ -127,7 +93,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			{
 				Settings.GameOptions.Arma2OADirectoryOverride = value;
 
-				PropertyHasChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
+				OnPropertyChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
 			}
 		}
 
@@ -142,7 +108,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				else
 					Settings.GameOptions.Arma2OADirectoryOverride = null;
 
-				PropertyHasChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
+				OnPropertyChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
 			}
 		}
 
@@ -157,7 +123,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				else
 					Settings.GameOptions.CustomBranchName = "";
 
-				PropertyHasChanged("CustomBranchEnabled", "CustomBranchName");
+				OnPropertyChanged("CustomBranchEnabled", "CustomBranchName");
 			}
 		}
 
@@ -172,7 +138,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				else
 					Settings.GameOptions.CustomBranchName = "";
 
-				PropertyHasChanged("CustomBranchName");
+				OnPropertyChanged(new[] { "CustomBranchName" });
 			}
 		}
 

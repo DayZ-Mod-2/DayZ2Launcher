@@ -15,17 +15,16 @@ namespace DayZ2.DayZ2Launcher.App.Ui.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			var server = (Server)value;
-			if (server == null)
-				return null;
+			var (playerCount, slots) = (Rational)value;
+			var freeSlots = slots - playerCount;
 
-			if (server.FreeSlots == 0)
+			if (freeSlots == 0)
 				return Full;
-			if (server.FreeSlots < 5)
+			if (freeSlots < 5)
 				return NearFull;
-			if (server.MaxPlayers - server.FreeSlots < 3)
+			if (playerCount < 3)
 				return Empty;
-			if (server.FreeSlots >= 5)
+			if (freeSlots >= 5)
 				return SomeSpace;
 
 			return Empty;

@@ -8,9 +8,9 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 		{
 			Title = "filters";
 
-			Filter = UserSettings.Current.Filter;
+			Filters = UserSettings.Current.Filters;
 		}
 
-		public Filter Filter { get; set; }
+		public Filters Filters { get; set; }
 	}
 }

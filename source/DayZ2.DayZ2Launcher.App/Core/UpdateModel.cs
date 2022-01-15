@@ -19,7 +19,7 @@ using SharpCompress.Readers;
 namespace DayZ2.DayZ2Launcher.App.Core
 {
 	[JsonConverter(typeof(SemanticVersionConverter))]
-	public struct SemanticVersion
+	public readonly struct SemanticVersion
 	{
 		readonly uint m_value;
 
@@ -106,9 +106,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 	{
 		static readonly Uri RootLocatorUri = new Uri(@"https://www.perry-swift.de/dayz2/locator.json");
 
-		HttpClient m_httpClient;
+		private readonly HttpClient m_httpClient;
 
-		Dictionary<string, string> m_stringCache = new Dictionary<string, string>();
+		private readonly Dictionary<string, string> m_stringCache = new Dictionary<string, string>();
 
 		public ResourceLocator(HttpClient httpClient)
 		{
@@ -127,8 +127,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		{
 			using (var content = await GetAsync(RootLocatorUri, cancellationToken))
 			{
-				// TODO: upgrade .NET and enable cancellationToken
-				var json = await JsonDocument.ParseAsync(await content.ReadAsStreamAsync(), cancellationToken: cancellationToken);
+				var json = await JsonDocument.ParseAsync(await content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
 				return Resource.FromJson(json.RootElement.GetProperty(name));
 			}
 		}
@@ -140,8 +139,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			using (var content = await GetAsync(resource.Uri, cancellationToken))
 			{
-				// TODO: upgrade .NET and enable cancellationToken
-				result = await content.ReadAsStringAsync(/*cancellationToken*/);
+				result = await content.ReadAsStringAsync(cancellationToken);
 
 				if (resource.Sha256 != Hash.HashStringSha256(result))
 					throw new Exception($"Resource locator hash did not match the content.\n{resource.Uri}");
@@ -159,7 +157,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			using (var sha256 = SHA256.Create())
 			using (var hashStream = new HashStream(fileStream, sha256))
 			{
-				await content.CopyToAsync(fileStream);
+				await content.CopyToAsync(fileStream, cancellationToken);
 				if (resource.Sha256 != hashStream.HashString)
 					throw new Exception($"Resource locator hash did not match the content.\n{resource.Uri}");
 			}
@@ -173,7 +171,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public SemanticVersion CurrentVersion { get; private set; }
 		public SemanticVersion LatestVersion { get; private set; }
 
-		struct ModInfo
+		private struct ModInfo
 		{
 			[JsonPropertyName("name")]
 			public string Name { get; set; }
@@ -183,7 +181,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			public Resource ContentResource { get; set; }
 		}
 
-		class Mod
+		private class Mod
 		{
 			public SemanticVersion CurrentVersion;
 			public SemanticVersion LatestVersion;
@@ -194,7 +192,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			public DirectoryInfo Directory;
 		}
 
-		class Torrent
+		private class Torrent
 		{
 			public string Sha256;
 			public readonly FileInfo TorrentFile;
@@ -226,11 +224,10 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			public Dictionary<Torrent, double> ExtractedBytes;
 			public double TotalBytes;
 
-			// TODO: after upgrading .NET remove contructor
-			public ExtractionProgress(Dictionary<Torrent, double> extractedBytes, double totalBytes)
+			public ExtractionProgress()
 			{
-				ExtractedBytes = extractedBytes;
-				TotalBytes = totalBytes;
+				ExtractedBytes = new Dictionary<Torrent, double>();
+				TotalBytes = 0;
 			}
 
 			public double TotalExtractedBytes()
@@ -245,7 +242,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		}
 
 		private bool IsExtracting { get; set; }
-		private ExtractionProgress m_extractionProgress = new ExtractionProgress(new Dictionary<Torrent, double>(), 0);
+		private ExtractionProgress m_extractionProgress = new();
 
 		public ModUpdater()
 		{
@@ -462,11 +459,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		{
 			Mod mod = m_mods[modName];
 
-			// have to stop them individually, the lib doesn't like bulk stopping
-			foreach (Torrent torrent in mod.Torrents)
-			{
-				await RemoveTorrentAsync(torrent, cancellationToken);
-			}
+			await Task.WhenAll(mod.Torrents.Select(t => RemoveTorrentAsync(t, cancellationToken)));
 
 			Resource[] resources = JsonSerializer.Deserialize<Resource[]>(
 				await m_resourceLocator.GetStringAsync(mod.LatestVersionContent, cancellationToken));
@@ -490,23 +483,19 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public async Task StartAsync(string modName, CancellationToken cancellationToken)
 		{
-			foreach (KeyValuePair<string, Mod> mod in m_mods)
+			foreach (var (name, mod) in m_mods)
 			{
-				// have to stop them individually, the lib doesn't like bulk stopping
-				foreach (Torrent torrent in mod.Value.Torrents)
-				{
-					await RemoveTorrentAsync(torrent, cancellationToken);
-				}
+				await Task.WhenAll(mod.Torrents.Select(t => RemoveTorrentAsync(t, cancellationToken)));
 
 				var resources = JsonSerializer.Deserialize<Resource[]>(
-					await m_resourceLocator.GetStringAsync(mod.Value.LatestVersionContent, cancellationToken));
+					await m_resourceLocator.GetStringAsync(mod.LatestVersionContent, cancellationToken));
 				var torrents = await Task.WhenAll(resources.Select(n => AddTorrentAsync(n, cancellationToken)));
-				mod.Value.Torrents = torrents;
+				mod.Torrents = torrents;
 			}
 
 			await m_torrentClient.StartAsync();
 		}
-		
+
 		// TODO: use this
 		public Task StopAsync() => m_torrentClient.StopAsync();
 
@@ -618,9 +607,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		[JsonPropertyName("hostname")]
 		public string Hostname { get; set; }
 		[JsonPropertyName("port")]
-		public uint Port { get; set; }
-		[JsonPropertyName("password")]
-		public string Password { get; set; }
+		public ushort Port { get; set; }
 		[JsonPropertyName("mods")]
 		public IList<string> Mods { get; set; }
 	}

@@ -26,7 +26,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				case ServerDifficulty.Veteran:
 					SetVeteranDefaults();
 					break;
-				case ServerDifficulty.Expert:
+				case ServerDifficulty.Mercenary:
 					SetExpertDefaults();
 					break;
 				default:

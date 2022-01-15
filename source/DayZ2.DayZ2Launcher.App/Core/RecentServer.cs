@@ -1,10 +1,12 @@
 ﻿using System;
+using System.CodeDom;
 using System.Runtime.Serialization;
+using DayZ2.DayZ2Launcher.App.Ui;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
 	[DataContract]
-	public class RecentServer : BindableBase
+	public class RecentServer : ViewModelBase
 	{
 		[DataMember] private readonly string _ipAddress;
 		[DataMember] private readonly string _name;
@@ -16,34 +18,24 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public RecentServer(Server server, DateTime on)
 		{
 			_on = @on;
-			_ipAddress = server.QueryHost;
+			_ipAddress = server.Hostname;
 			_port = server.QueryPort;
 			_name = server.Name;
 		}
 
 		public Server Server
 		{
-			get { return _server; }
-			set
-			{
-				_server = value;
-				PropertyHasChanged("Server");
-			}
+			get => _server;
+			set => SetValue(ref _server, value);
 		}
 
-		public DateTime On
-		{
-			get { return _on; }
-		}
+		public DateTime On => _on;
 
-		public string Ago
-		{
-			get { return AgoText.Ago(On); }
-		}
+		public string Ago => AgoText.Ago(On);
 
 		public bool Matches(Server server)
 		{
-			return server.QueryHost == _ipAddress && server.QueryPort == _port;
+			return server.Hostname == _ipAddress && server.QueryPort == _port;
 		}
 
 		/*public Server CreateServer()
@@ -59,7 +51,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public void RefreshAgo()
 		{
-			PropertyHasChanged("Ago");
+			OnPropertyChanged(new[] { "Ago" });
 		}
 	}
 

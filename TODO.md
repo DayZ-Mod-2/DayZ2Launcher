@@ -1,0 +1,2 @@
+- enable sign ClickOne manifest for App.csproj again
+- enable SignOutput AfterCompile in App.csproj again

@@ -6,7 +6,7 @@
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
 	<Grid HorizontalAlignment="Right">
-		<TextBlock Text="{Binding Ping, StringFormat={}{0}ms}"
+		<TextBlock Text="{Binding Ping, Converter={StaticResource PingToTextConverter}}"
 		           Foreground="{Binding Ping, Converter={StaticResource PingToForegroundConverter}}"
 		           HorizontalAlignment="Right"
 		           VerticalAlignment="Center"

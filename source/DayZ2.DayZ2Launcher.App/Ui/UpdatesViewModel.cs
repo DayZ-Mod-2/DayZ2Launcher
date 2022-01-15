@@ -13,16 +13,17 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 	{
 		private readonly CancellationToken m_cancellationToken;
 
-		private readonly LauncherUpdater_old m_launcherUpdater = new LauncherUpdater_old();
-		private readonly ModUpdater m_modUpdater = new ModUpdater();
-		private readonly ServerUpdater m_serverUpdater = new ServerUpdater();
-		private readonly MotdUpdater m_motdUpdater = new MotdUpdater();
+		private readonly GameLauncher m_gameLauncher;
+		private readonly LauncherUpdater m_launcherUpdater = new();
+		private readonly ModUpdater m_modUpdater;
+		private readonly ServerUpdater m_serverUpdater = new();
+		private readonly MotdUpdater m_motdUpdater = new();
 
-		public UpdatesViewModel(GameLauncher_old gameLauncher)
+		public UpdatesViewModel(GameLauncher gameLauncher, ModUpdater modUpdater, AppCancellation cancellation)
 		{
-			// TODO: when to cancel this?
-			var source = new CancellationTokenSource();
-			m_cancellationToken = source.Token;
+			m_gameLauncher = gameLauncher;
+			m_modUpdater = modUpdater;
+			m_cancellationToken = cancellation.Token;
 
 			CalculatedGameSettings = CalculatedGameSettings.Current;
 
@@ -34,6 +35,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 					await Task.Delay(100, m_cancellationToken);
 				}
 			}, m_cancellationToken);
+
 
 			// TODO: maybe check for updates on a timer too
 			async Task Init()
@@ -48,22 +50,14 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		public string Motd
 		{
 			get => m_motd;
-			set
-			{
-				m_motd = value;
-				PropertyHasChanged(nameof(Motd));
-			}
+			private set => SetValue(ref m_motd, value);
 		}
 
 		private IList<ServerListInfo> m_servers;
 		public IList<ServerListInfo> Servers
 		{
 			get => m_servers;
-			set
-			{
-				m_servers = value;
-				PropertyHasChanged(nameof(Servers));
-			}
+			set => SetValue(ref m_servers, value);
 		}
 
 		public struct UpdateInfo
@@ -78,15 +72,11 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			}
 		}
 
-		UpdateInfo m_overallStatus = new UpdateInfo(UpdateStatus.Checking, null);
+		UpdateInfo m_overallStatus = new(UpdateStatus.Checking, null);
 		public UpdateInfo OverallStatus
 		{
 			get => m_overallStatus;
-			set
-			{
-				m_overallStatus = value;
-				PropertyHasChanged(nameof(OverallStatus));
-			}
+			set => SetValue(ref m_overallStatus, value);
 		}
 
 		void UpdateOverallStatus()
@@ -115,19 +105,14 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			OverallStatus = current;
 		}
 
-		UpdateInfo m_launcherStatus = new UpdateInfo(UpdateStatus.Checking, null);
+		UpdateInfo m_launcherStatus = new(UpdateStatus.Checking, null);
 		public UpdateInfo LauncherStatus
 		{
 			get => m_launcherStatus;
-			set
-			{
-				m_launcherStatus = value;
-				UpdateOverallStatus();
-				PropertyHasChanged(nameof(LauncherStatus));
-			}
+			set => SetValue(ref m_launcherStatus, value);
 		}
 
-		UpdateInfo m_dayzStatus = new UpdateInfo(UpdateStatus.Checking, null);
+		UpdateInfo m_dayzStatus = new(UpdateStatus.Checking, null);
 		public UpdateInfo DayZStatus
 		{
 			get => m_dayzStatus;
@@ -135,7 +120,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			{
 				m_dayzStatus = value;
 				UpdateOverallStatus();
-				PropertyHasChanged(nameof(DayZStatus));
+				OnPropertyChanged(new[] { nameof(DayZStatus) });
 			}
 		}
 
@@ -143,55 +128,35 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		public string LauncherLatestVersion
 		{
 			get => m_launcherLatestVersion;
-			set
-			{
-				m_launcherLatestVersion = value;
-				PropertyHasChanged(nameof(LauncherLatestVersion));
-			}
+			set => SetValue(ref m_launcherLatestVersion, value);
 		}
 
 		private string m_launcherCurrentVersion;
 		public string LauncherCurrentVersion
 		{
 			get => m_launcherCurrentVersion;
-			set
-			{
-				m_launcherCurrentVersion = value;
-				PropertyHasChanged(nameof(LauncherCurrentVersion));
-			}
+			set => SetValue(ref m_launcherCurrentVersion, value);
 		}
 
 		private string m_dayzLatestVersion;
 		public string DayZLatestVersion
 		{
 			get => m_dayzLatestVersion;
-			set
-			{
-				m_dayzLatestVersion = value;
-				PropertyHasChanged(nameof(DayZLatestVersion));
-			}
+			set => SetValue(ref m_dayzLatestVersion, value);
 		}
 
 		private string m_dayzCurrentVersion;
 		public string DayZCurrentVersion
 		{
 			get => m_dayzCurrentVersion;
-			set
-			{
-				m_dayzCurrentVersion = value;
-				PropertyHasChanged(nameof(DayZCurrentVersion));
-			}
+			set => SetValue(ref m_dayzCurrentVersion, value);
 		}
 
 		string m_dayzTorrentStatus = "";
 		public string DayZTorrentStatus
 		{
 			get => m_dayzTorrentStatus;
-			set
-			{
-				m_dayzTorrentStatus = value;
-				PropertyHasChanged(nameof(DayZTorrentStatus));
-			}
+			set => SetValue(ref m_dayzTorrentStatus, value);
 		}
 
 		public LocalMachineInfo LocalMachineInfo { get; private set; }
@@ -202,77 +167,42 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		public bool CanInstallLauncher
 		{
 			get => m_canInstallLauncher;
-			private set
-			{
-				m_canInstallLauncher = value;
-				PropertyHasChanged(nameof(CanInstallLauncher));
-			}
+			private set => SetValue(ref m_canInstallLauncher, value);
 		}
 
 		private bool m_canRestartLauncher;
 		public bool CanRestartLauncher
 		{
 			get => m_canRestartLauncher;
-			private set
-			{
-				m_canRestartLauncher = value;
-				PropertyHasChanged(nameof(CanRestartLauncher));
-			}
+			private set => SetValue(ref m_canRestartLauncher, value);
 		}
 
 		private bool m_canInstallMod;
 		public bool CanInstallMod
 		{
 			get => m_canInstallMod;
-			private set
-			{
-				m_canInstallMod = value;
-				PropertyHasChanged(nameof(CanInstallMod));
-			}
+			private set => SetValue(ref m_canInstallMod, value);
 		}
 
 		private bool m_canCheckForUpdates;
 		public bool CanCheckForUpdates
 		{
 			get => m_canCheckForUpdates;
-			private set
-			{
-				m_canCheckForUpdates = value;
-				PropertyHasChanged(nameof(CanCheckForUpdates));
-			}
-		}
-
-		private bool m_canLaunchGame;
-		public bool CanLaunchGame
-		{
-			get => m_canLaunchGame;
-			private set
-			{
-				m_canLaunchGame = value;
-				PropertyHasChanged(nameof(CanLaunchGame));
-			}
+			private set => SetValue(ref m_canCheckForUpdates, value);
 		}
 
 		private bool m_canVerifyIntegrity = true;
 		public bool CanVerifyIntegrity
 		{
 			get => m_canVerifyIntegrity;
-			private set
-			{
-				m_canVerifyIntegrity = value;
-				PropertyHasChanged(nameof(CanVerifyIntegrity));
-			}
+			private set => SetValue(ref m_canVerifyIntegrity, value);
 		}
 
 		private bool m_isVisible;
 		public bool IsVisible
 		{
 			get => m_isVisible;
-			set
-			{
-				m_isVisible = value;
-				PropertyHasChanged(nameof(IsVisible));
-			}
+			set => SetValue(ref m_isVisible, value);
 		}
 
 		/*
@@ -349,6 +279,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			DayZLatestVersion = m_modUpdater.LatestVersion.ToString();
 			DayZCurrentVersion = m_modUpdater.CurrentVersion.ToString();
 			DayZStatus = new UpdateInfo(m_modUpdater.Status, null);
+			m_gameLauncher.CanLaunch = m_modUpdater.Status == UpdateStatus.UpToDate;
 		}
 
 		private async Task CheckForMotdUpdatesAsync()
@@ -377,7 +308,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 					CheckForModUpdatesAsync(),
 					CheckForMotdUpdatesAsync(),
 					CheckForServerListUpdates());
-				await Task.Delay(100, m_cancellationToken);  // give it a tiny cooldown to stop users spamming it
 			}
 			catch (Exception ex)
 			{
@@ -385,6 +315,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			}
 			finally
 			{
+				await Task.Delay(100, m_cancellationToken); // give it a tiny cooldown to stop users spamming it
 				CanCheckForUpdates = true;
 			}
 		}
@@ -394,7 +325,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			try
 			{
 				CanInstallMod = false;
-				CanLaunchGame = false;
+				m_gameLauncher.CanLaunch = false;
 				CanVerifyIntegrity = false;
 				m_modUpdater.IsRunning = true;
 				await m_modUpdater.UpdateAsync("dayz2", m_cancellationToken);  // TODO: mod name
@@ -407,7 +338,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			finally
 			{
 				m_modUpdater.IsRunning = false;
-				CanLaunchGame = true;
+				m_gameLauncher.CanLaunch = true;
 				CanVerifyIntegrity = true;
 			}
 		}
@@ -428,11 +359,13 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			{
 				CanVerifyIntegrity = false;
 				m_modUpdater.IsRunning = true;
+				m_gameLauncher.CanLaunch = false;
 				await m_modUpdater.VerifyIntegrityAsync("dayz2", m_cancellationToken);  // TODO: mod name
-				await Task.Delay(500, m_cancellationToken);  // give it a tiny cooldown to stop users spamming it
 			}
 			finally
 			{
+				await Task.Delay(500, m_cancellationToken);  // give it a tiny cooldown to stop users spamming it
+				m_gameLauncher.CanLaunch = true;
 				m_modUpdater.IsRunning = false;
 				CanVerifyIntegrity = true;
 			}

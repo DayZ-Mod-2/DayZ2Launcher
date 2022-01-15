@@ -11,14 +11,14 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public FavoriteServer(Server server)
 		{
-			_ipAddress = server.QueryHost;
+			_ipAddress = server.Hostname;
 			_port = server.QueryPort;
 			_name = server.Name;
 		}
 
 		public bool Matches(Server server)
 		{
-			return server.QueryHost == _ipAddress && server.QueryPort == _port;
+			return server.Hostname == _ipAddress && server.QueryPort == _port;
 		}
 
 		/*

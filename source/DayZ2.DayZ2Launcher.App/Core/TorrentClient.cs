@@ -133,19 +133,20 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public struct EngineTorrent
 		{
 			public TorrentManager Manager { get; private set; }
-			// TODO: make this just TaskCompletionSource after .NET upgrade
-			public TaskCompletionSource<object> CompletionTask { get; private set; }
+			public TaskCompletionSource CompletionTask { get; private set; }
 
 			public EngineTorrent(TorrentManager manager)
 			{
 				Manager = manager;
-				CompletionTask = new TaskCompletionSource<object>();
+				CompletionTask = new TaskCompletionSource();
 			}
 		}
 
-		private readonly Dictionary<string, EngineTorrent> m_torrents = new Dictionary<string, EngineTorrent>();
+		private readonly Dictionary<string, EngineTorrent> m_torrents = new();
 
+#pragma warning disable CS1998
 		public async Task StartAsync()
+#pragma warning restore CS1998
 		{
 			if (m_cancellationTokenSource == null)
 			{
@@ -297,7 +298,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					if (engineTorrents.Any())
 					{
 						if (!engineTorrents[0].CompletionTask.Task.IsCompleted)
-							engineTorrents[0].CompletionTask.SetResult(null);
+							engineTorrents[0].CompletionTask.SetResult();
 					}
 				}
 

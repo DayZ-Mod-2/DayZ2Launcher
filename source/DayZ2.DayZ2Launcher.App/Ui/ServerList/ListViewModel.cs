@@ -29,7 +29,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
             set
             {
                 _servers = value;
-                PropertyHasChanged("Servers");
+                OnPropertyChanged(new[] { "Servers" });
             }
         }
 
