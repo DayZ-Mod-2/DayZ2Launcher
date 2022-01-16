@@ -1,214 +1,213 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Deployment.Application;
 using System.IO;
 using System.IO.Pipes;
+using System.Linq;
+using System.Net.Http;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Caliburn.Micro;
+
+using Microsoft.Extensions.DependencyInjection;
+
 using DayZ2.DayZ2Launcher.App.Core;
+using DayZ2.DayZ2Launcher.App.Ui;
 
 namespace DayZ2.DayZ2Launcher.App
 {
-    public partial class App : Application
-    {
-        public static EventAggregator Events = new EventAggregator();
-        private static string[] _exeArguments;
-        private bool _isUncaughtUiThreadException;
+	public class AppCancellation
+	{
+		public CancellationToken Token { get; private set; }
 
-        private string _pipeName;
+		public AppCancellation(CancellationToken token)
+		{
+			Token = token;
+		}
+	}
 
-        private void StartPipeServer()
-        {
-            var pipeServer = new NamedPipeServerStream(_pipeName, PipeDirection.In, 2, PipeTransmissionMode.Message,
-                PipeOptions.Asynchronous);
-            pipeServer.BeginWaitForConnection(NewPipeConnection, pipeServer);
-        }
+	public partial class App : Application
+	{
+		class AsyncDisposableProxy : IAsyncDisposable
+		{
+			readonly IDisposable m_disposable;
 
-        private void PipeReadCallback(IAsyncResult iar)
-        {
-            var details = (ReadParams)iar.AsyncState;
-            NamedPipeServerStream pipeSvr = details.PipeSvr;
-            MemoryStream memStr = details.MessageStr;
-            byte[] readBuffer = details.ReadBuffer;
+			public AsyncDisposableProxy(IDisposable disposable)
+			{
+				m_disposable = disposable;
+			}
 
-            int numBytes = pipeSvr.EndRead(iar);
+			public ValueTask DisposeAsync()
+			{
+				m_disposable.Dispose();
+				return ValueTask.CompletedTask;
+			}
+		}
 
-            if (numBytes > 0)
-                memStr.Write(readBuffer, 0, numBytes);
+		public static new App Current => (App)Application.Current;
 
-            if (pipeSvr.IsMessageComplete)
-            {
-                byte[] memBytes = memStr.ToArray();
-                memStr.Dispose();
+		readonly ServiceProvider m_serviceProvider;
+		readonly CancellationTokenSource m_cancellationTokenSource = new();
+		readonly List<IAsyncDisposable> m_shutdownCleanup = new();
 
-                string recvStr = Encoding.UTF8.GetString(memBytes, 0, memBytes.Length);
-                Events.Publish(new LaunchCommandString(recvStr));
+		bool m_shutdownRequested = false;
 
-                pipeSvr.Close();
-            }
-            else
-                pipeSvr.BeginRead(readBuffer, 0, readBuffer.Length, PipeReadCallback, details);
-        }
+		bool m_isUncaughtUiThreadException;
 
-        private void NewPipeConnection(IAsyncResult iar)
-        {
-            var pipSvr = (NamedPipeServerStream)iar.AsyncState;
-            try
-            {
-                pipSvr.EndWaitForConnection(iar);
+		public App()
+		{
+			ServiceCollection services = new();
+			ConfigureServices(services);
 
-                var messageStr = new MemoryStream(4096);
-                var readBuffer = new byte[4096];
-                pipSvr.BeginRead(readBuffer, 0, readBuffer.Length,
-                    PipeReadCallback, new ReadParams(pipSvr, messageStr, readBuffer));
+			services.AddSingleton<IServiceProvider>(sp => sp);
+			m_serviceProvider = services.BuildServiceProvider();
+		}
 
-                StartPipeServer();
-            }
-            catch (ObjectDisposedException)
-            {
-            } //happens if no connection happened
-        }
+		public void OnShutdown(IDisposable disposable)
+		{
+			m_shutdownCleanup.Add(new AsyncDisposableProxy(disposable));
+		}
 
-        private static string QueryParamsFromArgs(string[] whichArgs)
-        {
-            var args = new List<string>();
-            foreach (string arg in whichArgs)
-            {
-                string[] tokens = arg.Split('=');
-                for (int i = 0; i < tokens.Length; i++)
-                    tokens[i] = Uri.EscapeDataString(tokens[i]);
+		public void OnShutdown(IAsyncDisposable disposable)
+		{
+			m_shutdownCleanup.Add(disposable);
+		}
 
-                args.Add(string.Join("=", tokens));
-            }
+		bool TryStartUniqueInstance()
+		{
+			const string Guid = "{a08c9217-041a-4d36-80a4-604d616c637b}";
 
-            return string.Join("&", args);
-        }
+#pragma warning disable CA1416
+			string userId;
+			using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+				userId = identity.User?.ToString() ?? "null";
+#pragma warning restore CA1416
 
-        public static string GetQueryParams()
-        {
-            string queryString = null;
-            if (ApplicationDeployment.IsNetworkDeployed)
-            {
-                Uri actUri = ApplicationDeployment.CurrentDeployment.ActivationUri;
-                if (actUri != null)
-                    queryString = actUri.Query;
-                else
-                {
-                    try
-                    {
-                        string[] actData = AppDomain.CurrentDomain.SetupInformation.ActivationArguments.ActivationData;
-                        queryString = QueryParamsFromArgs(actData);
-                    }
-                    catch (Exception)
-                    {
-                        queryString = null;
-                    }
-                }
-            }
-            else
-                queryString = QueryParamsFromArgs(_exeArguments);
+			string eventName = $"DayzLauncher-EVENT-{Guid}-{{{userId}}}";
+			string mutexName = $"DayzLauncher-MUTEX-{Guid}-{{{userId}}}";
 
-            if (queryString == null)
-                return "";
-            return queryString;
-        }
+			var sharedEvent = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
 
-        protected override void OnStartup(StartupEventArgs e)
-        {
-            if (e.Args == null)
-                _exeArguments = new string[0];
-            else
-                _exeArguments = e.Args;
+			bool wasCreated;
+			var sharedMutex = new Mutex(true, mutexName, out wasCreated);
 
-            AppDomain.CurrentDomain.UnhandledException += UncaughtThreadException;
-            DispatcherUnhandledException += UncaughtUiThreadException;
+			if (!wasCreated)
+			{
+				sharedEvent.Set();
+				return false;
+			}
 
-            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-                _pipeName = String.Format("DayZLauncher_{{{0}}}_Instance", identity.User);
+			var thread = new Thread(() =>
+			{
+				while (sharedEvent.WaitOne())
+				{
+					Current.Dispatcher.BeginInvoke(() => ((MainWindow)Current.MainWindow).BringToForeground());
+				}
+				GC.KeepAlive(sharedMutex);
+			});
 
-            bool secondInstance = false;
-            using (var pipeConn = new NamedPipeClientStream(".", _pipeName, PipeDirection.Out))
-            {
-                try
-                {
-                    const int timeoutMs = 100;
-                    pipeConn.Connect(timeoutMs);
-                    pipeConn.ReadMode = PipeTransmissionMode.Message;
+			thread.IsBackground = true;
+			thread.Start();
 
-                    string queryString = GetQueryParams();
-                    if (!string.IsNullOrEmpty(queryString))
-                    {
-                        byte[] bytesToWrite = Encoding.UTF8.GetBytes(queryString);
-                        pipeConn.Write(bytesToWrite, 0, bytesToWrite.Length);
-                        pipeConn.WaitForPipeDrain();
-                    }
-                    secondInstance = true;
+			return true;
+		}
 
-                    pipeConn.Close();
-                }
-                catch (TimeoutException)
-                {
-                }
-            }
+		protected override void OnStartup(StartupEventArgs e)
+		{
+			if (!TryStartUniqueInstance())
+			{
+				Shutdown();
+				return;
+			}
 
-            if (secondInstance) //already sent message to pipe
-            {
-                Shutdown();
-                return;
-            }
+			LocalMachineInfo.Current.Update();
 
-            //we are the only app, start the server
-            StartPipeServer();
+			base.OnStartup(e);
+		}
 
-            LocalMachineInfo.Current.Update();
-            base.OnStartup(e);
-        }
+		public void RequestShutdown()
+		{
+			if (m_shutdownRequested) return;
+			m_shutdownRequested = true;
 
-        private void UncaughtException(Exception ex)
-        {
-            MessageBox.Show(
-                "It wasn't your fault, but something went really wrong.\r\nThe application will now exit\r\nException Details:\r\n" +
-                ex,
-                "Unhandled exception", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+			foreach (Window window in Windows.Cast<Window>())
+			{
+				window.Close();
+			}
 
-        private void UncaughtUiThreadException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            _isUncaughtUiThreadException = true;
-            UncaughtException(e.Exception);
-        }
+			m_cancellationTokenSource.Cancel();
 
-        private void UncaughtThreadException(object sender, UnhandledExceptionEventArgs e)
-        {
-            if (!_isUncaughtUiThreadException)
-                UncaughtException(e.ExceptionObject as Exception);
-        }
+			Shutdown();
 
-        public sealed class LaunchCommandString
-        {
-            public string QueryString;
+			/*
+			async void ShutdownAsync()
+			{
+				const int Timeout = 5000;
+				var shutdownTask = Task.WhenAll(m_shutdownCleanup.Select(async n =>
+				{
+					try
+					{
+						await n.DisposeAsync().AsTask();
+					}
+					catch (OperationCanceledException ex)
+					{
+					}
+				}));
+				//await Task.WhenAny(shutdownTask, Task.Delay(Timeout));
+				var delayTask = Task.Delay(Timeout);
+				bool timeout = await Task.WhenAny(shutdownTask, delayTask) == delayTask;
 
-            public LaunchCommandString(string queryString)
-            {
-                QueryString = queryString;
-            }
-        }
+				Shutdown();
+			}
+			ShutdownAsync();
+			*/
+		}
 
-        private class ReadParams
-        {
-            public readonly MemoryStream MessageStr;
-            public readonly NamedPipeServerStream PipeSvr;
-            public readonly byte[] ReadBuffer;
+		void ApplicationStartup(object sender, StartupEventArgs e)
+		{
+			var mainWindow = new MainWindow
+			{
+				DataContext = m_serviceProvider.CreateInstance<MainWindowViewModel>()
+			};
 
-            public ReadParams(NamedPipeServerStream pipeSvr, MemoryStream msgStr, byte[] readBuffer)
-            {
-                PipeSvr = pipeSvr;
-                MessageStr = msgStr;
-                ReadBuffer = readBuffer;
-            }
-        }
-    }
+			ShutdownMode = ShutdownMode.OnExplicitShutdown;
+			mainWindow.Closed += (object sender, EventArgs e) => RequestShutdown();
+
+			mainWindow.Show();
+		}
+
+		void ConfigureServices(ServiceCollection services)
+		{
+			services.AddSingleton(new AppCancellation(m_cancellationTokenSource.Token));
+			services.AddSingleton<HttpClient>();
+			services.AddSingleton<ResourceLocator>();
+			services.AddSingleton<GameLauncher>();
+			services.AddSingleton<ModUpdater>();
+			services.AddSingleton<MotdUpdater>();
+			services.AddSingleton<ServerUpdater>();
+			services.AddSingleton<TorrentClient>();
+		}
+
+		void UncaughtException(Exception ex)
+		{
+			MessageBox.Show(
+				"It wasn't your fault, but something went really wrong.\r\nThe application will now exit\r\nException Details:\r\n" +
+				ex,
+				"Unhandled exception", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+
+		void UncaughtUiThreadException(object sender, DispatcherUnhandledExceptionEventArgs e)
+		{
+			m_isUncaughtUiThreadException = true;
+			UncaughtException(e.Exception);
+		}
+
+		void UncaughtThreadException(object sender, UnhandledExceptionEventArgs e)
+		{
+			if (!m_isUncaughtUiThreadException)
+				UncaughtException(e.ExceptionObject as Exception);
+		}
+	}
 }

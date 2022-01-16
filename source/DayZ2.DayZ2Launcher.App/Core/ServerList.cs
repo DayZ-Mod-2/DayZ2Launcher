@@ -1,169 +1,161 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Threading;
-using Caliburn.Micro;
-using DayZ2.DayZ2Launcher.App.Ui;
-using DayZ2.DayZ2Launcher.App.Ui.Controls;
+using System.Threading.Tasks;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-    public class ServerList : ViewModelBase,
-        IHandle<RefreshServerRequest>
-    {
-        private bool _downloadingServerList;
-        private bool _isRunningRefreshBatch;
-        private ObservableCollection<Server> _items;
-        private ObservableCollection<Server> _oldItems;
+	public class Filters
+	{
 
-        private ServerBatchRefresher _refreshAllBatch;
+	}
 
-        public ServerList()
-        {
-            Items = new ObservableCollection<Server>();
-        }
+	public struct Player
+	{
+		public string Name { get; set; }
+		public int Score { get; set; }
+		public string Duration { get; set; }
+	}
 
-        public ServerBatchRefresher RefreshAllBatch
-        {
-            get { return _refreshAllBatch; }
-            private set
-            {
-                _refreshAllBatch = value;
-                PropertyHasChanged("RefreshAllBatch");
-            }
-        }
+	public enum ServerDifficulty
+	{
+		Recruit = 0,
+		Regular = 1,
+		Veteran = 2,
+		Mercenary = 3
+	}
 
-        public ObservableCollection<Server> Items
-        {
-            get { return _items; }
-            private set
-            {
-                _items = value;
-                PropertyHasChanged("Items");
-            }
-        }
+	public enum ServerState
+	{
+		None,
+		SelectingMission,
+		EditingMission,
+		AssigningRoles,
+		SendingMission,
+		LoadingGame,
+		Briefing,
+		Playing,
+		Debriefing,
+		MissionAborted
+	}
 
-        public bool DownloadingServerList
-        {
-            get { return _downloadingServerList; }
-            set
-            {
-                _downloadingServerList = value;
-                PropertyHasChanged("DownloadingServerList");
-            }
-        }
+	public enum ServerPlatform
+	{
+		Undefined = 0,
+		Windows = 'w',
+		Linux = 'l'
+	}
 
-        public void Handle(RefreshServerRequest message)
-        {
-            if (_isRunningRefreshBatch)
-                return;
+	public enum ServerPerspective
+	{
+		FirstPerson,
+		ThirdPerson
+	}
 
-            _isRunningRefreshBatch = true;
-            App.Events.Publish(new RefreshingServersChange(true));
-            RefreshAllBatch = message.Batch;
-            RefreshAllBatch.RefreshAllComplete += RefreshAllBatchOnRefreshAllComplete;
-            RefreshAllBatch.RefreshAll();
-        }
+	public class Server
+	{
+		public string Name;
+		public readonly string Hostname;
+		public readonly ushort GamePort;
+		public readonly ushort QueryPort;
+		public bool IsResponding;
+		public string Version;
+		public string RequiredVersion;
+		public string RequiredBuildNo;
+		public bool EqualModRequired;
+		public bool Lock;
+		public bool VerifySignatures;
+		public bool Battleye = false;
+		public bool Dedicated;
+		public long? Ping;
+		public int Slots;
+		public int PlayerCount;
+		public int FreeSlots => Slots - PlayerCount;
+		public IList<Player> Players;
+		public IList<string> Mods;
+		public ServerDifficulty Difficulty;
+		public ServerPerspective Perspective;
+		public ServerState State;
+		public string GameType;
+		public string Language;
+		public string LatLong;
+		public ServerPlatform Platform = ServerPlatform.Undefined;
+		public string ContentLoadedHash;
+		public string Country;
+		public string TimeLeft;
+		public bool IsFavorite;
 
-        public void GetAndUpdateAll()
-        {
-            GetAll(() => UpdateAll());
-        }
+		public event EventHandler<EventArgs> RefreshStarted;
+		public event EventHandler<EventArgs> RefreshFinished;
+		public event EventHandler<EventArgs> Refreshed;
 
-        private void GetAll(Action uiThreadOnComplete)
-        {
-            DownloadingServerList = true;
-            new Thread(() =>
-            {
-                List<Server> servers = GetAllSync();
-                Execute.OnUiThread(() =>
-                {
-                    _oldItems = Items;
-                    Items = new ObservableCollection<Server>(servers);
-                    DownloadingServerList = false;
-                    if (uiThreadOnComplete != null)
-                        uiThreadOnComplete();
-                });
-            }).Start();
-        }
+		public Server(ServerListInfo info)
+		{
+			Hostname = info.Hostname;
+			GamePort = info.Port;
+			QueryPort = (ushort)(info.Port + 1);
+			Mods = info.Mods;
+		}
 
-        private List<Server> GetAllSync()
-        {
-            string list = "";
-            {
-                string serverListUrl = "https://www.perry-swift.de/dayz2/serverlist.txt";
-                LocatorInfo locator = CalculatedGameSettings.Current.Locator;
-                if (locator != null && locator.ServerListUrl != null)
-                    serverListUrl = locator.ServerListUrl;
+		public async Task RefreshAsync(CancellationToken cancellationToken)
+		{
+			try
+			{
+				RefreshStarted?.Invoke(this, EventArgs.Empty);
+				await ArmaServerQuery.Run(this, cancellationToken);
+				IsResponding = true;
+			}
+			catch (TimeoutException)
+			{
+				IsResponding = false;
+			}
+			finally
+			{
+				RefreshFinished?.Invoke(this, EventArgs.Empty);
+			}
+			Refreshed?.Invoke(this, EventArgs.Empty);
+		}
+	}
 
-                if (!string.IsNullOrWhiteSpace(serverListUrl))
-                {
-                    using (var wc = new WebClient())
-                    {
-                        try
-                        {
-                            list = wc.DownloadString(new Uri(serverListUrl));
-                        }
-                        catch (Exception)
-                        {
-                        }
-                    }
-                }
-            }
 
-            if (string.IsNullOrEmpty(list))
-                return new List<Server>(); //Empty list.. Too bad.
+	public class ServerDiscoveredEventArgs : EventArgs
+	{
+		public Server Server { get; private set; }
 
-            List<Server> fullList = list
-                .Split('\n').Select(line =>
-                {
-                    string[] serverInfo = line.Split(';');
-                    var server = new Server("", 0, "", "", 0);
-                    if (serverInfo.Count() > 5)
-                    {
-                        string queryHostname = serverInfo[1];
-                        ushort joinPort = (ushort)serverInfo[2].TryInt();
-                        string password = serverInfo[3];
-                        string mod = serverInfo[4];
-                        ushort queryPort = (ushort)serverInfo[5].TryInt();
+		public ServerDiscoveredEventArgs(Server server)
+		{
+			Server = server;
+		}
+	}
 
-                        server = new Server(queryHostname, joinPort, password, mod, queryPort);
-                    }
+	public class ServerList
+	{
+		public List<Server> Servers { get; private set; } = new();
 
-                    server.Settings = new SortedDictionary<string, string>
-                    {
-                        {"hostname", serverInfo[0]}
-                    };
+		public event EventHandler<ServerDiscoveredEventArgs> ServerDiscovered;
 
-                    return server;
-                }).ToList();
+		public void SetServers(IList<ServerListInfo> servers)
+		{
+			Servers.Clear();
+			foreach (ServerListInfo info in servers)
+			{
+				Server server = new Server(info);
+				Servers.Add(server);
+				ServerDiscovered?.Invoke(this, new ServerDiscoveredEventArgs(server));
+			}
+		}
 
-            return fullList;
-        }
+		public async Task RefreshAllAsync(IProgress<int> progress, CancellationToken cancellationToken)
+		{
+			int i = 0;
+			async Task Refresh(Server s)
+			{
+				await s.RefreshAsync(cancellationToken);
+				progress.Report(++i);
+			}
 
-        public void UpdateAll()
-        {
-            var batch = new ServerBatchRefresher("Refreshing all servers...", Items, _oldItems);
-            App.Events.Publish(new RefreshServerRequest(batch));
-        }
-
-        private void RefreshAllBatchOnRefreshAllComplete()
-        {
-            RefreshAllBatch.RefreshAllComplete -= RefreshAllBatchOnRefreshAllComplete;
-            _isRunningRefreshBatch = false;
-            App.Events.Publish(new RefreshingServersChange(false));
-        }
-    }
-
-    public class RefreshingServersChange
-    {
-        public RefreshingServersChange(bool isRunning)
-        {
-            IsRunning = isRunning;
-        }
-
-        public bool IsRunning { get; set; }
-    }
+			await Task.WhenAll(Servers.Select(Refresh));
+		}
+	}
 }

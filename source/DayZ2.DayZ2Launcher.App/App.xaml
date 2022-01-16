@@ -3,32 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:shell="clr-namespace:Microsoft.Windows.Shell;assembly=Microsoft.Windows.Shell"
              xmlns:Converters="clr-namespace:DayZ2.DayZ2Launcher.App.Ui.Converters"
-             StartupUri="Ui\MainWindow.xaml">
+             Startup="ApplicationStartup">
 	<Application.Resources>
 		<Converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter" />
 		<Converters:PingToForegroundConverter x:Key="PingToForegroundConverter" />
-		<Converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter" />
+		<Converters:PingToTextConverter x:Key="PingToTextConverter" />
 		<Converters:TimeToTextConverter x:Key="TimeToTextConverter" />
 		<Converters:TimeToColorConverter x:Key="TimeToColorConverter" />
 		<Converters:ServerFullnessToColorConverter x:Key="ServerFullnessToColorConverter" />
+		<Converters:ServerResponsivenessToForegroundConverter x:Key="ServerResponsivenessToForegroundConverter" />
 		<Converters:BooleanToSelectedOptionColorConverter x:Key="BooleanToSelectedOptionColorConverter" />
+		<Converters:BooleanNegationConverter x:Key="BooleanNegationConverter" />
 		<Converters:NotNullToVisibilityConverter x:Key="NotNullToVisibilityConverter" />
-		<Converters:NonZeroToVisibilityCollapsedConverter x:Key="NonZeroToVisibilityConverter" />
 		<Converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter" />
-		<Converters:DifficultyToDescriptionConverter x:Key="DifficultyToDescriptionConverter" />
 		<Converters:NonZeroToVisibilityHiddenConverter x:Key="NonZeroToVisibilityHiddenConverter" />
-		<Converters:EnabledSettingToForegroundConverter x:Key="EnabledSettingToForegroundConverter" />
+		<Converters:PerspectiveToForegroundConverter x:Key="EnabledSettingToForegroundConverter" />
 		<Converters:BooleanToVisibilityCollapsedConverter x:Key="BooleanToVisibilityCollapsedConverter" />
-		<Converters:IsSelectedTabToColorConverter x:Key="IsSelectedTabToColorConverter" />
+		<Converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+		<Converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter" />
 		<Converters:IsFavoriteToForegroundConverter x:Key="IsFavoriteToForegroundConverter" />
 		<Converters:UpdateStatusToForegroundConverter x:Key="UpdateStatusToForegroundConverter" />
+		<Converters:UpdateStatusToTextConverter x:Key="UpdateStatusToTextConverter" />
 		<Converters:UpdateStatusToStyleConverter x:Key="UpdateStatusToStyleConverter" />
-		<Converters:ServerRevisionCountToWidthConverter x:Key="ServerRevisionCountToWidthConverter" />
-		<Converters:CountsToPercentageConverter x:Key="CountsToPercentageConverter" />
 		<Converters:VersionMatchesToForegroundConverter x:Key="VersionMatchesToForegroundConverter" />
-        <Converters:HasNotesToForegroundConverter x:Key="HasNotesToForegroundConverter" />
 
-        <Style TargetType="Button" x:Key="MetroTextButtonStyle">
+		<Style TargetType="Button" x:Key="MetroTextButtonStyle">
 			<Setter Property="Foreground" Value="#CCC" />
 			<Setter Property="Cursor" Value="Hand" />
 			<Style.Triggers>
@@ -107,10 +106,10 @@
 			</Setter>
 			<Style.Triggers>
 				<Trigger Property="SortDirection" Value="Ascending">
-                    <Setter Property="Foreground" Value="#0784B5" />
+					<Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-                    <Setter Property="Foreground" Value="#0784B5" />
+					<Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 				<MultiTrigger>
 					<MultiTrigger.Conditions>
@@ -185,7 +184,7 @@
                     <Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 				<Trigger Property="SortDirection" Value="Descending">
-                    <Setter Property="Foreground" Value="#0784B5" />
+					<Setter Property="Foreground" Value="#0784B5" />
 				</Trigger>
 			</Style.Triggers>
 		</Style>

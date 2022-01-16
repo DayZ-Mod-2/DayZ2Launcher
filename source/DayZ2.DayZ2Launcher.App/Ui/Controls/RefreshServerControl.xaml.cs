@@ -1,29 +1,28 @@
-﻿using System.Windows;
+﻿using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using DayZ2.DayZ2Launcher.App.Core;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.Controls
 {
-    /// <summary>
-    ///     Interaction logic for RefreshServerControl.xaml
-    /// </summary>
-    public partial class RefreshServerControl : UserControl
-    {
-        public RefreshServerControl()
-        {
-            InitializeComponent();
-        }
+	public partial class RefreshServerControl : UserControl
+	{
+		public RefreshServerControl()
+		{
+			InitializeComponent();
+		}
 
-        private void RefreshServer(object sender, RoutedEventArgs e)
-        {
-            var server = (Server)((Control)sender).DataContext;
-            server.BeginUpdate(server1 => { }, true);
-        }
-
-        private void RefreshServerDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            e.Handled = true;
-        }
-    }
+		void Button_Click(object sender, RoutedEventArgs e)
+		{
+			if (DataContext is IRefreshable refreshable)
+			{
+				refreshable.Refresh();
+			}
+		}
+	}
 }

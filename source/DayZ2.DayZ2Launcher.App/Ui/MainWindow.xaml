@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ServerList="clr-namespace:DayZ2.DayZ2Launcher.App.Ui.ServerList"
         xmlns:Ui="clr-namespace:DayZ2.DayZ2Launcher.App.Ui"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         Title="DayZ2 Launcher"
         MinHeight="590" MinWidth="900"
         Height="590" Width="900"
@@ -30,13 +31,6 @@
 			<Ui:UpdatesView DataContext="{Binding UpdatesViewModel}"
 			                Grid.RowSpan="5"
 			                Width="205"
-			                HorizontalAlignment="Right"
-			                Canvas.ZIndex="1000"
-			                Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, FallbackValue=Hidden}" />
-
-			<Ui:PluginsView DataContext="{Binding PluginsViewModel}"
-			                Grid.RowSpan="5"
-			                Width="200"
 			                HorizontalAlignment="Right"
 			                Canvas.ZIndex="1000"
 			                Visibility="{Binding IsVisible, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, FallbackValue=Hidden}" />
@@ -69,8 +63,6 @@
 					            Margin="0 10 20 0"
 					            Grid.Row="0"
 					            Orientation="Horizontal">
-
-
 						<Button
 							Margin="12 0 0 0"
 							Style="{StaticResource MetroTextButtonStyle}"
@@ -94,7 +86,7 @@
 						<Button
 							Margin="12 0 0 0"
 							Style="{StaticResource MetroTextButtonStyle}"
-							Click="ToggleMaxamimizeClick">
+							Click="ToggleMaximizeClick">
 							<Button.Template>
 								<ControlTemplate>
 									<Border Background="#222"
@@ -143,28 +135,22 @@
 						Grid.Row="1">
 
 						<StackPanel
-							Orientation="Horizontal"
-							Visibility="{Binding ServerList.DownloadingServerList, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, ConverterParameter=true}">
+							Orientation="Horizontal">
 							<StackPanel Orientation="Horizontal"
 							            HorizontalAlignment="Right"
-							            Visibility="{Binding ServerList.RefreshAllBatch.UnprocessedServersCount, Converter={StaticResource CountToVisibilityConverter}}">
-								<Path
-									Data="F1M2278.07,1272.94C2265.47,1272.94,2254.91,1281.77,2252.19,1293.55L2241.99,1293.43 2255.8,1315.74 2270.14,1293.77 2260.66,1293.66C2263.13,1286.36 2269.96,1281.07 2278.07,1281.07 2288.24,1281.07 2296.52,1289.35 2296.52,1299.52 2296.52,1309.7 2288.24,1317.98 2278.07,1317.98 2274.31,1317.98 2270.81,1316.84 2267.89,1314.9L2263.45,1321.7C2267.65,1324.48 2272.67,1326.11 2278.07,1326.11 2292.73,1326.11 2304.65,1314.18 2304.65,1299.52 2304.65,1284.87 2292.73,1272.94 2278.07,1272.94"
-									Stretch="Uniform"
-									Fill="#06688F"
-									Width="14" Height="14" Margin="0,3,5,0" />
-                                <TextBlock Text="{Binding ServerList.RefreshAllBatch.InProgressText}" Foreground="#06688F" FontSize="14" />
+							            Visibility="{Binding ServerListViewModel.IsRunning, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}">
+								<TextBlock Text="Refreshing all servers..." Foreground="#06688F" FontSize="14" />
                                 <TextBlock Text="( " Foreground="#06688F" FontSize="12" Margin="0 2 0 0" />
-								<TextBlock Text="{Binding ServerList.RefreshAllBatch.ProcessedServersCount}" Foreground="#FFF" Margin="0 2 0 0"
+								<TextBlock Text="{Binding ServerListViewModel.ProcessedServers}" Foreground="#FFF" Margin="0 2 0 0"
 								           FontSize="12" />
 								<TextBlock Text=" / " Foreground="#FFF" FontSize="12" Margin="0 2 0 0" />
-                                <TextBlock Text="{Binding ServerList.RefreshAllBatch.TotalCount}" Foreground="#06688F" FontSize="12"
+                                <TextBlock Text="{Binding ServerListViewModel.TotalServers}" Foreground="#06688F" FontSize="12"
 								           Margin="0 2 0 0" />
                                 <TextBlock Text=" )" Foreground="#06688F" FontSize="12" Margin="0 2 0 0" />
 							</StackPanel>
 							<Button Click="RefreshAll_Click"
 							        HorizontalAlignment="Right"
-							        Visibility="{Binding ServerList.RefreshAllBatch.UnprocessedServersCount, Converter={StaticResource ZeroToVisibilityConverter}}"
+							        Visibility="{Binding ServerListViewModel.CanRefresh, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 							        Margin="0 0 0 0"
 							        Style="{StaticResource MetroTextButtonStyle}">
 								<Button.Template>
@@ -177,7 +163,7 @@
 													Stretch="Uniform"
 													Fill="{TemplateBinding Foreground}"
 													Width="14" Height="14" Margin="0,3,3,0" />
-												<TextBlock Text="refresh all servers"
+												<TextBlock Text="Refresh All Servers"
 												           FontSize="14"
 												           Padding="2 0 0 0"
 												           VerticalAlignment="Center"
@@ -189,23 +175,10 @@
 							</Button>
 						</StackPanel>
 
-						<StackPanel
-							Orientation="Horizontal"
-							Visibility="{Binding ServerList.DownloadingServerList, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}">
-
-							<Path
-								Data="F1M624.846,564.374L624.846,546.742 645.182,567.074 645.182,527.111 658.123,527.111 658.123,566.933 678.352,546.705 678.321,564.374 651.584,591.111 624.846,564.374z"
-								Stretch="Uniform" Fill="#06688F" Width="14" Height="14" Margin="0,3,3,0" />
-							<TextBlock Text="downloading server list... "
-							           Foreground="#06688F"
-							           FontSize="14"
-							           TextAlignment="Right" />
-						</StackPanel>
-
 						<Button
 							Margin="16 0 0 0"
 							Click="Updates_Click"
-							Style="{Binding UpdatesViewModel.Status, Converter={StaticResource UpdateStatusToStyleConverter}, FallbackValue={StaticResource MetroTextButtonStyle}}">
+							Style="{Binding UpdatesViewModel.OverallStatus, Converter={StaticResource UpdateStatusToStyleConverter}, FallbackValue={StaticResource MetroTextButtonStyle}}">
 							<Button.Template>
 								<ControlTemplate>
 									<Border IsHitTestVisible="True"
@@ -220,35 +193,7 @@
 												Width="14"
 												Height="14"
 												Margin="0,4,0,0" />
-											<TextBlock Text="versions"
-											           VerticalAlignment="Top"
-											           Margin="4 0 0 0"
-											           FontSize="14"
-											           Foreground="{TemplateBinding Foreground}" />
-										</StackPanel>
-									</Border>
-								</ControlTemplate>
-							</Button.Template>
-						</Button>
-						<Button
-							Margin="16 0 0 0"
-							Click="Plugins_Click"
-							Style="{StaticResource MetroTextButtonStyle}">
-							<Button.Template>
-								<ControlTemplate>
-									<Border IsHitTestVisible="True"
-									        Margin="0"
-									        Padding="0"
-									        Background="#222">
-										<StackPanel Orientation="Horizontal">
-											<Path
-												Data="F1 M49.1958,33.5217 C53.144,37.4699 53.4908,43.6557 50.2361,47.9969 L55.9133,53.6742 C56.5317,54.2925 56.5317,55.295 55.9133,55.9134 55.295,56.5317 54.2925,56.5317 53.6742,55.9134 L47.9969,50.2361 C43.6557,53.4908 37.4698,53.1441 33.5216,49.1959 L36.8804,45.8371 34.0814,43.0381 C33.1539,42.1107 33.1539,40.6069 34.0814,39.6794 35.0089,38.7519 36.5127,38.7519 37.4402,39.6794 L40.2392,42.4784 42.4783,40.2392 39.6794,37.4402 C38.7519,36.5127 38.7519,35.009 39.6794,34.0815 40.6069,33.154 42.1106,33.154 43.0381,34.0815 L45.8371,36.8804 49.1958,33.5217 z"
-												Stretch="Uniform"
-												Fill="{TemplateBinding Foreground}"
-												Width="14.322"
-												Height="14.321"
-												Margin="0,4,0,0" />
-											<TextBlock Text="plugins"
+											<TextBlock Text="Versions"
 											           VerticalAlignment="Top"
 											           Margin="4 0 0 0"
 											           FontSize="14"
@@ -277,7 +222,7 @@
 												Width="14"
 												Height="14"
 												Margin="0,4,0,0" />
-											<TextBlock Text="settings"
+											<TextBlock Text="Settings"
 											           VerticalAlignment="Top"
 											           Margin="4 0 0 0"
 											           FontSize="14"
@@ -307,9 +252,9 @@
 					Background="Transparent"
 					Foreground="#0784B5"
 					Margin="-30 0 -20 0"
-					Visibility="{Binding ServerList.RefreshAllBatch.UnprocessedServersCount, Converter={StaticResource NonZeroToVisibilityHiddenConverter}}"
-					Maximum="{Binding ServerList.RefreshAllBatch.TotalCount, FallbackValue=0}"
-					Value="{Binding ServerList.RefreshAllBatch.ProcessedServersCount, FallbackValue=0}" />
+					Visibility="{Binding ServerListViewModel.IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}"
+					Maximum="{Binding ServerListViewModel.TotalServers, FallbackValue=0}"
+					Value="{Binding ServerListViewModel.ProcessedServers, FallbackValue=0}" />
 
 				<ListBox ItemsSource="{Binding Tabs}"
 				         Grid.Row="1"
@@ -364,12 +309,14 @@
 							<ServerList:ServerListView DataContext="{Binding ServerListViewModel}" />
 						</Grid>
 					</ScrollViewer>
+					
 					<Grid Grid.Row="1">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="Auto" />
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="Auto" />
 						</Grid.ColumnDefinitions>
+						
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0">
 							<Button VerticalAlignment="Center" BorderBrush="Transparent" Height="23" BorderThickness="0"
 							        Click="DiscordImage_Click" HorizontalAlignment="Left" Cursor="Hand" Margin="0">
@@ -381,15 +328,90 @@
 								<Image Source="../Assets/Images/discord_logo.png" ImageFailed="Image_ImageFailed" />
 							</Button>
 						</StackPanel>
-                        <Border BorderBrush="#06688F" BorderThickness="2" ClipToBounds="True" CornerRadius="7" x:Name="AnnouncementBorder"
-						        Margin="5,0,0,0" Grid.Column="1" Padding="0" VerticalAlignment="Center" Height="25">
+
+						<Border BorderBrush="#06688F" BorderThickness="2" ClipToBounds="True" CornerRadius="7" x:Name="AnnouncementBorder"
+						        Margin="10,0,0,0" Grid.Column="1" Padding="0" VerticalAlignment="Center" Height="25">
 							<Canvas x:Name="Marquee" Margin="0">
 								<Canvas Margin="0" ClipToBounds="True" x:Name="canMain" Width="{Binding ActualWidth, ElementName=Marquee}"
 								        Height="23">
-									<TextBlock x:Name="AnnouncementMessage" FontSize="15" Text="" VerticalAlignment="Center" Foreground="WHITE" />
+									<TextBlock x:Name="AnnouncementMessage" FontSize="15" Text="{Binding UpdatesViewModel.Motd}" VerticalAlignment="Center" Foreground="WHITE" />
 								</Canvas>
 							</Canvas>
 						</Border>
+
+						<StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Column="2">
+							<StackPanel.Resources>
+								<Style TargetType="{x:Type Button}" x:Key="buttonStyle" BasedOn="{StaticResource MetroTextButtonStyle}">
+									<Setter Property="Opacity" Value="0.7"/>
+									<Setter Property="Template">
+										<Setter.Value>
+											<ControlTemplate TargetType="{x:Type Button}">
+												<Border
+													Width="{TemplateBinding Width}"
+													Height="{TemplateBinding Height}">
+													<ContentPresenter
+														HorizontalAlignment="Center"
+														VerticalAlignment="Center"
+														Content="{TemplateBinding Content}"/>
+												</Border>
+												<ControlTemplate.Triggers>
+													<Trigger Property="IsMouseOver" Value="True">
+														<Setter Property="Opacity" Value="1" />
+													</Trigger>
+												</ControlTemplate.Triggers>
+											</ControlTemplate>
+										</Setter.Value>
+									</Setter>
+								</Style>
+							</StackPanel.Resources>
+
+							<Button
+								Margin="10 0 0 0"
+								Click="LaunchGameButton_Click"
+								Style="{StaticResource MetroTextButtonStyle}"
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center">
+								<Button.Template>
+									<ControlTemplate>
+										<Border IsHitTestVisible="True"
+										        Margin="0"
+										        Padding="0"
+										        Background="Transparent">
+											<StackPanel Orientation="Horizontal">
+												<Path
+													Data="M8.566 17.842c-.945 2.462-3.678 4.012-6.563 4.161.139-2.772 1.684-5.608 4.209-6.563l.51.521c-1.534 1.523-2.061 2.765-2.144 3.461.704-.085 2.006-.608 3.483-2.096l.505.516zm-1.136-11.342c-1.778-.01-4.062.911-5.766 2.614-.65.649-1.222 1.408-1.664 2.258 1.538-1.163 3.228-1.485 5.147-.408.566-1.494 1.32-3.014 2.283-4.464zm5.204 17.5c.852-.44 1.61-1.013 2.261-1.664 1.708-1.706 2.622-4.001 2.604-5.782-1.575 1.03-3.125 1.772-4.466 2.296 1.077 1.92.764 3.614-.399 5.15zm11.312-23.956c-.428-.03-.848-.044-1.261-.044-9.338 0-14.465 7.426-16.101 13.009l4.428 4.428c5.78-1.855 12.988-6.777 12.988-15.993v-.059c-.002-.437-.019-.884-.054-1.341zm-5.946 7.956c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2z"
+													Stretch="Uniform"
+													Fill="{TemplateBinding Foreground}"
+													Width="14"
+													Height="14"
+													Margin="4,0,0,0" />
+												<TextBlock Text="Launch Game"
+												           VerticalAlignment="Center"
+												           Margin="4 0 0 0"
+												           FontSize="14"
+												           Foreground="{TemplateBinding Foreground}" />
+											</StackPanel>
+										</Border>
+									</ControlTemplate>
+								</Button.Template>
+							</Button>
+						</StackPanel>
+
+						<!--
+						<StackPanel Grid.Column="3">
+						<Button
+							Margin="5,0,0,0"
+							Click="LaunchGameButton_Click"
+							Style="{StaticResource MetroTextButtonStyle}"
+							Height="23"
+							Background="Transparent"
+							Cursor="Hand"
+							BorderThickness="0">
+							Launch
+						</Button>
+					</StackPanel>-->
+
+						<!--
 						<ItemsControl Grid.Column="2" ItemsSource="{Binding Launcher.LaunchButtons}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
@@ -403,6 +425,7 @@
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
 						</ItemsControl>
+						-->
 					</Grid>
 				</Grid>
 			</Grid>

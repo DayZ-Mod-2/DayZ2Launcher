@@ -7,35 +7,98 @@
              xmlns:Controls="clr-namespace:DayZ2.DayZ2Launcher.App.Ui.Controls" mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
 	<Grid>
-		<!--
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="190"/>
-			<ColumnDefinition/>
-		</Grid.ColumnDefinitions>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition/>
-		</Grid.RowDefinitions>
-		<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="190">
-			<TextBlock Text="{Binding ListViewModel.Servers.Count}" Foreground="#FFF" FontSize="16"/>
-			<TextBlock Text=" results " Foreground="#FFF" FontSize="16"/>
-			<TextBlock Text="{Binding ListViewModel.RawServers.Count, StringFormat={} ({0} total)}" Foreground="#CCC" Margin="2 5 0 0" FontSize="11"/>
-		</StackPanel>
-        -->
-		<!--
-		<ScrollViewer BorderThickness="0"
-					  Padding="0 0 4 0"
-					  Margin="0 0 5 0"
-					  Grid.Row="1"
-					  VerticalScrollBarVisibility="Auto">
-			
-	
-		
-		</ScrollViewer>
-        -->
-		<Controls:ServerListGrid DataContext="{Binding ListViewModel.Servers}"
-		                         HorizontalAlignment="Stretch"
-		                         VerticalAlignment="Stretch"
-		                         Loaded="ServerListGrid_Loaded_1" />
+		<DataGrid x:Name="ServerDataGrid"
+		          ItemsSource="{Binding Servers}"
+		          AutoGenerateColumns="False"
+		          Background="Transparent"
+		          VerticalScrollBarVisibility="Disabled"
+		          HorizontalScrollBarVisibility="Disabled"
+		          Style="{StaticResource MetroDataGridStyle}"
+		          ColumnHeaderStyle="{StaticResource MetroDataGridHeader}"
+		          CellStyle="{StaticResource MetroDataGridCellStyle}"
+		          SelectionMode="Single"
+		          SelectionUnit="FullRow"
+		          CanUserResizeRows="False"
+		          CanUserResizeColumns="False"
+		          Foreground="#DDD"
+		          HorizontalGridLinesBrush="#333"
+		          VerticalGridLinesBrush="#333"
+		          HeadersVisibility="Column"
+		          SelectedCellsChanged="ServerDataGrid_SelectedCellsChanged"
+		          GridLinesVisibility="All">
+
+			<DataGrid.RowStyle>
+				<Style BasedOn="{StaticResource MetroDataGridRowStyle}" TargetType="DataGridRow">
+					<Setter Property="Height" Value="21"/>
+					<EventSetter Event="KeyDown" Handler="RowKeyDown" />
+					<EventSetter Event="KeyUp" Handler="RowKeyUp" />
+				</Style>
+			</DataGrid.RowStyle>
+
+			<DataGrid.Columns>
+				<DataGridTemplateColumn Header="NAME"
+				                        HeaderStyle="{StaticResource MetroDataGridHeader}"
+				                        SortMemberPath="Name"
+				                        Width="*">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<ContentControl MouseDoubleClick="ServerDoubleClick">
+								<TextBlock Text="{Binding Name}"
+								           Margin="4,0,0,0"
+								           Foreground="{Binding IsResponding, Converter={StaticResource ServerResponsivenessToForegroundConverter}}"/>
+							</ContentControl>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+
+				<DataGridTemplateColumn Header="1ST/3RD"
+				                        HeaderStyle="{StaticResource MetroDataGridHeaderRight}"
+				                        SortMemberPath="Perspective"
+				                        Width="80">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Controls:ServerSettingsControl/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+
+				<DataGridTemplateColumn Header="PLAYERS"
+				                        HeaderStyle="{StaticResource MetroDataGridHeaderRight}"
+				                        SortMemberPath="Fullness"
+				                        Width="66">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Controls:PlayersControl/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+
+				<DataGridTemplateColumn Header="PING"
+				                        HeaderStyle="{StaticResource MetroDataGridHeaderRight}"
+				                        SortMemberPath="Ping"
+				                        Width="57">
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Controls:PingControl/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+
+				<!-- Refresh -->
+				<DataGridTemplateColumn>
+					<DataGridTemplateColumn.CellStyle>
+						<Style TargetType="DataGridCell">
+							<Setter Property="BorderThickness" Value="3"></Setter>
+							<Setter Property="BorderBrush" Value="Transparent"></Setter>
+						</Style>
+					</DataGridTemplateColumn.CellStyle>
+					<DataGridTemplateColumn.CellTemplate>
+						<DataTemplate>
+							<Controls:RefreshServerControl HorizontalAlignment="Center"/>
+						</DataTemplate>
+					</DataGridTemplateColumn.CellTemplate>
+				</DataGridTemplateColumn>
+			</DataGrid.Columns>
+		</DataGrid>
 	</Grid>
 </UserControl>

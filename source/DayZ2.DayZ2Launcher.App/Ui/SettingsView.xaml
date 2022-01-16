@@ -8,50 +8,58 @@
              xmlns:beh="clr-namespace:DayZ2.DayZ2Launcher.App.Ui.Behaviors"
              Background="#333333"
              d:DesignHeight="800" d:DesignWidth="520">
-	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
-		<StackPanel Margin="18 5 18 0">
+	<Grid>
+		<DockPanel Margin="18 5 18 10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 			<TextBlock Text="settings"
 			           Foreground="#06688F"
 			           Margin="0,0,0,5"
-			           FontSize="24" FontFamily="./#Bebas Neue" />
-			<Grid>
+			           FontSize="24" FontFamily="./#Bebas Neue"
+			           DockPanel.Dock="Top"/>
+
+			<Grid DockPanel.Dock="Top">
 				<Grid.ColumnDefinitions>
 					<ColumnDefinition Width="25*" />
 					<ColumnDefinition Width="50*" />
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
 					<RowDefinition />
-					<RowDefinition />
-					<RowDefinition />
 				</Grid.RowDefinitions>
 				<CheckBox Content="Windowed Mode" Grid.Row="0" Grid.Column="0"
 				          IsChecked="{Binding Settings.GameOptions.WindowedMode, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0" />
+				<!--
 				<CheckBox Content="Multi GPU Support (Windows Vista/7 only)" Grid.Row="0" Grid.Column="1"
 				          IsChecked="{Binding Settings.GameOptions.MultiGpu, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0" />
+				
 				<CheckBox Content="24-hr Time Format" Grid.Row="1" Grid.Column="0"
 				          IsChecked="{Binding Settings.GameOptions.TwentyFourHourTimeFormat, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0" />
-				<CheckBox Content="Close DayZ Launcher (after launching game)" Grid.Row="1" Grid.Column="1"
+				-->
+				<CheckBox Content="Close DayZ Launcher (after launching game)" Grid.Row="0" Grid.Column="1"
 				          IsChecked="{Binding Settings.GameOptions.CloseDayZLauncher, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0" />
+				<!--
 				<CheckBox Content="Launch using Steam" Grid.Row="2" Grid.Column="0"
 				          IsChecked="{Binding Settings.GameOptions.LaunchUsingSteam, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0"
 				          IsEnabled="False" />
+				
 				<CheckBox Content="Always run full systems check (no fast-resume)" Grid.Row="2" Grid.Column="1"
 				          IsChecked="{Binding Settings.TorrentOptions.DisableFastResume, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
 				          Margin="0 8 0 0" />
+				-->
 			</Grid>
 
-			<StackPanel Margin="0 8 0 0">
+			<StackPanel
+				Margin="0 8 0 0"
+				DockPanel.Dock="Top">
 				<TextBlock Text="Additional Launch Parameters"
 				           Foreground="#DDDDDD" />
 				<TextBox Text="{Binding Settings.GameOptions.AdditionalStartupParameters, Mode=TwoWay}"
@@ -76,8 +84,11 @@
 					</TextBox>
 				</Grid>
 			</StackPanel>
-			<StackPanel Margin="0,10,0,0">
 
+			<StackPanel
+				Margin="0,10,0,0"
+				DockPanel.Dock="Top"
+				>
 				<TextBlock Text="GAME DIRECTORIES"
 				           FontWeight="Bold"
 				           Margin="0,0,0,5"
@@ -131,6 +142,8 @@
 						        Click="BrowseA2OA_Click" VerticalAlignment="Bottom" Margin="5,0" HorizontalAlignment="Center" />
 					</Grid>
 				</StackPanel>
+
+				<!--
 				<Grid Margin="0,5,0,0">
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="Auto" />
@@ -148,9 +161,12 @@
 					<TextBox Grid.Column="3" IsEnabled="{Binding CustomBranchEnabled}" MaxLength="24"
 					         Text="{Binding Settings.GameOptions.CustomBranchPass, Mode=TwoWay}" Margin="5,0" />
 				</Grid>
+				-->
 			</StackPanel>
-			<StackPanel Margin="0,10,0,0">
 
+			<StackPanel
+				Margin="0,10,0,0"
+				DockPanel.Dock="Top">
 				<TextBlock
 					FontWeight="Bold"
 					Margin="0,0,0,5"
@@ -224,14 +240,20 @@
 					</StackPanel>
 				</StackPanel>
 			</StackPanel>
+
+			<!--
 			<TextBlock
 				FontWeight="Bold"
 				Margin="0,10,0,5"
-				Foreground="#FFFFFF">
+				Foreground="#FFFFFF"
+				DockPanel.Dock="Top">
 				<Run Text="SERVER FILTERS" />
 			</TextBlock>
 
-			<StackPanel Orientation="Horizontal">
+
+			<StackPanel
+				Orientation="Horizontal"
+				DockPanel.Dock="Top">
 				<CheckBox Content="Europe"
 				          IsChecked="{Binding Settings.IncludeEU, Mode=TwoWay}"
 				          Foreground="#DDDDDD"
@@ -245,15 +267,16 @@
 				          Foreground="#DDDDDD"
 				          Margin="0 0 5 0" />
 			</StackPanel>
-			<Border Margin="0 10 0 0"
-			        BorderBrush="#555555"
-			        BorderThickness="0 1 0 0" />
+			-->
+
 			<Button Content="Done"
 			        Style="{StaticResource MetroButtonStyle}"
 			        Background="#444444"
 			        Foreground="#EEEEEE"
 			        Padding="8 2"
-			        Click="Done_Click" HorizontalAlignment="Left" Margin="0,5,0,0" />
-		</StackPanel>
-	</ScrollViewer>
+			        Click="Done_Click" HorizontalAlignment="Left" Margin="0,5,0,0" 
+			        DockPanel.Dock="Bottom"
+			        VerticalAlignment="Bottom"/>
+		</DockPanel>
+	</Grid>
 </UserControl>

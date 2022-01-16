@@ -1,24 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{84CB1B33-1E5C-4F82-B299-A406B85282ED}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DayZ2.DayZ2Launcher.App</RootNamespace>
     <AssemblyName>DayZ2Launcher</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
     <IsWebBootstrapper>true</IsWebBootstrapper>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <PublishUrl>C:\Code\DayZ2Launcher\publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
@@ -45,28 +32,11 @@
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup />
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
@@ -74,15 +44,8 @@
     <ApplicationIcon>commanderico.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\DayZLauncher.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
@@ -91,20 +54,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\DayZLauncher.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>DayZ2.DayZ2Launcher.App.App</StartupObject>
@@ -127,337 +82,17 @@
   <PropertyGroup>
     <ManifestTimestampUrl>http://timestamp.digicert.com</ManifestTimestampUrl>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Windows.Shell, Version=3.5.41019.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Microsoft.Windows.Shell\Microsoft.Windows.Shell.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Nat">
-      <HintPath>..\packages\MonoTorrent\Mono.Nat.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoTorrent, Version=1.0.1.5, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MonoTorrent\MonoTorrent.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoTorrent.Dht, Version=0.7.1.3, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MonoTorrent\MonoTorrent.Dht.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Ookii.Dialogs.Wpf, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c15020868fd6249, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Ookii.Dialogs.1.0\lib\net40\Ookii.Dialogs.Wpf.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpCompress, Version=0.30.1.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpCompress.0.30.1\lib\net461\SharpCompress.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\System.Windows.Interactivity.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="Core\AppOptions.cs" />
-    <Compile Include="Core\Arma2Installer.cs" />
-    <Compile Include="Core\Arma2Updater.cs" />
-    <Compile Include="Core\CalculatedGameSettings.cs" />
-    <Compile Include="Core\Hash.cs" />
-    <Compile Include="Core\HttpUtility.cs" />
-    <Compile Include="Core\Unpacker.cs" />
-    <Compile Include="SteamKit2\KeyValue.cs" />
-    <Compile Include="SteamKit2\StreamHelpers.cs" />
-    <Compile Include="Core\TorrentOptions.cs" />
-    <Compile Include="Core\GUIDCalculator.cs" />
-    <Compile Include="Core\HashWebClient.cs" />
-    <Compile Include="Core\ServerBatchRefresher.cs" />
-    <Compile Include="Core\ServerRefreshQueue.cs" />
-    <Compile Include="Core\TorrentLauncher.cs" />
-    <Compile Include="Core\DayZUpdater.cs" />
-    <Compile Include="Core\FavoriteServer.cs" />
-    <Compile Include="Core\GameOptions.cs" />
-    <Compile Include="Core\GameVersions.cs" />
-    <Compile Include="Core\RecentServer.cs" />
-    <Compile Include="Core\TorrentUpdater.cs" />
-    <Compile Include="Ui\Behaviors\NumericTextBoxBehavior.cs" />
-    <Compile Include="Ui\Controls\InfoPopup.xaml.cs">
-      <DependentUpon>InfoPopup.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\FavoriteControl.xaml.cs">
-      <DependentUpon>FavoriteControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Converters\UpdateStatusToForegroundConverter.cs" />
-    <Compile Include="Ui\LaunchProgress.xaml.cs">
-      <DependentUpon>LaunchProgress.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\PingControl.xaml.cs">
-      <DependentUpon>PingControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\PlayersControl.xaml.cs">
-      <DependentUpon>PlayersControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\RefreshServerControl.xaml.cs">
-      <DependentUpon>RefreshServerControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\ServerListGrid.xaml.cs">
-      <DependentUpon>ServerListGrid.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\ServerRevisions.xaml.cs">
-      <DependentUpon>ServerRevisions.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\ServerSettingsControl.xaml.cs">
-      <DependentUpon>ServerSettingsControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\ServerStandaloneHeaderRow.xaml.cs">
-      <DependentUpon>ServerStandaloneHeaderRow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\ServerStandaloneRow.xaml.cs">
-      <DependentUpon>ServerStandaloneRow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\TimeControl.xaml.cs">
-      <DependentUpon>TimeControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Controls\VersionControl.xaml.cs">
-      <DependentUpon>VersionControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Converters\BooleanToSelectedOptionColorConverter.cs" />
-    <Compile Include="Ui\Converters\BooleanToVisibilityHiddenConverter.cs" />
-    <Compile Include="Ui\Converters\BooleanToVisibilityCollapsedConverter.cs" />
-    <Compile Include="Ui\Converters\CountsToPercentageConverter.cs" />
-    <Compile Include="Ui\Converters\CountToVisibilityConverter.cs" />
-    <Compile Include="Ui\Converters\DifficultyToDescriptionConverter.cs" />
-    <Compile Include="Ui\Converters\EnabledSettingToForegroundConverter.cs" />
-    <Compile Include="Ui\Converters\HasNotesToForegroundConverter.cs" />
-    <Compile Include="Ui\Converters\IsFavoriteToForegroundConverter.cs" />
-    <Compile Include="Ui\Converters\IsPlayingToColorConverter.cs" />
-    <Compile Include="Ui\Converters\IsSelectedTabToColorConverter.cs" />
-    <Compile Include="Ui\Converters\NonZeroToVisibilityCollapsedConverter.cs" />
-    <Compile Include="Ui\Converters\NonZeroToVisibilityHiddenConverter.cs" />
-    <Compile Include="Ui\Converters\NotNullToVisibilityConverter.cs" />
-    <Compile Include="Ui\Converters\PingToForegroundConverter.cs" />
-    <Compile Include="Ui\Converters\ServerFullnessToColorConverter.cs" />
-    <Compile Include="Ui\Converters\ServerRevisionCountToWidthConverter.cs" />
-    <Compile Include="Ui\Converters\TimeToColorConverter.cs" />
-    <Compile Include="Ui\Converters\TimeToTextConverter.cs" />
-    <Compile Include="Ui\Converters\UpdateStatusToStyleConverter.cs" />
-    <Compile Include="Ui\Converters\VersionMatchesToForegroundConverter.cs" />
-    <Compile Include="Ui\Converters\ZeroToVisibilityConverter.cs" />
-    <Compile Include="Ui\LaunchProgressViewModel.cs" />
-    <Compile Include="Ui\Favorites\FavoritesView.xaml.cs">
-      <DependentUpon>FavoritesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Favorites\FavoritesViewModel.cs" />
-    <Compile Include="Core\ServerUpdated.cs" />
-    <Compile Include="Ui\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\MainWindowViewModel.cs" />
-    <Compile Include="Ui\Recent\RecentView.xaml.cs">
-      <DependentUpon>RecentView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\Recent\RecentViewModel.cs" />
-    <Compile Include="Ui\ServerList\FiltersView.xaml.cs">
-      <DependentUpon>FiltersView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\ServerList\FiltersViewModel.cs" />
-    <Compile Include="Ui\ServerList\FilterUpdated.cs" />
-    <Compile Include="Ui\ServerList\ListViewModel.cs" />
-    <Compile Include="Ui\ServerList\ServerListView.xaml.cs">
-      <DependentUpon>ServerListView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\ServerList\ServerListViewModel.cs" />
-    <Compile Include="Ui\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\SettingsViewModel.cs" />
-    <Compile Include="Ui\PluginsView.xaml.cs">
-      <DependentUpon>PluginsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\UpdatesView.xaml.cs">
-      <DependentUpon>UpdatesView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Ui\PluginsViewModel.cs" />
-    <Compile Include="Ui\UpdatesViewModel.cs" />
-    <Compile Include="Ui\ViewModelBase.cs" />
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Caliburn.Micro\EventAggregator.cs" />
-    <Compile Include="Caliburn.Micro\ExtensionMethods.cs" />
-    <Compile Include="Core\BindableBase.cs" />
-    <Compile Include="Core\DayZLauncherUpdater.cs" />
-    <Compile Include="Core\Execute.cs" />
-    <Compile Include="Core\ExtensionMethods.cs" />
-    <Compile Include="Core\Filter.cs" />
-    <Compile Include="Core\GameLauncher.cs" />
-    <Compile Include="Core\LocalMachineInfo.cs" />
-    <Compile Include="Core\Player.cs" />
-    <Compile Include="Core\Server.cs" />
-    <Compile Include="Core\ServerDifficulty.cs" />
-    <Compile Include="Core\ServerInfo.cs" />
-    <Compile Include="Core\ServerList.cs" />
-    <Compile Include="Core\ServerQueryClient.cs" />
-    <Compile Include="Core\ServerQueryResult.cs" />
-    <Compile Include="Core\ServerSetting.cs" />
-    <Compile Include="Core\UserSettings.cs" />
-    <Compile Include="Core\WindowSettings.cs" />
-    <Page Include="Ui\Controls\InfoPopup.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\Controls\FavoriteControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\LaunchProgress.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\PingControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\PlayersControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\RefreshServerControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\ServerListGrid.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\ServerRevisions.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\ServerSettingsControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\ServerStandaloneHeaderRow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\ServerStandaloneRow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\TimeControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Controls\VersionControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\Favorites\FavoritesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\Recent\RecentView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\ServerList\FiltersView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\ServerList\ServerListView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\SettingsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Ui\PluginsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Ui\UpdatesView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
+    <Resource Include="Assets\Icons\rocket.svg" />
     <Resource Include="commanderico.ico" />
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <Resource Include="Assets\Images\discord_logo.png" />
     <Resource Include="Ui\BebasNeue.ttf" />
-    <!--<SplashScreen Include="Assets\Images\dayz_splash.png" />-->
-    <None Include="app.config" />
-    <None Include="app.manifest" />
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
@@ -483,17 +118,41 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SSQLib\SSQLib.csproj">
-      <Project>{3f273b18-3c15-420b-bd8f-ded3e4e52996}</Project>
-      <Name>SSQLib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Assets\Images\dayz_logo.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Mono.Nat" Version="3.0.2" />
+    <PackageReference Include="MonoTorrent" Version="2.0.4" />
+    <PackageReference Include="ReusableTasks" Version="2.0.1" />
+    <PackageReference Include="SharpCompress" Version="0.30.1" />
+    <PackageReference Include="SharpVectors" Version="1.7.7" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
+    <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Core\DayZLauncherUpdater.cs" />
+    <Compile Remove="Core\JsonExtensions.cs" />
+    <Compile Remove="Core\MonoTorrentExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Assets\Icons\refresh.svg" />
+    <None Remove="Assets\Icons\rocket.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\Icons\refresh.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SteamQueryNet\SteamQueryNet\SteamQueryNet\SteamQueryNet.csproj" />
+  </ItemGroup>
   <Target Name="AfterCompile">
     <CallTarget Targets="SignOutput" />
   </Target>

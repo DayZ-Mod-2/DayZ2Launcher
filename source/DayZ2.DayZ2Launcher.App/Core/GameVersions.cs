@@ -2,133 +2,88 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-    public class MetaPlugin
-    {
-        public MetaPlugin(string ident)
-        {
-            Ident = ident;
-        }
+	public class GameVersion
+	{
+		public string DirPath;
+		public string ExePath;
+		public Version ExeVersion;
 
-        [JsonProperty("ident")]
-        public string Ident { get; set; }
+		public GameVersion(string gameDir)
+		{
+			var dirInfo = new DirectoryInfo(gameDir);
+			if (!dirInfo.Exists)
+				return;
 
-        [JsonProperty("addon")]
-        public string Addon { get; set; }
+			DirPath = dirInfo.FullName;
+			ExePath = Path.Combine(gameDir, "arma2oa.exe");
+			if (!File.Exists(ExePath))
+				ExePath = null;
+			else
+				ExeVersion = GetFileVersion(ExePath);
+		}
 
-        [JsonProperty("name")]
-        public string Name { get; set; }
+		public int? BuildNo
+		{
+			get
+			{
+				if (ExeVersion != null)
+					return ExeVersion.Revision;
 
-        [JsonProperty("description")]
-        public string Description { get; set; }
+				return null;
+			}
+		}
 
-        public bool IsEnabled { get; set; }
-    }
+		private static Version GetFileVersion(string arma2OAExePath)
+		{
+			try
+			{
+				FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(arma2OAExePath);
+				return Version.Parse(versionInfo.ProductVersion);
+			}
+			catch (Exception)
+			{
+				return null;
+			}
+		}
+	}
 
-    public class MetaModDetails
-    {
-        [JsonProperty("addons")] public List<MetaAddon> AddOns;
+	public class GameVersions
+	{
+		public GameVersion Beta;
+		public GameVersion Retail;
 
-        [JsonProperty("gametypes")] public List<MetaGameType> GameTypes;
+		public GameVersions(string oaDir)
+		{
+			Retail = new GameVersion(oaDir);
+			if (Retail.DirPath == null)
+				return;
 
-        [JsonProperty("plugins")] public List<MetaPlugin> Plugins;
+			Beta = new GameVersion(Path.Combine(oaDir, "Expansion\\beta"));
+			if (Beta.DirPath == null)
+				return;
+		}
 
-        [JsonProperty("version")] public string Version;
+		public GameVersion BestVersion
+		{
+			get
+			{
+				if (Equals(Retail.BuildNo, Beta.BuildNo))
+					return Retail;
 
-        public static string GetFileName(string versionString)
-        {
-            return Path.Combine(UserSettings.ContentMetaPath, versionString + ".json");
-        }
+				if ((Retail.BuildNo ?? 0) > (Beta.BuildNo ?? 0))
+					return Retail;
 
-        public static MetaModDetails LoadFromFile(string fullPath)
-        {
-            var modDetails = JsonConvert.DeserializeObject<MetaModDetails>(File.ReadAllText(fullPath));
-            return modDetails;
-        }
-    }
+				if ((Beta.BuildNo ?? 0) > 0)
+					return Beta;
 
-    public class GameVersion
-    {
-        public string DirPath;
-        public string ExePath;
-        public Version ExeVersion;
+				if ((Retail.BuildNo ?? 0) > 0)
+					return Retail;
 
-        public GameVersion(string gameDir)
-        {
-            var dirInfo = new DirectoryInfo(gameDir);
-            if (!dirInfo.Exists)
-                return;
-
-            DirPath = dirInfo.FullName;
-            ExePath = Path.Combine(gameDir, "arma2oa.exe");
-            if (!File.Exists(ExePath))
-                ExePath = null;
-            else
-                ExeVersion = GetFileVersion(ExePath);
-        }
-
-        public int? BuildNo
-        {
-            get
-            {
-                if (ExeVersion != null)
-                    return ExeVersion.Revision;
-
-                return null;
-            }
-        }
-
-        private static Version GetFileVersion(string arma2OAExePath)
-        {
-            try
-            {
-                FileVersionInfo versionInfo = FileVersionInfo.GetVersionInfo(arma2OAExePath);
-                return Version.Parse(versionInfo.ProductVersion);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
-        }
-    }
-
-    public class GameVersions
-    {
-        public GameVersion Beta;
-        public GameVersion Retail;
-
-        public GameVersions(string oaDir)
-        {
-            Retail = new GameVersion(oaDir);
-            if (Retail.DirPath == null)
-                return;
-
-            Beta = new GameVersion(Path.Combine(oaDir, "Expansion\\beta"));
-            if (Beta.DirPath == null)
-                return;
-        }
-
-        public GameVersion BestVersion
-        {
-            get
-            {
-                if (Equals(Retail.BuildNo, Beta.BuildNo))
-                    return Retail;
-
-                if ((Retail.BuildNo ?? 0) > (Beta.BuildNo ?? 0))
-                    return Retail;
-
-                if ((Beta.BuildNo ?? 0) > 0)
-                    return Beta;
-
-                if ((Retail.BuildNo ?? 0) > 0)
-                    return Retail;
-
-                return null;
-            }
-        }
-    }
+				return null;
+			}
+		}
+	}
 }

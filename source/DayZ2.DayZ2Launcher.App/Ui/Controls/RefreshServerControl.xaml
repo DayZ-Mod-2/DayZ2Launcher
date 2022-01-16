@@ -3,50 +3,84 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="clr-namespace:DayZ2.DayZ2Launcher.App.Ui"
+             xmlns:controls="clr-namespace:DayZ2.DayZ2Launcher.App.Ui.Controls"
+             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+             xmlns:converters="http://sharpvectors.codeplex.com/svgc/"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
+
+	<UserControl.Resources>
+		<Style TargetType="{x:Type Button}" x:Key="buttonStyle">
+			<Setter Property="Opacity" Value="0.7"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="{x:Type Button}">
+						<Border
+							Width="{TemplateBinding Width}"
+							Height="{TemplateBinding Height}">
+							<ContentPresenter
+								HorizontalAlignment="Center"
+								VerticalAlignment="Center"
+								Content="{TemplateBinding Content}"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter Property="Opacity" Value="1" />
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</UserControl.Resources>
+
 	<Grid>
 		<Button
-			HorizontalAlignment="Center"
-			Click="RefreshServer"
-			MouseDoubleClick="RefreshServerDoubleClick"
 			Background="Transparent"
-			Visibility="{Binding IsUpdating, Converter={StaticResource BooleanToVisibilityCollapsedConverter}, ConverterParameter=true}"
-			Style="{StaticResource MetroTextButtonStyle}">
-			<Button.Template>
-				<ControlTemplate>
-					<Border IsHitTestVisible="True"
-					        x:Name="Refresh"
-					        Background="{TemplateBinding Background}">
-						<Path
-							Data="F1M2278.07,1272.94C2265.47,1272.94,2254.91,1281.77,2252.19,1293.55L2241.99,1293.43 2255.8,1315.74 2270.14,1293.77 2260.66,1293.66C2263.13,1286.36 2269.96,1281.07 2278.07,1281.07 2288.24,1281.07 2296.52,1289.35 2296.52,1299.52 2296.52,1309.7 2288.24,1317.98 2278.07,1317.98 2274.31,1317.98 2270.81,1316.84 2267.89,1314.9L2263.45,1321.7C2267.65,1324.48 2272.67,1326.11 2278.07,1326.11 2292.73,1326.11 2304.65,1314.18 2304.65,1299.52 2304.65,1284.87 2292.73,1272.94 2278.07,1272.94"
-							Stretch="Uniform"
-							Fill="{TemplateBinding Foreground}"
-							Width="14" Height="14" Margin="0,3,3,0" />
-					</Border>
-				</ControlTemplate>
-			</Button.Template>
-		</Button>
-		<Button
+			Click="Button_Click"
+			VerticalAlignment="Center"
 			HorizontalAlignment="Center"
-			MouseDoubleClick="RefreshServerDoubleClick"
-			Background="Transparent"
-			Foreground="#06688F"
-			Visibility="{Binding IsUpdating, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
-			Style="{StaticResource MetroTextButtonStyle}">
-			<Button.Template>
-				<ControlTemplate>
-					<Border IsHitTestVisible="True"
-					        x:Name="Refresh"
-					        Background="{TemplateBinding Background}">
-						<Path
-							Data="F1M2278.07,1272.94C2265.47,1272.94,2254.91,1281.77,2252.19,1293.55L2241.99,1293.43 2255.8,1315.74 2270.14,1293.77 2260.66,1293.66C2263.13,1286.36 2269.96,1281.07 2278.07,1281.07 2288.24,1281.07 2296.52,1289.35 2296.52,1299.52 2296.52,1309.7 2288.24,1317.98 2278.07,1317.98 2274.31,1317.98 2270.81,1316.84 2267.89,1314.9L2263.45,1321.7C2267.65,1324.48 2272.67,1326.11 2278.07,1326.11 2292.73,1326.11 2304.65,1314.18 2304.65,1299.52 2304.65,1284.87 2292.73,1272.94 2278.07,1272.94"
-							Stretch="Uniform"
-							Fill="{TemplateBinding Foreground}"
-							Width="14" Height="14" Margin="0,3,3,0" />
-					</Border>
-				</ControlTemplate>
-			</Button.Template>
+			BorderThickness="0"
+			Style="{StaticResource buttonStyle}"
+			IsEnabled="{Binding Path=IsRefreshing, Converter={StaticResource BooleanNegationConverter}}">
+
+			<svgc:SvgViewbox
+				x:Name="Rotator"
+				Source="/Assets/Icons/refresh.svg"
+				Stretch="Uniform"
+				AutoSize="False"
+				EnsureViewboxSize="True"
+				RenderTransformOrigin="0.5,0.5">
+
+				<svgc:SvgViewbox.RenderTransform>
+					<RotateTransform Angle="0"/>
+				</svgc:SvgViewbox.RenderTransform>
+
+				<svgc:SvgViewbox.Style>
+					<Style>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding Path=IsRefreshing}" Value="True">
+								<DataTrigger.EnterActions>
+									<BeginStoryboard Name="Rotation">
+										<Storyboard>
+											<DoubleAnimation
+												Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+												To="360"
+												BeginTime="0:0:0"
+												Duration="0:0:1"
+												RepeatBehavior="Forever"/>
+										</Storyboard>
+									</BeginStoryboard>
+								</DataTrigger.EnterActions>
+								<DataTrigger.ExitActions>
+									<StopStoryboard BeginStoryboardName="Rotation"/>
+								</DataTrigger.ExitActions>
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</svgc:SvgViewbox.Style>
+			</svgc:SvgViewbox>
 		</Button>
 	</Grid>
 </UserControl>

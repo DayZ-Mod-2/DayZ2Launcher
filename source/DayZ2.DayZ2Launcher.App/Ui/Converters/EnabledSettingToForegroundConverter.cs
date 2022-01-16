@@ -2,34 +2,34 @@
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+using DayZ2.DayZ2Launcher.App.Core;
 
 namespace DayZ2.DayZ2Launcher.App.Ui.Converters
 {
-    public class EnabledSettingToForegroundConverter : IValueConverter
-    {
-        public static SolidColorBrush Empty = new SolidColorBrush(Colors.Transparent);
-        public static SolidColorBrush Enabled = new SolidColorBrush(Color.FromArgb(255, 238, 238, 238));
-        public static SolidColorBrush Disabled = new SolidColorBrush(Color.FromArgb(255, 87, 87, 87));
+	public class PerspectiveToForegroundConverter : IValueConverter
+	{
+		private static readonly SolidColorBrush Empty = new SolidColorBrush(Colors.Transparent);
+		private static readonly SolidColorBrush Enabled = new SolidColorBrush(Color.FromArgb(255, 238, 238, 238));
+		private static readonly SolidColorBrush Disabled = new SolidColorBrush(Color.FromArgb(255, 87, 87, 87));
 
-        #region Implementation of IValueConverter
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value != null)
+			{
+				switch ((ServerPerspective)value)
+				{
+					case ServerPerspective.FirstPerson:
+						return Disabled;
+					case ServerPerspective.ThirdPerson:
+						return Enabled;
+				}
+			}
+			return Empty;
+		}
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value == null)
-                return Empty;
-
-            if ((bool)value)
-            {
-                return Enabled;
-            }
-            return Disabled;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-    }
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
 }

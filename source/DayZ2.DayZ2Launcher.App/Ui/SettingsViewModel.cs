@@ -1,207 +1,173 @@
 ﻿using System;
 using System.Windows;
-using Ookii.Dialogs.Wpf;
+using System.Windows.Forms;
+using System.Windows.Interop;
 using DayZ2.DayZ2Launcher.App.Core;
 
 namespace DayZ2.DayZ2Launcher.App.Ui
 {
-    public class SettingsViewModel : ViewModelBase
-    {
-        private bool _customBranchEnabled;
-        private string _customBranchName;
-        private bool _isVisible;
+	public class SettingsViewModel : ViewModelBase
+	{
+		private bool _customBranchEnabled;
+		private string _customBranchName;
+		private bool _isVisible;
 
-        public SettingsViewModel()
-        {
-            Settings = UserSettings.Current;
-            if (string.IsNullOrWhiteSpace(Settings.GameOptions.CustomBranchName))
-            {
-                CustomBranchEnabled = false;
-                CustomBranchName = "release";
-            }
-            else
-            {
-                CustomBranchName = Settings.GameOptions.CustomBranchName;
-                CustomBranchEnabled = true;
-            }
+		public EventHandler TorrentSettingsChanged;
 
-            PropertyChanged += (sender, args) =>
-            {
-                //reconfigure TorrentEngine every time we close this panel, not just on clicking Done
-                if (args.PropertyName == "IsVisible")
-                {
-                    if (IsVisible == false)
-                        TorrentUpdater.ReconfigureEngine();
-                }
-            };
-        }
+		public SettingsViewModel()
+		{
+			Settings = UserSettings.Current;
+			if (string.IsNullOrWhiteSpace(Settings.GameOptions.CustomBranchName))
+			{
+				CustomBranchEnabled = false;
+				CustomBranchName = "release";
+			}
+			else
+			{
+				CustomBranchName = Settings.GameOptions.CustomBranchName;
+				CustomBranchEnabled = true;
+			}
 
-        public UserSettings Settings { get; set; }
+			PropertyChanged += (sender, args) =>
+			{
+				//reconfigure TorrentEngine every time we close this panel, not just on clicking Done
+				if (args.PropertyName == "IsVisible")
+				{
+					if (IsVisible == false)
+						TorrentSettingsChanged?.Invoke(this, null);
+				}
+			};
+		}
 
-        public bool IsVisible
-        {
-            get => _isVisible;
-            set
-            {
-                _isVisible = value;
-                PropertyHasChanged("IsVisible");
-            }
-        }
+		public UserSettings Settings { get; set; }
 
-        public bool IncludeUS
-        {
-            get => Settings.IncludeUS;
-            set
-            {
-                Settings.IncludeUS = value;
-                PropertyHasChanged("IncludeUS");
-            }
-        }
+		public bool IsVisible
+		{
+			get => _isVisible;
+			set => SetValue(ref _isVisible, value);
+		}
 
-        public bool IncludeEU
-        {
-            get => Settings.IncludeEU;
-            set
-            {
-                Settings.IncludeEU = value;
-                PropertyHasChanged("IncludeEU");
-            }
-        }
+		public bool Arma2DirectoryOverride
+		{
+			get => !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride);
+			set
+			{
+				if (value)
+					Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
+				else
+					Settings.GameOptions.Arma2DirectoryOverride = null;
 
-        public bool IncludeAU
-        {
-            get => Settings.IncludeAU;
-            set
-            {
-                Settings.IncludeAU = value;
-                PropertyHasChanged("IncludeAU");
-            }
-        }
+				OnPropertyChanged(nameof(Arma2Directory), nameof(Arma2DirectoryOverride));
+			}
+		}
 
-        public bool Arma2DirectoryOverride
-        {
-            get => !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride);
-            set
-            {
-                if (value)
-                    Settings.GameOptions.Arma2DirectoryOverride = LocalMachineInfo.Current.Arma2Path ?? "Replace with full Arma2 Path";
-                else
-                    Settings.GameOptions.Arma2DirectoryOverride = null;
+		public string Arma2Directory
+		{
+			get
+			{
+				if (!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride))
+				{
+					return Settings.GameOptions.Arma2DirectoryOverride;
+				}
+				return LocalMachineInfo.Current.Arma2Path;
+			}
+			set
+			{
+				Settings.GameOptions.Arma2DirectoryOverride = value;
 
-                PropertyHasChanged("Arma2Directory", "Arma2DirectoryOverride");
-            }
-        }
+				OnPropertyChanged(new[] { "Arma2Directory" });
+			}
+		}
 
-        public string Arma2Directory
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2DirectoryOverride))
-                {
-                    return Settings.GameOptions.Arma2DirectoryOverride;
-                }
-                return LocalMachineInfo.Current.Arma2Path;
-            }
-            set
-            {
-                Settings.GameOptions.Arma2DirectoryOverride = value;
+		public string Arma2OADirectory
+		{
+			get
+			{
+				if (!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride))
+				{
+					return Settings.GameOptions.Arma2OADirectoryOverride;
+				}
+				return LocalMachineInfo.Current.Arma2OAPath;
+			}
+			set
+			{
+				Settings.GameOptions.Arma2OADirectoryOverride = value;
 
-                PropertyHasChanged("Arma2Directory");
-            }
-        }
+				OnPropertyChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
+			}
+		}
 
-        public string Arma2OADirectory
-        {
-            get
-            {
-                if (!string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride))
-                {
-                    return Settings.GameOptions.Arma2OADirectoryOverride;
-                }
-                return LocalMachineInfo.Current.Arma2OAPath;
-            }
-            set
-            {
-                Settings.GameOptions.Arma2OADirectoryOverride = value;
+		public bool Arma2OADirectoryOverride
+		{
+			get => !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride);
+			set
+			{
+				if (value)
+					Settings.GameOptions.Arma2OADirectoryOverride = LocalMachineInfo.Current.Arma2OAPath ??
+																	"Replace with full Arma2 OA Path";
+				else
+					Settings.GameOptions.Arma2OADirectoryOverride = null;
 
-                PropertyHasChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
-            }
-        }
+				OnPropertyChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
+			}
+		}
 
-        public bool Arma2OADirectoryOverride
-        {
-            get => !string.IsNullOrWhiteSpace(Settings.GameOptions.Arma2OADirectoryOverride);
-            set
-            {
-                if (value)
-                    Settings.GameOptions.Arma2OADirectoryOverride = LocalMachineInfo.Current.Arma2OAPath ??
-                                                                    "Replace with full Arma2 OA Path";
-                else
-                    Settings.GameOptions.Arma2OADirectoryOverride = null;
+		public bool CustomBranchEnabled
+		{
+			get { return _customBranchEnabled; }
+			set
+			{
+				_customBranchEnabled = value;
+				if (value)
+					Settings.GameOptions.CustomBranchName = CustomBranchName;
+				else
+					Settings.GameOptions.CustomBranchName = "";
 
-                PropertyHasChanged("Arma2OADirectory", "Arma2OADirectoryOverride");
-            }
-        }
+				OnPropertyChanged("CustomBranchEnabled", "CustomBranchName");
+			}
+		}
 
-        public bool CustomBranchEnabled
-        {
-            get { return _customBranchEnabled; }
-            set
-            {
-                _customBranchEnabled = value;
-                if (value)
-                    Settings.GameOptions.CustomBranchName = CustomBranchName;
-                else
-                    Settings.GameOptions.CustomBranchName = "";
+		public string CustomBranchName
+		{
+			get { return _customBranchName; }
+			set
+			{
+				_customBranchName = value;
+				if (CustomBranchEnabled)
+					Settings.GameOptions.CustomBranchName = value;
+				else
+					Settings.GameOptions.CustomBranchName = "";
 
-                PropertyHasChanged("CustomBranchEnabled", "CustomBranchName");
-            }
-        }
+				OnPropertyChanged(new[] { "CustomBranchName" });
+			}
+		}
 
-        public string CustomBranchName
-        {
-            get { return _customBranchName; }
-            set
-            {
-                _customBranchName = value;
-                if (CustomBranchEnabled)
-                    Settings.GameOptions.CustomBranchName = value;
-                else
-                    Settings.GameOptions.CustomBranchName = "";
+		public string DisplayDirectoryPrompt(Window parentWindow, bool allowNewFolder, string previousPath, string description)
+		{
+			var dialog = new System.Windows.Forms.FolderBrowserDialog()
+			{
+				ShowNewFolderButton = allowNewFolder,
+				RootFolder = Environment.SpecialFolder.ProgramFilesX86,
+				SelectedPath = previousPath,
+				Description = description,
+				UseDescriptionForTitle = true
+			};
 
-                PropertyHasChanged("CustomBranchName");
-            }
-        }
+			NativeWindow nativeWindow = new System.Windows.Forms.NativeWindow();
+			nativeWindow.AssignHandle(new WindowInteropHelper(parentWindow).Handle);
 
-        public string DisplayDirectoryPrompt(Window parentWindow, bool allowNewFolder, string previousPath, string description)
-        {
-            var folderDlg = new VistaFolderBrowserDialog();
+			var result = dialog.ShowDialog(nativeWindow);
+			if (result != DialogResult.Yes && result != DialogResult.OK)
+			{
+				return null;
+			}
 
-            if (allowNewFolder)
-                folderDlg.ShowNewFolderButton = true;
-            else
-                folderDlg.ShowNewFolderButton = false;
+			return dialog.SelectedPath;
+		}
 
-            folderDlg.RootFolder = Environment.SpecialFolder.ProgramFilesX86;
-            if (previousPath != null)
-                folderDlg.SelectedPath = previousPath;
-
-            if (description != null)
-            {
-                folderDlg.Description = description;
-                folderDlg.UseDescriptionForTitle = true;
-            }
-
-            bool dialogAccepted = folderDlg.ShowDialog(parentWindow) ?? false;
-            if (!dialogAccepted)
-                return null;
-
-            return folderDlg.SelectedPath;
-        }
-
-        public void Done()
-        {
-            IsVisible = false;
-        }
-    }
+		public void Done()
+		{
+			IsVisible = false;
+		}
+	}
 }
