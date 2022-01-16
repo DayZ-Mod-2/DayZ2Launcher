@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using DayZ2.DayZ2Launcher.App.Core;
 using UpdateStatus = DayZ2.DayZ2Launcher.App.Core.UpdateStatus;
-#pragma warning disable CS4014  // running async from sync
 
 namespace DayZ2.DayZ2Launcher.App.Ui
 {
@@ -16,13 +16,18 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		private readonly GameLauncher m_gameLauncher;
 		private readonly LauncherUpdater m_launcherUpdater = new();
 		private readonly ModUpdater m_modUpdater;
-		private readonly ServerUpdater m_serverUpdater = new();
-		private readonly MotdUpdater m_motdUpdater = new();
+		private readonly ServerUpdater m_serverUpdater;
+		private readonly MotdUpdater m_motdUpdater;
 
-		public UpdatesViewModel(GameLauncher gameLauncher, ModUpdater modUpdater, AppCancellation cancellation)
+		public UpdatesViewModel(
+			GameLauncher gameLauncher, ModUpdater modUpdater,
+			AppCancellation cancellation, MotdUpdater motdUpdater,
+			ServerUpdater serverUpdater)
 		{
 			m_gameLauncher = gameLauncher;
 			m_modUpdater = modUpdater;
+			m_motdUpdater = motdUpdater;
+			m_serverUpdater = serverUpdater;
 			m_cancellationToken = cancellation.Token;
 
 			CalculatedGameSettings = CalculatedGameSettings.Current;
@@ -36,9 +41,8 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				}
 			}, m_cancellationToken);
 
-
 			// TODO: maybe check for updates on a timer too
-			async Task Init()
+			async void Init()
 			{
 				await CheckForUpdatesAsync();
 				await m_modUpdater.StartAsync("dayz2", m_cancellationToken);  // TODO: mod name
@@ -205,53 +209,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			set => SetValue(ref m_isVisible, value);
 		}
 
-		/*
-		public void Handle(ServerUpdated message)
-		{
-			VersionStatistic existingDayZStatistic = null;
-			string dayZVersion = null;
-			if (message.Server.DayZVersion != null)
-			{
-				dayZVersion = message.Server.DayZVersion;
-				if (_rawDayZVersionStats != null)
-					existingDayZStatistic =
-						_rawDayZVersionStats.FirstOrDefault(x => x.Version.Equals(dayZVersion, StringComparison.OrdinalIgnoreCase));
-			}
-
-			//If we've seen this server (or its gone), decrement what it was last time
-			bool serverWasProcessed = _processedServers.ContainsKey(message.Server);
-			if (serverWasProcessed || message.IsRemoved)
-			{
-				if (existingDayZStatistic != null)
-					existingDayZStatistic.Count--;
-			}
-
-			if (_rawDayZVersionStats == null)
-				_rawDayZVersionStats = new ObservableCollection<VersionStatistic>();
-
-			if (existingDayZStatistic == null && !message.IsRemoved)
-			{
-				if (dayZVersion != null)
-					_rawDayZVersionStats.Add(new VersionStatistic { Version = dayZVersion, Count = 1, Parent = this });
-			}
-			else if (existingDayZStatistic != null)
-			{
-				if (!message.IsRemoved)
-					existingDayZStatistic.Count++;
-
-				_rawDayZVersionStats.Remove(existingDayZStatistic);
-				_rawDayZVersionStats.Add(existingDayZStatistic);
-			}
-
-			if (!serverWasProcessed && !message.IsRemoved)
-			{
-				_processedServers.Add(message.Server, new VersionSnapshot(message.Server));
-				ProcessedCount++;
-			}
-		}
-		*/
-
-		private async Task ReconfigureTorrentEngineAsync()
+		private async void ReconfigureTorrentEngineAsync()
 		{
 			await m_modUpdater.ReconfigureTorrentEngineAsync();
 		}
@@ -320,7 +278,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			}
 		}
 
-		private async Task InstallLatestModVersionAsync()
+		private async void InstallLatestModVersionAsync()
 		{
 			try
 			{
@@ -328,6 +286,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				m_gameLauncher.CanLaunch = false;
 				CanVerifyIntegrity = false;
 				m_modUpdater.IsRunning = true;
+				await GameLauncher.CloseGameAsync(m_cancellationToken);
 				await m_modUpdater.UpdateAsync("dayz2", m_cancellationToken);  // TODO: mod name
 				await CheckForModUpdatesAsync();
 			}
@@ -345,7 +304,9 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		public void CheckForUpdates()
 		{
+#pragma warning disable CS4014
 			CheckForUpdatesAsync();
+#pragma warning restore CS4014
 		}
 
 		public void InstallLatestModVersion()
@@ -353,13 +314,14 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			InstallLatestModVersionAsync();
 		}
 
-		private async Task VerifyIntegrityAsync()
+		private async void VerifyIntegrityAsync()
 		{
 			try
 			{
 				CanVerifyIntegrity = false;
 				m_modUpdater.IsRunning = true;
 				m_gameLauncher.CanLaunch = false;
+				await GameLauncher.CloseGameAsync(m_cancellationToken);
 				await m_modUpdater.VerifyIntegrityAsync("dayz2", m_cancellationToken);  // TODO: mod name
 			}
 			finally

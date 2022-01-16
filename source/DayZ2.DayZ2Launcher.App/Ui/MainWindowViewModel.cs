@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,16 +11,21 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 {
 	public class MainWindowViewModel : ViewModelBase
 	{
-		private CancellationToken m_cancellationToken;
+		CancellationToken m_cancellationToken;
 
-		private ViewModelBase m_currentTab;
-		private ObservableCollection<ViewModelBase> m_tabs;
+		ViewModelBase m_currentTab;
+		ObservableCollection<ViewModelBase> m_tabs;
 
-		public MainWindowViewModel(IServiceProvider services, AppCancellation cancellation)
+		readonly GameLauncher m_gameLauncher;
+
+		public ServerListViewModel ServerListViewModel { get; private set; }
+		public SettingsViewModel SettingsViewModel { get; private set; }
+		public UpdatesViewModel UpdatesViewModel { get; private set; }
+
+		public MainWindowViewModel(IServiceProvider services, AppCancellation cancellation, GameLauncher gameLauncher)
 		{
 			m_cancellationToken = cancellation.Token;
-
-			GameLauncher = new GameLauncher();
+			m_gameLauncher = gameLauncher;
 
 			Tabs = new ObservableCollection<ViewModelBase>(new ViewModelBase[]
 			{
@@ -43,11 +49,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			};
 		}
 
-		public ServerListViewModel ServerListViewModel { get; set; }
-		public SettingsViewModel SettingsViewModel { get; set; }
-		public UpdatesViewModel UpdatesViewModel { get; set; }
-		public GameLauncher GameLauncher { get; set; }
-
 		public ViewModelBase CurrentTab
 		{
 			get => m_currentTab;
@@ -60,11 +61,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 					m_currentTab.IsSelected = true;
 				OnPropertyChanged(nameof(CurrentTab), nameof(IsServerListSelected));
 			}
-		}
-
-		public void Shutdown()
-		{
-			//TODO: cancel in App
 		}
 
 		public bool IsServerListSelected => CurrentTab == ServerListViewModel;
@@ -91,6 +87,16 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 		{
 			SettingsViewModel.IsVisible = false;
 			UpdatesViewModel.IsVisible = false;
+		}
+
+		public void RefreshAll()
+		{
+			ServerListViewModel.RefreshAll();
+		}
+
+		public void Launch()
+		{
+			m_gameLauncher.LaunchGame(null);
 		}
 	}
 }

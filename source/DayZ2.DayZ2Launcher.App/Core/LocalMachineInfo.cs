@@ -32,15 +32,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
-		public Version LauncherVersion
-		{
-			get
-			{
-				//if (ApplicationDeployment.IsNetworkDeployed)
-				//	return ApplicationDeployment.CurrentDeployment.CurrentVersion;
-				return Assembly.GetEntryAssembly().GetName().Version;
-			}
-		}
+		public Version LauncherVersion => Assembly.GetEntryAssembly()?.GetName().Version;
 
 		public string Arma2Path
 		{

@@ -88,7 +88,7 @@ namespace DayZ2.DayZ2Launcher.App.UI.ServerList
 
 		public void Refresh()
 		{
-			async Task RefreshAsync()
+			async void RefreshAsync()
 			{
 				try
 				{
@@ -106,10 +106,7 @@ namespace DayZ2.DayZ2Launcher.App.UI.ServerList
 
 		public void Join()
 		{
-			if (m_gameLauncher.CanLaunch)
-			{
-				m_gameLauncher.LaunchGame(m_server);
-			}
+			m_gameLauncher.LaunchGame(m_server);
 		}
 	}
 }

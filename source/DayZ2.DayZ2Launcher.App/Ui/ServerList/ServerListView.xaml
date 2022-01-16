@@ -28,11 +28,10 @@
 		          GridLinesVisibility="All">
 
 			<DataGrid.RowStyle>
-				<Style BasedOn="{StaticResource MetroDataGridRowStyle}"
-				       TargetType="DataGridRow">
+				<Style BasedOn="{StaticResource MetroDataGridRowStyle}" TargetType="DataGridRow">
+					<Setter Property="Height" Value="21"/>
 					<EventSetter Event="KeyDown" Handler="RowKeyDown" />
 					<EventSetter Event="KeyUp" Handler="RowKeyUp" />
-					<EventSetter Event="PreviewMouseLeftButtonDown" Handler="PreviewMouseLeftButtonDown" />
 				</Style>
 			</DataGrid.RowStyle>
 

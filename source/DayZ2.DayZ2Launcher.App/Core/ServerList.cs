@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,9 +13,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 	public struct Player
 	{
-		public string Name;
-		public int Score;
-		public string Duration;
+		public string Name { get; set; }
+		public int Score { get; set; }
+		public string Duration { get; set; }
 	}
 
 	public enum ServerDifficulty

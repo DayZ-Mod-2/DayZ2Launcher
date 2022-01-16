@@ -29,7 +29,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			};
 			Closing += (sender, args) =>
 			{
-				ViewModel.Shutdown();
 				UserSettings.Current.WindowSettings = WindowSettings.Create(this);
 				UserSettings.Current.Save();
 			};
@@ -79,7 +78,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		private void CloseButtonClick(object sender, RoutedEventArgs e)
 		{
-			Application.Current.Shutdown();
+			Close();
 		}
 
 		private void MainWindow_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -100,7 +99,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		private void RefreshAll_Click(object sender, RoutedEventArgs e)
 		{
-			ViewModel.ServerListViewModel.RefreshAll();
+			ViewModel.RefreshAll();
 		}
 
 		private void Settings_Click(object sender, RoutedEventArgs e)
@@ -125,13 +124,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		private void LaunchGameButton_Click(object sender, RoutedEventArgs e)
 		{
-			ViewModel.GameLauncher.LaunchGame(null);
-			/*
-			var buttonObj = (FrameworkElement)sender;
-			var buttonContext = (GameLauncher_old.ButtonInfo)buttonObj.DataContext;
-
-			ViewModel.GameLauncher.LaunchGame(this, buttonContext.Argument);
-			*/
+			ViewModel.Launch();
 		}
 
 		private void DiscordImage_Click(object sender, RoutedEventArgs e)

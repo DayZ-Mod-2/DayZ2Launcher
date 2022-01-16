@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Windows;
 using System.Xml.Linq;
 
 namespace DayZ2.DayZ2Launcher.App.Core
@@ -24,130 +25,130 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		private static string _notesPath;
 		private static string _settingsPath;
 
-		[DataMember] private AppOptions _appOptions = new AppOptions();
-		[DataMember] private List<string> _enabledPlugins = new List<string>();
-		[DataMember] private List<FavoriteServer> _favorites = new List<FavoriteServer>();
-		[DataMember] private Filters _filter = new Filters();
-		[DataMember] private List<string> _friends = new List<string>();
-		[DataMember] private GameOptions _gameOptions = new GameOptions();
-		[DataMember] private bool _hideAU;
-		[DataMember] private bool _hideEU;
-		[DataMember] private bool _hideUS;
-		[DataMember] private List<RecentServer> _recentServers = new List<RecentServer>();
-		[DataMember] private TorrentOptions _torrentOptions = new TorrentOptions();
+		[DataMember] private AppOptions m_appOptions = new();
+		[DataMember] private List<string> m_enabledPlugins = new();
+		[DataMember] private List<FavoriteServer> m_favorites = new();
+		[DataMember] private Filters m_filter = new();
+		[DataMember] private List<string> m_friends = new();
+		[DataMember] private GameOptions m_gameOptions = new();
+		[DataMember] private bool m_hideAU;
+		[DataMember] private bool m_hideEU;
+		[DataMember] private bool m_hideUS;
+		[DataMember] private List<RecentServer> m_recentServers = new();
+		[DataMember] private TorrentOptions m_torrentOptions = new();
 
-		[DataMember] private WindowSettings _windowSettings;
+		[DataMember] private WindowSettings m_windowSettings;
 		//This is null on purpose so the MainWindow view can set defaults if needed
 
 		public bool IncludeUS
 		{
-			get { return !_hideUS; }
-			set { _hideUS = !value; }
+			get => !m_hideUS;
+			set => m_hideUS = !value;
 		}
 
 		public bool IncludeEU
 		{
-			get { return !_hideEU; }
-			set { _hideEU = !value; }
+			get => !m_hideEU;
+			set => m_hideEU = !value;
 		}
 
 		public bool IncludeAU
 		{
-			get { return !_hideAU; }
-			set { _hideAU = !value; }
+			get => !m_hideAU;
+			set => m_hideAU = !value;
 		}
 
 		public Filters Filters
 		{
 			get
 			{
-				if (_filter == null)
-					_filter = new Filters();
+				if (m_filter == null)
+					m_filter = new Filters();
 
-				return _filter;
+				return m_filter;
 			}
-			set { _filter = value; }
+			set => m_filter = value;
 		}
 
 		public WindowSettings WindowSettings
 		{
-			get { return _windowSettings; }
-			set { _windowSettings = value; }
+			get => m_windowSettings;
+			set => m_windowSettings = value;
 		}
 
 		public GameOptions GameOptions
 		{
 			get
 			{
-				if (_gameOptions == null)
-					_gameOptions = new GameOptions();
+				if (m_gameOptions == null)
+					m_gameOptions = new GameOptions();
 
-				return _gameOptions;
+				return m_gameOptions;
 			}
-			set { _gameOptions = value; }
+			set => m_gameOptions = value;
 		}
 
 		public TorrentOptions TorrentOptions
 		{
 			get
 			{
-				if (_torrentOptions == null)
-					_torrentOptions = new TorrentOptions();
+				if (m_torrentOptions == null)
+					m_torrentOptions = new TorrentOptions();
 
-				return _torrentOptions;
+				return m_torrentOptions;
 			}
-			set { _torrentOptions = value; }
+			set => m_torrentOptions = value;
 		}
 
 		public AppOptions AppOptions
 		{
 			get
 			{
-				if (_appOptions == null)
-					_appOptions = new AppOptions();
+				if (m_appOptions == null)
+					m_appOptions = new AppOptions();
 
-				return _appOptions;
+				return m_appOptions;
 			}
-			set { _appOptions = value; }
+			set => m_appOptions = value;
 		}
 
 		public List<FavoriteServer> Favorites
 		{
 			get
 			{
-				if (_favorites == null)
+				if (m_favorites == null)
 				{
-					_favorites = new List<FavoriteServer>();
+					m_favorites = new List<FavoriteServer>();
 				}
-				return _favorites;
+				return m_favorites;
 			}
-			set { _favorites = value; }
+			set => m_favorites = value;
 		}
 
 		public List<string> EnabledPlugins
 		{
 			get
 			{
-				if (_enabledPlugins == null)
+				if (m_enabledPlugins == null)
 				{
-					_enabledPlugins = new List<string>();
+					m_enabledPlugins = new List<string>();
 				}
-				return _enabledPlugins;
+				return m_enabledPlugins;
 			}
-			set { _enabledPlugins = value; }
+			set => m_enabledPlugins = value;
 		}
 
 		public List<RecentServer> RecentServers
 		{
 			get
 			{
-				if (_recentServers == null)
+				if (m_recentServers == null)
 				{
-					_recentServers = new List<RecentServer>();
+					m_recentServers = new List<RecentServer>();
 				}
-				return _recentServers;
+				return m_recentServers;
 			}
-			set { _recentServers = value; }
+			set => m_recentServers = value;
 		}
 
 		public static UserSettings Current
@@ -318,8 +319,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			{
 				if (_notesPath == null)
 				{
-					const string notesFolderName = "notes";
-					string newNotesLocation = Path.Combine(RoamingDataPath, notesFolderName);
+					string newNotesLocation = Path.Combine(RoamingDataPath, "notes");
 					if (!Directory.Exists(newNotesLocation))
 					{
 						DirectoryInfo newFolder = Directory.CreateDirectory(newNotesLocation);
@@ -353,18 +353,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
-		private static string SettingsPath
-		{
-			get
-			{
-				if (_settingsPath == null)
-				{
-					const string settingsFileName = "settings.xml";
-					_settingsPath = Path.Combine(RoamingDataPath, settingsFileName);
-				}
-				return _settingsPath;
-			}
-		}
+		private static string SettingsPath => _settingsPath ??= Path.Combine(RoamingDataPath, "settings.xml");
 
 		public void Save()
 		{
@@ -382,6 +371,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 			catch (Exception)
 			{
+				// MessageBox.Show($"Failed to save config: {ex}", "Config Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
 			}
 		}
 

@@ -14,16 +14,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 {
 	public class ServerListViewModel : ViewModelBase
 	{
-		public class ServerRefreshProgress : IProgress<int>
-		{
-			public int CurrentProgress { get; set; }
-
-			public void Report(int progress)
-			{
-				CurrentProgress = progress;
-			}
-		}
-
 		private readonly CancellationToken m_cancellationToken;
 
 		readonly Core.ServerList m_serverList = new();
@@ -34,8 +24,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 
 			Title = "Servers";
 
-			FiltersViewModel = new FiltersViewModel();
-			ListViewModel = new ListViewModel();
+			// FiltersViewModel = new FiltersViewModel();
 
 			m_serverList.ServerDiscovered += (object sender, ServerDiscoveredEventArgs e) =>
 			{
@@ -45,8 +34,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 			// FiltersViewModel.Filters.PublishFilter();
 		}
 
-		public FiltersViewModel FiltersViewModel { get; set; }
-		public ListViewModel ListViewModel { get; set; }
+		// public FiltersViewModel FiltersViewModel { get; set; }
 
 		public ListCollectionView FilteredServers { get; set; }
 		public ObservableCollection<ServerViewModel> Servers { get; private set; } = new();
@@ -78,7 +66,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 
 		public bool IsRunning => !CanRefresh;
 
-		private async Task RefreshAllAsync()
+		private async void RefreshAllAsync()
 		{
 			try
 			{
@@ -96,11 +84,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 			{
 				CanRefresh = true;
 			}
-		}
-
-		private void Server_RefreshFinished(object sender, EventArgs e)
-		{
-			throw new NotImplementedException();
 		}
 
 		public void SetServers(IList<ServerListInfo> servers)

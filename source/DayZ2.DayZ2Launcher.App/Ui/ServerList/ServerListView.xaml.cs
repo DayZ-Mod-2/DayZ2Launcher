@@ -32,11 +32,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 		{
 		}
 
-		private void PreviewMouseLeftButtonDown(object sender, RoutedEventArgs e)
-		{
-			
-		}
-
 		private void ServerDataGrid_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs args)
 		{
 			((DataGrid)sender).UnselectAllCells();

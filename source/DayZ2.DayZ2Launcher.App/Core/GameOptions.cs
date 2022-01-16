@@ -6,141 +6,85 @@ namespace DayZ2.DayZ2Launcher.App.Core
 	[DataContract]
 	public class GameOptions : ViewModelBase
 	{
-		[DataMember] private string _additionalStartupParameters;
-		[DataMember] private string _arma2DirectoryOverride;
-		[DataMember] private bool _arma2OASteamUpdate;
-		[DataMember] private string _arma2OaDirectoryOverride;
-		[DataMember] private bool _closeDayZLauncher;
-		[DataMember] private string _customBranchName;
-		[DataMember] private string _customBranchPass;
-		[DataMember] private bool _launchUsingSteam;
-		[DataMember] private bool _multiGpu;
-		[DataMember] private bool _twentyFourHourTimeFormat;
-		[DataMember] private bool _windowedMode;
+		[DataMember] private string m_additionalStartupParameters;
+		[DataMember] private string m_arma2DirectoryOverride;
+		[DataMember] private bool m_arma2OASteamUpdate;
+		[DataMember] private string m_arma2OaDirectoryOverride;
+		[DataMember] private bool m_closeDayZLauncher;
+		[DataMember] private string m_customBranchName;
+		[DataMember] private string m_customBranchPass;
+		[DataMember] private bool m_multiGpu;
+		[DataMember] private bool m_twentyFourHourTimeFormat;
+		[DataMember] private bool m_windowedMode;
 
 		public string AdditionalStartupParameters
 		{
-			get => _additionalStartupParameters;
-			set
-			{
-				_additionalStartupParameters = value;
-				OnPropertyChanged(new[] { "AdditionalStartupParameters" });
-				UserSettings.Current.Save();
-			}
-		}
-
-		public bool LaunchUsingSteam
-		{
-			get => _launchUsingSteam;
-			set
-			{
-				_launchUsingSteam = value;
-				OnPropertyChanged(new[] { "LaunchUsingSteam" });
-				UserSettings.Current.Save();
-			}
+			get => m_additionalStartupParameters;
+			set => SetValue(ref m_additionalStartupParameters, value, UserSettings.Current.Save);
 		}
 
 		public string GUID => GUIDCalculator.GetKey();
 
 		public bool Arma2OASteamUpdate
 		{
-			get => _arma2OASteamUpdate;
-			set
-			{
-				_arma2OASteamUpdate = value;
-				OnPropertyChanged(new[] { "Arma2OASteamUpdate" });
-				UserSettings.Current.Save();
-			}
+			get => m_arma2OASteamUpdate;
+			set => SetValue(ref m_arma2OASteamUpdate, value, UserSettings.Current.Save);
 		}
 
 		public bool WindowedMode
 		{
-			get => _windowedMode;
-			set
-			{
-				_windowedMode = value;
-				OnPropertyChanged(new[] { "WindowedMode" });
-				UserSettings.Current.Save();
-			}
+			get => m_windowedMode;
+			set => SetValue(ref m_windowedMode, value, UserSettings.Current.Save);
 		}
 
 		public bool MultiGpu
 		{
-			get => _multiGpu;
-			set
-			{
-				_multiGpu = value;
-				OnPropertyChanged(new[] { "MultiGpu" });
-				UserSettings.Current.Save();
-			}
+			get => m_multiGpu;
+			set => SetValue(ref m_multiGpu, value, UserSettings.Current.Save);
 		}
 
 		public bool CloseDayZLauncher
 		{
-			get => _closeDayZLauncher;
-			set
-			{
-				_closeDayZLauncher = value;
-				OnPropertyChanged(new[] { "CloseDayZLauncher" });
-				UserSettings.Current.Save();
-			}
+			get => m_closeDayZLauncher;
+			set => SetValue(ref m_closeDayZLauncher, value, UserSettings.Current.Save);
 		}
 
 		public string Arma2DirectoryOverride
 		{
-			get => _arma2DirectoryOverride;
-			set
+			get => m_arma2DirectoryOverride;
+			set => SetValue(ref m_arma2DirectoryOverride, value, () =>
 			{
-				_arma2DirectoryOverride = value;
-				OnPropertyChanged(new[] { "Arma2DirectoryOverride" });
 				UserSettings.Current.Save();
 				CalculatedGameSettings.Current.Update();
-			}
+			});
 		}
 
 		public string Arma2OADirectoryOverride
 		{
-			get => _arma2OaDirectoryOverride;
-			set
+			get => m_arma2OaDirectoryOverride;
+			set => SetValue(ref m_arma2OaDirectoryOverride, value, () =>
 			{
-				_arma2OaDirectoryOverride = value;
-				OnPropertyChanged(new[] { "Arma2OADirectoryOverride" });
 				UserSettings.Current.Save();
 				CalculatedGameSettings.Current.Update();
-			}
+			});
 		}
 
 		public string CustomBranchName
 		{
-			get => _customBranchName;
-			set
-			{
-				_customBranchName = value;
-				OnPropertyChanged(new[] { "CustomBranchName" });
-				UserSettings.Current.Save();
-			}
+			get => m_customBranchName;
+			set => SetValue(ref m_customBranchName, value, UserSettings.Current.Save);
 		}
 
 		public string CustomBranchPass
 		{
-			get => _customBranchPass;
-			set
-			{
-				_customBranchPass = value;
-				OnPropertyChanged(new[] { "CustomBranchPass" });
-				UserSettings.Current.Save();
-			}
+			get => m_customBranchPass;
+			set => SetValue(ref m_customBranchPass, value, UserSettings.Current.Save);
 		}
 
 		public bool TwentyFourHourTimeFormat
 		{
-			get => _twentyFourHourTimeFormat;
-			set
-			{
-				_twentyFourHourTimeFormat = value;
-				OnPropertyChanged(new[] { "TwentyFourHourTimeFormat" });
-				UserSettings.Current.Save();
-			}
+			get => m_twentyFourHourTimeFormat;
+			set => SetValue(ref m_twentyFourHourTimeFormat, value, UserSettings.Current.Save);
 		}
 	}
 }

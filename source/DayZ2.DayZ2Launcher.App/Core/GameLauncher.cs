@@ -12,13 +12,17 @@ namespace DayZ2.DayZ2Launcher.App.Core
 {
 	public class GameLauncher
 	{
+		const string ProcessName = "arma2oa";
+
 		public bool CanLaunch { get; set; }
 
 #nullable enable
 		public bool LaunchGame(Server? server)
 		{
+			if (!CanLaunch) return false;
+
 			bool battleye = server?.Battleye ?? true;
-			// TODO: does the battleye version require additional args "0 0"?
+
 			string exe = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, battleye ? "ArmA2OA_BE.exe" : "ArmA2OA.exe");
 
 			if (!File.Exists(exe))
@@ -44,7 +48,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			if (succeeded && UserSettings.Current.GameOptions.CloseDayZLauncher)
 			{
-				// TODO: shutdown
+				UserSettings.Current.Save();
+				App.Current.RequestShutdown();
 			}
 
 			return succeeded;
@@ -52,16 +57,21 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		private static string GetLaunchArguments(Server? server)
 		{
-			List<string> args = new()
+			bool battleye = server?.Battleye ?? true;
+
+			List<string> args = new();
+
+			if (battleye)
 			{
-				"-noSplash"
-				,"-noFilePatching"
-			};
+				args.Add("0");
+				args.Add("0");
+			}
+
+			args.Add("-noSplash");
+			args.Add("-noFilePatching");
 
 			// TODO: dont hardcode mod name
 			args.Add($"-mod={Path.Combine(UserSettings.ContentDataPath, "@DayZ2")}");
-			// args.Add(new StringBuilder().Append("-mods=").AppendJoin(';', server.Mods).ToString());
-
 
 			if (UserSettings.Current.GameOptions.WindowedMode)
 				args.Add("-window");
@@ -84,16 +94,16 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public static bool IsRunning()
 		{
-			return Process.GetProcessesByName("arma2oa").Any();
+			return Process.GetProcessesByName(ProcessName).Any();
 		}
 
-		public static async Task CloseGame(CancellationToken cancellationToken)
+		public static Task CloseGameAsync(CancellationToken cancellationToken)
 		{
-			foreach (Process process in Process.GetProcessesByName("arma2oa"))
+			return Task.WhenAll(Process.GetProcessesByName(ProcessName).Select(n =>
 			{
-				process.Kill();
-				await process.WaitForExitAsync(cancellationToken);
-			}
+				n.Kill();
+				return n.WaitForExitAsync(cancellationToken);
+			}));
 		}
 	}
 }

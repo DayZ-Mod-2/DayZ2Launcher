@@ -31,7 +31,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_listeningPort != oldValue)
 				{
-					OnPropertyChanged(new[] { "ListeningPort" });
+					OnPropertyChanged(nameof(ListeningPort));
 					UserSettings.Current.Save();
 				}
 			}
@@ -40,29 +40,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public bool RandomizePort
 		{
 			get => _randomizePort;
-			set
-			{
-				if (_randomizePort != value)
-				{
-					_randomizePort = value;
-					OnPropertyChanged(new[] { "RandomizePort" });
-					UserSettings.Current.Save();
-				}
-			}
+			set => SetValue(ref _randomizePort, value, UserSettings.Current.Save);
 		}
 
 		public bool EnableUpnp
 		{
 			get => _enableUpnp;
-			set
-			{
-				if (_enableUpnp != value)
-				{
-					_enableUpnp = value;
-					OnPropertyChanged(new[] { "EnableUpnp" });
-					UserSettings.Current.Save();
-				}
-			}
+			set => SetValue(ref _enableUpnp, value, UserSettings.Current.Save);
 		}
 
 		public int MaxDLSpeed
@@ -79,7 +63,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_maxDlSpeed != oldValue)
 				{
-					OnPropertyChanged(new[] { "MaxDLSpeed" });
+					OnPropertyChanged(nameof(MaxDLSpeed));
 					UserSettings.Current.Save();
 				}
 			}
@@ -99,7 +83,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_maxDlConns != oldValue)
 				{
-					OnPropertyChanged(new[] { "MaxDLConns" });
+					OnPropertyChanged(nameof(MaxDLConns));
 					UserSettings.Current.Save();
 				}
 			}
@@ -131,7 +115,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_maxUlSpeed != oldValue)
 				{
-					OnPropertyChanged(new[] { "MaxULSpeed" });
+					OnPropertyChanged(nameof(MaxULSpeed));
 					UserSettings.Current.Save();
 				}
 			}
@@ -151,7 +135,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 				if (_numUlSlots != oldValue)
 				{
-					OnPropertyChanged(new[] { "NumULSlots" });
+					OnPropertyChanged(nameof(NumULSlots));
 					UserSettings.Current.Save();
 				}
 			}
@@ -172,29 +156,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public bool StopSeeding
 		{
 			get => _stopSeeding;
-			set
-			{
-				if (_stopSeeding != value)
-				{
-					_stopSeeding = value;
-					OnPropertyChanged(new[] { "StopSeeding" });
-					UserSettings.Current.Save();
-				}
-			}
+			set => SetValue(ref _stopSeeding, value, UserSettings.Current.Save);
 		}
 
 		public bool DisableFastResume
 		{
 			get => _disableFastResume;
-			set
-			{
-				if (_disableFastResume != value)
-				{
-					_disableFastResume = value;
-					OnPropertyChanged(new[] { "DisableFastResume" });
-					UserSettings.Current.Save();
-				}
-			}
+			set => SetValue(ref _disableFastResume, value, UserSettings.Current.Save);
 		}
 	}
 }

@@ -89,6 +89,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Assets\Icons\rocket.svg" />
     <Resource Include="commanderico.ico" />
     <Resource Include="Assets\Images\discord_logo.png" />
     <Resource Include="Ui\BebasNeue.ttf" />
@@ -124,7 +125,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Mono.Nat" Version="3.0.2" />
     <PackageReference Include="MonoTorrent" Version="2.0.4" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="ReusableTasks" Version="2.0.1" />
     <PackageReference Include="SharpCompress" Version="0.30.1" />
     <PackageReference Include="SharpVectors" Version="1.7.7" />
@@ -145,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\Icons\refresh.svg" />
+    <None Remove="Assets\Icons\rocket.svg" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\Icons\refresh.svg" />

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using DayZ2.DayZ2Launcher.App.Ui;
-using Newtonsoft.Json;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
@@ -42,7 +41,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			else
 				Arma2Path = LocalMachineInfo.Current.Arma2Path;
 
-			OnPropertyChanged(new[] { "Arma2Path" });
+			OnPropertyChanged(nameof(Arma2Path));
 		}
 
 		public void SetArma2OAPath()
@@ -52,7 +51,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			else
 				Arma2OAPath = LocalMachineInfo.Current.Arma2OAPath;
 
-			OnPropertyChanged(new[] { "Arma2OAPath" });
+			OnPropertyChanged(nameof(Arma2OAPath));
 		}
 
 		private void SetGameVersions()
@@ -62,7 +61,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			else
 				Versions = null;
 
-			OnPropertyChanged(new[] { "Versions" });
+			OnPropertyChanged(nameof(Versions));
 		}
 
 		private void SetModContentVersion()
@@ -76,7 +75,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				ModContentVersion = null;
 			}
 
-			OnPropertyChanged(new[] { "ModContentVersion" });
+			OnPropertyChanged(nameof(ModContentVersion));
 		}
 	}
 }

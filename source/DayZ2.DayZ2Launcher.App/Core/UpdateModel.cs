@@ -84,7 +84,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		Error
 	}
 
-	struct Resource
+	public struct Resource
 	{
 		[JsonPropertyName("url")]
 		public Uri Uri { get; set; }
@@ -102,7 +102,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public static Resource FromJson(JsonElement json) => new Resource(json);
 	}
 
-	class ResourceLocator
+	public class ResourceLocator
 	{
 		static readonly Uri RootLocatorUri = new Uri(@"https://www.perry-swift.de/dayz2/locator.json");
 
@@ -164,12 +164,14 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		}
 	}
 
-	public class ModUpdater
+	public class ModUpdater : IAsyncDisposable
 	{
 		public bool IsRunning { get; set; }
 		public UpdateStatus Status { get; private set; }
 		public SemanticVersion CurrentVersion { get; private set; }
 		public SemanticVersion LatestVersion { get; private set; }
+
+		private readonly List<Task> m_extractionTasks = new();
 
 		private struct ModInfo
 		{
@@ -183,7 +185,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		private class Mod
 		{
-			public SemanticVersion CurrentVersion;
+#pragma warning disable CS0649
+			public SemanticVersion CurrentVersion;  // TODO: save some version file containing each mod
+#pragma warning restore CS0649
 			public SemanticVersion LatestVersion;
 
 			public Resource LatestVersionContent;
@@ -241,13 +245,16 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
-		private bool IsExtracting { get; set; }
+		private bool IsExtracting => m_extractionTasks.Count > 0;
 		private ExtractionProgress m_extractionProgress = new();
 
-		public ModUpdater()
+		public ModUpdater(ResourceLocator resourceLocator, TorrentClient torrentClient)
 		{
-			m_resourceLocator = new ResourceLocator(new HttpClient());
-			m_torrentClient = new TorrentClient();
+			m_resourceLocator = resourceLocator;
+			m_torrentClient = torrentClient;
+
+			App.Current.OnShutdown(this);
+
 			ReadCurrentVersion();
 		}
 
@@ -306,29 +313,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				Status = mod.LatestVersion == CurrentVersion ? UpdateStatus.UpToDate : UpdateStatus.OutOfDate;
 			}
 			LatestVersion = mod.LatestVersion;
-			// CurrentVersion = mod.CurrentVersion;
-
-			/*
-			bool updateRequired = false;
-			foreach (KeyValuePair<string, ModInfo> item in mods)  // TODO: use unpack when upgrading .NET
-			{
-				string name = item.Key;
-				ModInfo info = item.Value;
-				if (m_mods.TryGetValue(name, out Mod mod))
-				{
-					if (mod.LatestVersionContent.Sha256 != info.ContentResource.Sha256)
-						updateRequired = true;
-				}
-				else
-				{
-					m_mods.Add(name, mod = new Mod());
-					updateRequired = true;
-				}
-
-				mod.LatestVersion = info.LatestVersion;
-				mod.LatestVersionContent = info.ContentResource;
-			}
-			*/
 		}
 
 		private async Task<Torrent> AddTorrentAsync(Resource resource, CancellationToken cancellationToken)
@@ -385,9 +369,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					Overwrite = true,
 				};
 
-				archive.CompressedBytesRead += (Object _, CompressedBytesReadEventArgs args) =>
+				archive.CompressedBytesRead += (object sender, CompressedBytesReadEventArgs e) =>
 				{
-					m_extractionProgress.ExtractedBytes[torrent] = (double)args.CompressedBytesRead;
+					m_extractionProgress.ExtractedBytes[torrent] = (double)e.CompressedBytesRead;
 				};
 
 				foreach (IArchiveEntry entry in archive.Entries.Where(entry => !entry.IsDirectory))
@@ -396,34 +380,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 					entry.WriteToDirectory(directory.FullName, options);
 				}
-
-				/*
-				using (var archive = ArchiveFactory.Open(torrent.ArchiveFile))
-				using (var reader = archive.ExtractAllEntries())
-				{
-					var options = new ExtractionOptions
-					{
-						ExtractFullPath = true,
-						Overwrite = true,
-					};
-
-					while (reader.MoveToNextEntry())
-					{
-						cancellationToken.ThrowIfCancellationRequested();
-						reader.WriteEntryToDirectory(directory.FullName, options);
-					}
-
-
-					// m_extractionProgress.FinishedSize += archive.TotalSize;
-				}
-				*/
 			}
-			return Task.Run(ExtractTorrentBlocking, cancellationToken);
+			return Task.Run(ExtractTorrentBlocking);
 		}
 
 		private async Task ExtractModAsync(Mod mod, CancellationToken cancellationToken)
 		{
-			IsExtracting = true;
 			m_extractionProgress.Clear();
 			foreach (Torrent modTorrent in mod.Torrents)
 			{
@@ -431,8 +393,18 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				m_extractionProgress.TotalBytes += archive.TotalUncompressSize;
 				m_extractionProgress.ExtractedBytes[modTorrent] = archive.TotalUncompressSize;
 			}
-			await Task.WhenAll(mod.Torrents.Select(n => ExtractTorrentAsync(n, mod.Directory, cancellationToken)));
-			IsExtracting = false;
+
+			var task = Task.WhenAll(mod.Torrents.Select(n => ExtractTorrentAsync(n, mod.Directory, cancellationToken)));
+			m_extractionTasks.Add(task);
+
+			try
+			{
+				await task;
+			}
+			finally
+			{
+				m_extractionTasks.Remove(task);
+			}
 		}
 
 		private static Task ClearDirectoryAsync(DirectoryInfo directory, CancellationToken cancellationToken)
@@ -571,30 +543,30 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				CurrentVersion = SemanticVersion.Parse(File.ReadAllText(UserSettings.ContentCurrentTagFile));
 			}
 		}
+
+		public ValueTask DisposeAsync()
+		{
+			return new ValueTask(Task.WhenAll(m_extractionTasks));
+		}
 	}
 
 	public class MotdUpdater
 	{
 		public string Motd;
-		private string m_sha256;
 
 		private readonly ResourceLocator m_resourceLocator;
-		public MotdUpdater()
+
+		public MotdUpdater(ResourceLocator resourceLocator)
 		{
-			m_resourceLocator = new ResourceLocator(new HttpClient());
+			m_resourceLocator = resourceLocator;
 		}
 
 		public async Task<bool> CheckForUpdateAsync(CancellationToken cancellationToken)
 		{
+			string oldMotd = Motd;
 			Resource resource = await m_resourceLocator.LocateAsync("motd", cancellationToken);
-			if (resource.Sha256 != m_sha256)
-			{
-				Motd = await m_resourceLocator.GetStringAsync(resource, cancellationToken);
-				m_sha256 = resource.Sha256;
-				return true;
-			}
-
-			return false;
+			Motd = await m_resourceLocator.GetStringAsync(resource, cancellationToken);
+			return Motd != oldMotd;
 		}
 	}
 
@@ -614,9 +586,10 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		private string m_sha256;
 
 		private readonly ResourceLocator m_resourceLocator;
-		public ServerUpdater()
+
+		public ServerUpdater(ResourceLocator resourceLocator)
 		{
-			m_resourceLocator = new ResourceLocator(new HttpClient());
+			m_resourceLocator = resourceLocator;
 		}
 
 		public async Task<bool> CheckForUpdateAsync(CancellationToken cancellationToken)

@@ -1,9 +1,11 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using DayZ2.DayZ2Launcher.App.Core;
+using System.Runtime.Serialization;
 
 namespace DayZ2.DayZ2Launcher.App.Ui
 {
+	[DataContract]
 	public abstract class ViewModelBase : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -23,6 +25,18 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 			field = value;
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+		}
+
+		protected void SetValue<T>(ref T field, T value, Action callback, [CallerMemberName] string propertyName = null)
+		{
+			if (field == null && value == null || (field?.Equals(value) ?? false))
+			{
+				return;
+			}
+
+			field = value;
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			callback();
 		}
 
 		public string Title

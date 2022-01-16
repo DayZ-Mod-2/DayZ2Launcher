@@ -9,7 +9,7 @@ using MonoTorrent.Client;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
-	public class TorrentClient
+	public class TorrentClient : IAsyncDisposable
 	{
 		public enum Status
 		{
@@ -23,9 +23,10 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public TorrentClient()
 		{
 			m_engine = new ClientEngine(GetEngineSettings());
+			App.Current.OnShutdown(this);
 		}
 
-		private readonly ClientEngine m_engine;
+		readonly ClientEngine m_engine;
 
 		public struct Progress
 		{
@@ -128,7 +129,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		}
 
 		Task m_torrentTask;
-		private CancellationTokenSource m_cancellationTokenSource;
+		CancellationTokenSource m_cancellationTokenSource;
 
 		public struct EngineTorrent
 		{
@@ -142,7 +143,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
-		private readonly Dictionary<string, EngineTorrent> m_torrents = new();
+		readonly Dictionary<string, EngineTorrent> m_torrents = new();
 
 #pragma warning disable CS1998
 		public async Task StartAsync()
@@ -301,7 +302,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 							engineTorrents[0].CompletionTask.SetResult();
 					}
 				}
-
 			}
 		}
 
@@ -334,6 +334,11 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				AllowDht = true,
 				AllowPeerExchange = true
 			}.ToSettings();
+		}
+
+		public ValueTask DisposeAsync()
+		{
+			return new ValueTask(StopAsync());
 		}
 	}
 }

@@ -6,17 +6,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 	[DataContract]
 	public class AppOptions : ViewModelBase
 	{
-		[DataMember] private bool _lowPingRate;
+		[DataMember] private bool m_lowPingRate;
 
 		public bool LowPingRate
 		{
-			get { return _lowPingRate; }
-			set
-			{
-				_lowPingRate = value;
-				OnPropertyChanged(new[] { "LowPingRate" });
-				UserSettings.Current.Save();
-			}
+			get => m_lowPingRate;
+			set => SetValue(ref m_lowPingRate, value, UserSettings.Current.Save);
 		}
 	}
 }

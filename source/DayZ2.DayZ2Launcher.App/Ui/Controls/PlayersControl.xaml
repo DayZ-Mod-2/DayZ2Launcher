@@ -10,9 +10,9 @@
 		            VerticalAlignment="Center"
 		            HorizontalAlignment="Right">
 			<TextBlock Text="{Binding Fullness}"
-			           Foreground="{Binding Fullness, Converter={StaticResource ServerFullnessToColorConverter}}" />
+			           Foreground="{Binding Fullness, Converter={StaticResource ServerFullnessToColorConverter}}"/>
 			<StackPanel.ToolTip>
-				<ToolTip>
+				<ToolTip Visibility="{Binding IsResponding, Converter={StaticResource BooleanToVisibilityConverter}}">
 					<ItemsControl ItemsSource="{Binding Players}">
 						<ItemsControl.Template>
 							<ControlTemplate>
