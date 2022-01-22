@@ -301,6 +301,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					Status = UpdateStatus.OutOfDate;
 					mod.LatestVersion = info.LatestVersion;
 					mod.LatestVersionContent = info.ContentResource;
+					m_mods[modName] = mod;
 				}
 			}
 			else
