@@ -102,14 +102,14 @@
 							        HorizontalAlignment="Left"
 							        Margin="0,8,0,0"
 							        Style="{StaticResource MetroButtonStyle}"
-							        Visibility="{Binding CanInstallMod, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+							        Visibility="{Binding Actions.CanInstallMod, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 							        Click="InstallLatestVersion_Click">
 							</Button>
 							<Button Content="Verify Integrity"
 							        Background="#444444"
 							        Foreground="LightGreen"
 							        HorizontalAlignment="Left"
-							        Visibility="{Binding CanVerifyIntegrity, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+							        Visibility="{Binding Actions.CanVerifyIntegrity, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 							        Margin="0,8,0,0"
 							        Style="{StaticResource MetroButtonStyle}"
 							        Click="VerifyIntegrity_Click">
@@ -137,7 +137,7 @@
 				        Foreground="#EEEEEE"
 				        Padding="8 2"
 				        Style="{StaticResource MetroButtonStyle}"
-				        Visibility="{Binding CanCheckForUpdates, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
+				        Visibility="{Binding Actions.CanCheckForUpdates, Converter={StaticResource BooleanToVisibilityCollapsedConverter}}"
 				        Click="CheckNow_Click"/>
 				<Button Content="Done"
 				        Margin="14 10 0 0"

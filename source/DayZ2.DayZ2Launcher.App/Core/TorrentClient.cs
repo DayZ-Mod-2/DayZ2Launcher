@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -131,15 +133,26 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		Task m_torrentTask;
 		CancellationTokenSource m_cancellationTokenSource;
 
-		public struct EngineTorrent
+		class EngineTorrent
 		{
-			public TorrentManager Manager { get; private set; }
-			public TaskCompletionSource CompletionTask { get; private set; }
+			public TorrentManager Manager { get; }
+			public TaskCompletionSource TaskCompletionSource { get; }
 
 			public EngineTorrent(TorrentManager manager)
 			{
 				Manager = manager;
-				CompletionTask = new TaskCompletionSource();
+				TaskCompletionSource = new TaskCompletionSource();
+			}
+
+			public bool CheckCompletion()
+			{
+				if (Manager.Complete && !TaskCompletionSource.Task.IsCompleted)
+				{
+					Debug.WriteLine($"Torrent completed: {Manager.Torrent.Source}");
+					TaskCompletionSource.SetResult();
+					return true;
+				}
+				return false;
 			}
 		}
 
@@ -189,35 +202,38 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			return new string[]{};
 		}
 
-		public EngineTorrent[] Torrents()
+		public async Task VerifyTorrentsAsync(bool autoStart = true)
 		{
-			return m_torrents.Values.ToArray();
-		}
-
-		public async Task VerifyTorrentsAsync()
-		{
-			foreach (TorrentManager torrent in m_engine.Torrents)
+			await Task.WhenAll(m_engine.Torrents.Select(async t =>
 			{
-				// have to stop it to check
-				await torrent.StopAsync();
-				await torrent.HashCheckAsync(true);
-			}
+				await t.StopAsync();
+				await t.HashCheckAsync(autoStart);
+			}));
 		}
 
-		public async Task AddTorrentAsync(string torrentFile, CancellationToken cancellationToken)
+		public async Task<Task> AddTorrentAsync(string torrentFile, string outputPath, CancellationToken cancellationToken)
 		{
+			if (m_torrents.ContainsKey(torrentFile))
+				throw new ArgumentException("Torrent already added.", nameof(torrentFile));
+
 			Torrent torrent = await Torrent.LoadAsync(torrentFile);
-			TorrentManager manager = await m_engine.AddAsync(torrent, UserSettings.ContentPackedDataPath, GetTorrentSettings());
-			manager.TorrentStateChanged += OnTorrentStateChanged;
+			TorrentManager manager = await m_engine.AddAsync(torrent, outputPath, GetTorrentSettings());
+
+			EngineTorrent engineTorrent = new EngineTorrent(manager);
+
+			if (!engineTorrent.CheckCompletion())
+			{
+				manager.TorrentStateChanged += (object sender, TorrentStateChangedEventArgs e) =>
+				{
+					engineTorrent.CheckCompletion();
+				};
+			}
+
+			m_torrents.Add(torrentFile, engineTorrent);
+
 			await manager.StartAsync();
 
-			lock (m_torrents)
-			{
-				if (m_torrents.ContainsKey(torrentFile))
-					m_torrents[torrentFile] = new EngineTorrent(manager);
-				else
-					m_torrents.Add(torrentFile, new EngineTorrent(manager));
-			}
+			return engineTorrent.TaskCompletionSource.Task;
 		}
 
 		public async Task<bool> RemoveTorrentAsync(string torrentFile, CancellationToken cancellationToken)
@@ -278,31 +294,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				await torrentManager.DhtAnnounceAsync();
 				await torrentManager.LocalPeerAnnounceAsync();
 				await torrentManager.TrackerManager.AnnounceAsync(cancellationToken);
-			}
-		}
-
-		private void OnTorrentStateChanged(object obj, TorrentStateChangedEventArgs args)
-		{
-			if (args.TorrentManager.Complete)
-			{
-				if (UserSettings.Current.TorrentOptions.StopSeeding)
-				{
-					args.TorrentManager.StopAsync();
-				}
-				
-				lock (m_torrents)
-				{
-					EngineTorrent[] engineTorrents = m_torrents
-						.Where(t => t.Value.Manager.InfoHash == args.TorrentManager.InfoHash)
-						.Select(t => t.Value)
-						.ToArray();
-
-					if (engineTorrents.Any())
-					{
-						if (!engineTorrents[0].CompletionTask.Task.IsCompleted)
-							engineTorrents[0].CompletionTask.SetResult();
-					}
-				}
 			}
 		}
 

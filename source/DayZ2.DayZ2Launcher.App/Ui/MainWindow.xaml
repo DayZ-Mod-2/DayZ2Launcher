@@ -178,7 +178,7 @@
 						<Button
 							Margin="16 0 0 0"
 							Click="Updates_Click"
-							Style="{Binding UpdatesViewModel.OverallStatus, Converter={StaticResource UpdateStatusToStyleConverter}, FallbackValue={StaticResource MetroTextButtonStyle}}">
+							Style="{Binding UpdatesViewModel.DayZStatus, Converter={StaticResource UpdateStatusToStyleConverter}, FallbackValue={StaticResource MetroTextButtonStyle}}">
 							<Button.Template>
 								<ControlTemplate>
 									<Border IsHitTestVisible="True"

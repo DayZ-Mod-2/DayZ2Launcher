@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -166,10 +165,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 	public class ModUpdater : IAsyncDisposable
 	{
-		public bool IsRunning { get; set; }
-		public UpdateStatus Status { get; private set; }
-		public SemanticVersion CurrentVersion { get; private set; }
-		public SemanticVersion LatestVersion { get; private set; }
+		private readonly Dictionary<string, SemanticVersion> m_installedMods;
 
 		private readonly List<Task> m_extractionTasks = new();
 
@@ -185,6 +181,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		private class Mod
 		{
+			public UpdateStatus Status;
+
 #pragma warning disable CS0649
 			public SemanticVersion CurrentVersion;  // TODO: save some version file containing each mod
 #pragma warning restore CS0649
@@ -198,22 +196,26 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		private class Torrent
 		{
-			public string Sha256;
-			public readonly FileInfo TorrentFile;
-			public FileInfo ArchiveFile;
-			public int RefCount;
+			public string Sha256 { get; }
+			public FileInfo TorrentFile { get; }
+			public DirectoryInfo DownloadDirectory { get; }
 
+			public int RefCount;
+			public Task Task;
+
+			/*
 			public Torrent(string sha256, FileInfo torrentFile)
 			{
 				Sha256 = sha256;
 				TorrentFile = torrentFile;
 			}
+			*/
 
-			public Torrent(string sha256, FileInfo torrentFile, FileInfo archiveFile)
+			public Torrent(string sha256, FileInfo torrentFile, DirectoryInfo downloadDirectory)
 			{
 				Sha256 = sha256;
 				TorrentFile = torrentFile;
-				ArchiveFile = archiveFile;
+				DownloadDirectory = downloadDirectory;
 			}
 		}
 
@@ -256,52 +258,23 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			App.Current.OnShutdown(this);
 
-			ReadCurrentVersion();
+			m_installedMods = ReadCurrentVersions();
 		}
 
 		public async Task CheckForUpdateAsync(string modName, CancellationToken cancellationToken)
 		{
-			/* {
-				"dayz2": {
-					"latest": "0.0.0.0",
-					"addons": {
-						"url": "https://foo.bar/mods/dayz2.json",
-						"sha256": "abcdef"
-					}
-				},
-				"dayz2-dev": {
-					"latest": "0.0.0.0"
-					"addons": {
-						"url": "https://foo.bar/mods/dayz2-dev.json",
-						"sha256": "abcdef"
-					}
-				}
-			} */
-
 			Resource resource = await m_resourceLocator.LocateAsync("mods", cancellationToken);
 			var mods = JsonSerializer.Deserialize<IDictionary<string, ModInfo>>(
 				await m_resourceLocator.GetStringAsync(resource, cancellationToken));
-
-			/* [
-				{
-					"url": "https://foo.bar/torrents/baz.torrent",
-					"sha256": "abcdef"
-				},
-				{
-					"url": "https://foo.bar/torrents/quux.torrent",
-					"sha256": "abcdef"
-				},
-			] */
 
 			ModInfo info = mods[modName];
 			if (m_mods.TryGetValue(modName, out Mod mod))
 			{
 				if (mod.LatestVersionContent.Sha256 != info.ContentResource.Sha256 || info.LatestVersion != mod.LatestVersion)
 				{
-					Status = UpdateStatus.OutOfDate;
+					mod.Status = UpdateStatus.OutOfDate;
 					mod.LatestVersion = info.LatestVersion;
 					mod.LatestVersionContent = info.ContentResource;
-					m_mods[modName] = mod;
 				}
 			}
 			else
@@ -315,38 +288,41 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				};
 				m_mods.Add(modName, mod);
 			}
-			LatestVersion = mod.LatestVersion;
-			Status = (LatestVersion == CurrentVersion) ? UpdateStatus.UpToDate : UpdateStatus.OutOfDate;
+
+			if (m_installedMods.TryGetValue(modName, out SemanticVersion currentVersion))
+			{
+				mod.CurrentVersion = currentVersion;
+			}
+			mod.Status = (mod.LatestVersion == mod.CurrentVersion) ? UpdateStatus.UpToDate : UpdateStatus.OutOfDate;
 		}
 
 		private async Task<Torrent> AddTorrentAsync(Resource resource, CancellationToken cancellationToken)
 		{
 			if (!m_torrents.TryGetValue(resource.Sha256, out Torrent torrent))
 			{
-				torrent = new Torrent(resource.Sha256, new FileInfo(Path.Combine(UserSettings.ContentMetaPath, $"{resource.Sha256}.torrent")));
-				if (!torrent.TorrentFile.Exists)
+				FileInfo torrentFile = new FileInfo(Path.Combine(UserSettings.ContentMetaPath, $"{resource.Sha256}.torrent"));
+				if (!torrentFile.Exists)
 				{
-					await m_resourceLocator.DownloadAsync(resource, torrent.TorrentFile, cancellationToken);
-					m_torrents[resource.Sha256] = torrent;
+					await m_resourceLocator.DownloadAsync(resource, torrentFile, cancellationToken);
 				}
+
+				var downloadDirectory = new DirectoryInfo(Path.Combine(UserSettings.ContentPackedDataPath, resource.Sha256));
+				if (!downloadDirectory.Exists) downloadDirectory.Create();
+
+				m_torrents[resource.Sha256] = torrent = new Torrent(resource.Sha256, torrentFile, downloadDirectory);
 			}
 
 			await AddTorrentAsync(torrent, cancellationToken);
-
-			string[] torrentFiles = m_torrentClient.GetTorrentFiles(torrent.TorrentFile.FullName);
-			if (torrentFiles.Length != 1)
-			{
-				throw new Exception($"Torrent is empty or contains more than a single archive: {torrent.TorrentFile.FullName}");
-			}
-			torrent.ArchiveFile = new FileInfo(Path.Combine(UserSettings.ContentPackedDataPath, torrentFiles[0]));
 
 			return torrent;
 		}
 
 		private async Task AddTorrentAsync(Torrent torrent, CancellationToken cancellationToken)
 		{
-			if (++torrent.RefCount == 1)
-				await m_torrentClient.AddTorrentAsync(torrent.TorrentFile.FullName, cancellationToken);
+			if (torrent.RefCount++ == 0)
+			{
+				torrent.Task = await m_torrentClient.AddTorrentAsync(torrent.TorrentFile.FullName, torrent.DownloadDirectory.FullName, cancellationToken);
+			}
 		}
 
 		private async Task RemoveTorrentAsync(Torrent torrent, CancellationToken cancellationToken)
@@ -366,23 +342,26 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			void ExtractTorrentBlocking()
 			{
-				IArchive archive = ArchiveFactory.Open(torrent.ArchiveFile);
-				var options = new ExtractionOptions
+				foreach (FileInfo archiveFile in torrent.DownloadDirectory.EnumerateFiles("*.7z", SearchOption.TopDirectoryOnly))
 				{
-					ExtractFullPath = true,
-					Overwrite = true,
-				};
+					IArchive archive = ArchiveFactory.Open(archiveFile);
+					var options = new ExtractionOptions
+					{
+						ExtractFullPath = true,
+						Overwrite = true,
+					};
 
-				archive.CompressedBytesRead += (object sender, CompressedBytesReadEventArgs e) =>
-				{
-					m_extractionProgress.ExtractedBytes[torrent] = (double)e.CompressedBytesRead;
-				};
+					archive.CompressedBytesRead += (object sender, CompressedBytesReadEventArgs e) =>
+					{
+						m_extractionProgress.ExtractedBytes[torrent] = (double)e.CompressedBytesRead;
+					};
 
-				foreach (IArchiveEntry entry in archive.Entries.Where(entry => !entry.IsDirectory))
-				{
-					cancellationToken.ThrowIfCancellationRequested();
+					foreach (IArchiveEntry entry in archive.Entries.Where(entry => !entry.IsDirectory))
+					{
+						cancellationToken.ThrowIfCancellationRequested();
 
-					entry.WriteToDirectory(directory.FullName, options);
+						entry.WriteToDirectory(directory.FullName, options);
+					}
 				}
 			}
 			return Task.Run(ExtractTorrentBlocking);
@@ -393,9 +372,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			m_extractionProgress.Clear();
 			foreach (Torrent modTorrent in mod.Torrents)
 			{
-				var archive = ArchiveFactory.Open(modTorrent.ArchiveFile);
-				m_extractionProgress.TotalBytes += archive.TotalUncompressSize;
-				m_extractionProgress.ExtractedBytes[modTorrent] = archive.TotalUncompressSize;
+				foreach (FileInfo archiveFile in modTorrent.DownloadDirectory.EnumerateFiles("*.7z", SearchOption.TopDirectoryOnly))
+				{
+					var archive = ArchiveFactory.Open(archiveFile);
+					m_extractionProgress.TotalBytes += archive.TotalUncompressSize;
+					m_extractionProgress.ExtractedBytes[modTorrent] = archive.TotalUncompressSize;
+				}
 			}
 
 			var task = Task.WhenAll(mod.Torrents.Select(n => ExtractTorrentAsync(n, mod.Directory, cancellationToken)));
@@ -442,20 +424,23 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			mod.Torrents = await Task.WhenAll(resources.Select(n => AddTorrentAsync(n, cancellationToken)));
 
 			// wait for all torrents to finish and then stop them to close file handles for extraction
-			await Task.WhenAll(m_torrentClient.Torrents().Select(t => t.CompletionTask.Task));
-			await Task.WhenAll(mod.Torrents.Select(t => RemoveTorrentAsync(t, cancellationToken)));
+			await Task.WhenAll(mod.Torrents.Select(n => n.Task));
 
+			// TODO: remove the stopping/staring after monotorrent opens files with only read hand
+			await Task.WhenAll(mod.Torrents.Select(t => RemoveTorrentAsync(t, cancellationToken)));
 			await ExtractModAsync(mod, cancellationToken);
 			await Task.WhenAll(mod.Torrents.Select(n => AddTorrentAsync(n, cancellationToken)));
 
-			CurrentVersion = mod.LatestVersion;
-			Status = UpdateStatus.UpToDate;
-			await WriteCurrentVersion();
+			mod.Status = UpdateStatus.UpToDate;
+
+			m_installedMods[modName] = mod.LatestVersion;
+
+			await WriteCurrentVersions();
 		}
 
-		public async Task StartAsync(string modName, CancellationToken cancellationToken)
+		public async Task StartAsync(CancellationToken cancellationToken)
 		{
-			foreach (var (name, mod) in m_mods)
+			foreach (Mod mod in m_mods.Values)
 			{
 				await Task.WhenAll(mod.Torrents.Select(t => RemoveTorrentAsync(t, cancellationToken)));
 
@@ -465,7 +450,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				mod.Torrents = torrents;
 			}
 
-			await m_torrentClient.StartAsync();
+			await m_torrentClient.VerifyTorrentsAsync(true);
+			// await m_torrentClient.StartAsync();
 		}
 
 		// TODO: use this
@@ -523,8 +509,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public async Task VerifyIntegrityAsync(string modName, CancellationToken cancellationToken)
 		{
-			await m_torrentClient.VerifyTorrentsAsync();
 			Mod mod = m_mods[modName];
+
+			await m_torrentClient.VerifyTorrentsAsync(true);
+
+			if (!mod.Torrents.All(n => n.Task?.IsCompleted ?? false))
+				throw new Exception("I love exceptions");
+
 			await ClearDirectoryAsync(mod.Directory, cancellationToken);
 			await ExtractModAsync(mod, cancellationToken);
 		}
@@ -534,23 +525,69 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			await m_torrentClient.ReconfigureEngineAsync();
 		}
 
-		private async Task WriteCurrentVersion()
+		private async Task WriteCurrentVersions()
 		{
-			byte[] content = Encoding.ASCII.GetBytes(CurrentVersion.ToString());
-			await File.OpenWrite(UserSettings.ContentCurrentTagFile).WriteAsync(content, 0, content.Length);
+			using (FileStream fs = File.OpenWrite(UserSettings.ContentCurrentTagFile))
+			{
+				await JsonSerializer.SerializeAsync(fs, m_installedMods);
+			}
 		}
 
-		private void ReadCurrentVersion()
+		private Dictionary<string, SemanticVersion> ReadCurrentVersions()
 		{
 			if (File.Exists(UserSettings.ContentCurrentTagFile))
 			{
-				CurrentVersion = SemanticVersion.Parse(File.ReadAllText(UserSettings.ContentCurrentTagFile));
+				using (FileStream fs = File.OpenRead(UserSettings.ContentCurrentTagFile))
+				{
+					try
+					{
+						return JsonSerializer.Deserialize<Dictionary<string, SemanticVersion>>(fs);
+					}
+					catch (JsonException)
+					{
+					}
+				}
+
+				File.Delete(UserSettings.ContentCurrentTagFile);
 			}
+			return new();
 		}
 
 		public ValueTask DisposeAsync()
 		{
 			return new ValueTask(Task.WhenAll(m_extractionTasks));
+		}
+
+		/* ------- Mod specific stuff -------- */
+
+		public bool IsInstalled(string modName)
+		{
+			return m_installedMods.ContainsKey(modName);
+		}
+
+		public UpdateStatus GetModStatus(string modName)
+		{
+			return m_mods[modName].Status;
+		}
+
+		public SemanticVersion GetLatestModVersion(string modName)
+		{
+			return m_mods[modName].LatestVersion;
+		}
+
+		public SemanticVersion GetCurrentModVersion(string modName)
+		{
+			return m_mods[modName].LatestVersion;
+		}
+
+		public bool IsDownloadComplete(string modName)
+		{
+			if (m_mods.TryGetValue(modName, out Mod mod))
+			{
+				return mod.Torrents.Any() && mod.Torrents.All(t => t.Task.IsCompleted);
+			}
+
+			return false;
 		}
 	}
 
