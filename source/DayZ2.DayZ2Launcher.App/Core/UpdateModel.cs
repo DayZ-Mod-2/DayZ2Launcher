@@ -297,8 +297,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			ModInfo info = mods[modName];
 			if (m_mods.TryGetValue(modName, out Mod mod))
 			{
-				if (mod.LatestVersionContent.Sha256 != info.ContentResource.Sha256 || CurrentVersion != mod.LatestVersion)
+				if (mod.LatestVersionContent.Sha256 != info.ContentResource.Sha256 || info.LatestVersion != mod.LatestVersion)
+				{
 					Status = UpdateStatus.OutOfDate;
+					mod.LatestVersion = info.LatestVersion;
+					mod.LatestVersionContent = info.ContentResource;
+				}
 			}
 			else
 			{
@@ -310,9 +314,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					LatestVersionContent = info.ContentResource
 				};
 				m_mods.Add(modName, mod);
-				Status = mod.LatestVersion == CurrentVersion ? UpdateStatus.UpToDate : UpdateStatus.OutOfDate;
 			}
 			LatestVersion = mod.LatestVersion;
+			Status = (LatestVersion == CurrentVersion) ? UpdateStatus.UpToDate : UpdateStatus.OutOfDate;
 		}
 
 		private async Task<Torrent> AddTorrentAsync(Resource resource, CancellationToken cancellationToken)
