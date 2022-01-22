@@ -70,8 +70,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			args.Add("-noSplash");
 			args.Add("-noFilePatching");
 
-			// TODO: dont hardcode mod name
-			args.Add($"-mod={Path.Combine(UserSettings.ContentDataPath, "@DayZ2")}");
+			args.Add($"\"-mod={CalculatedGameSettings.Current.Arma2Path};Expansion;ca\"");
+			args.Add($"\"-mod={Path.Combine(UserSettings.ContentDataPath, "@DayZ2")}\"");
 
 			if (UserSettings.Current.GameOptions.WindowedMode)
 				args.Add("-window");
@@ -79,6 +79,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			if (UserSettings.Current.GameOptions.MultiGpu)
 				args.Add("-winxp");
 
+			// TODO: escape additional parameters too?
 			if (!string.IsNullOrWhiteSpace(UserSettings.Current.GameOptions.AdditionalStartupParameters))
 				args.Add(UserSettings.Current.GameOptions.AdditionalStartupParameters);
 
