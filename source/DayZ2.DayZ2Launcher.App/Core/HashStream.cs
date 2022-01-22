@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using DayZ2.DayZ2Launcher.App.Core;
 
 class HashStream : Stream
 {
@@ -41,7 +42,7 @@ class HashStream : Stream
 		m_hash.TransformBlock(buffer, offset, count, buffer, offset);
 	}
 
-	public byte[] Hash
+	public byte[] HashBytes
 	{
 		get
 		{
@@ -55,7 +56,8 @@ class HashStream : Stream
 		get
 		{
 			m_hash.TransformFinalBlock(s_empty, 0, 0);
-			return Convert.ToBase64String(m_hash.Hash);
+			
+			return Hash.BytesToHexString(m_hash.Hash);
 		}
 	}
 

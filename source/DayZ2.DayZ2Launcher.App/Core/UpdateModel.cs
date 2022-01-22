@@ -157,7 +157,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			using (var sha256 = SHA256.Create())
 			using (var hashStream = new HashStream(fileStream, sha256))
 			{
-				await content.CopyToAsync(fileStream, cancellationToken);
+				await content.CopyToAsync(hashStream, cancellationToken);
 				if (resource.Sha256 != hashStream.HashString)
 					throw new Exception($"Resource locator hash did not match the content.\n{resource.Uri}");
 			}
@@ -217,8 +217,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
-		private readonly Dictionary<string, Mod> m_mods = new Dictionary<string, Mod>();
-		private readonly Dictionary<string, Torrent> m_torrents = new Dictionary<string, Torrent>();
+		private readonly Dictionary<string, Mod> m_mods = new();
+		private readonly Dictionary<string, Torrent> m_torrents = new();
 
 		private readonly ResourceLocator m_resourceLocator;
 		private readonly TorrentClient m_torrentClient;
@@ -291,8 +291,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					"sha256": "abcdef"
 				},
 			] */
-
-			Status = UpdateStatus.UpToDate;
 
 			ModInfo info = mods[modName];
 			if (m_mods.TryGetValue(modName, out Mod mod))
