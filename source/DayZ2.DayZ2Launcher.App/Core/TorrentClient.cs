@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -230,6 +230,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					await torrent.StopAsync();
 				}
 				await m_engine.RemoveAsync(torrent);
+				m_torrents.Remove(torrentFile);
 				return true;
 			}
 
