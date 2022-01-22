@@ -135,6 +135,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 			// TODO: maybe check for updates on a timer too
 			async void Init()
 			{
+				using var guard = Actions.Acquire();
 				await CheckForUpdatesAsync();
 				await m_modUpdater.StartAsync(m_cancellationToken);
 				await CheckForModUpdatesAsync();
