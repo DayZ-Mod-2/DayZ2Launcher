@@ -134,10 +134,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public List<Server> Servers { get; private set; } = new();
 
 		public event EventHandler<ServerDiscoveredEventArgs> ServerDiscovered;
+		public event EventHandler ServersClear;
 
 		public void SetServers(IList<ServerListInfo> servers)
 		{
 			Servers.Clear();
+			ServersClear?.Invoke(this, EventArgs.Empty);
 			foreach (ServerListInfo info in servers)
 			{
 				Server server = new Server(info);

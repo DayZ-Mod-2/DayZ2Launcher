@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -25,6 +25,11 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 			Title = "Servers";
 
 			// FiltersViewModel = new FiltersViewModel();
+
+			m_serverList.ServersClear += (object sender, EventArgs args) =>
+			{
+				Servers.Clear();
+			};
 
 			m_serverList.ServerDiscovered += (object sender, ServerDiscoveredEventArgs e) =>
 			{
