@@ -1,0 +1,66 @@
+[
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_anims.torrent",
+        "sha256": "91c8aa9c61c9a3bf84486fcb6654e21f023345f32b79f054fd971b28174bcb38"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_arma.torrent",
+        "sha256": "af9ca00a56153af3cb5136ac82f39f737198aae6d73461d13834844511616797"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_buildings.torrent",
+        "sha256": "c480fb086befb47e70a67b60f95a6fe9990d65badd4485895009198b96d1ccca"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_characters.torrent",
+        "sha256": "1895bf46d4374d0440d0dd9bda38c612c9c80f094777c467a518cd856ff3dff4"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_chernarus.torrent",
+        "sha256": "98e53973b43d60d093d61e26703687595102a6ab7135dc9b1efdbfa5e536a020"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_client.torrent",
+        "sha256": "4df638a377acac95ab5e03ae4d32aec6653df0a519f504c2f28c1b5487b769f5"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_client_dev.torrent",
+        "sha256": "8459be1329ee9948c8f728c7751d316dc3120f1376294cd19921eadf0d40e83f"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_common.torrent",
+        "sha256": "7971360574410d9bc4ef17774620f1e9fcff2e96edd49b3c1093daba4f280fec"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_debug.torrent",
+        "sha256": "cbf6838549ffe37de14bd7b3dd372f382604392e07bc16403a526c971d2c8d63"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_items.torrent",
+        "sha256": "f19d9f03302d96e2eccc03a7132e5eb6f82d4fb2416ed08c58cf53415b0851f0"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_legacy.torrent",
+        "sha256": "c1230c693991e9575b4bb3c24192143aabb9f8f7700ee34977a26e0e7880d845"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_sound.torrent",
+        "sha256": "520530fa240ff3bd8683f7a824a63b701178bf55083396fb78c1daafd00176d2"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_vehicles.torrent",
+        "sha256": "3b1890a789f36aecd642ef1e9359c14fdc1336d3bc2ffc8578ccbaaf0e59cb9c"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/dayz_weapons.torrent",
+        "sha256": "7169dfda874bac3f4578df2afda75e9a53e66e83e0cef02a70c0c92777884319"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/DayzSignatures.torrent",
+        "sha256": "f233649a65bbc2396b001829a84616ce17366d7b55dbdb5fb5f2788441c8104a"
+    },
+    {
+        "url": "https://www.perry-swift.de/dayz2/mods/DayzExtensions.torrent",
+        "sha256": "092fe6afa87f045ab95fc2be93ffbdff1deec91381707730892de11529d513e3"
+    }
+]

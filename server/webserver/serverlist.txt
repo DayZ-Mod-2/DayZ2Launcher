@@ -1,2 +1,0 @@
-server.dayzeuropa.com;server.dayzeuropa.com;2352;;@DayZ;2353
-www.perry-swift.de;www.perry-swift.de;2302;;@DayZ;2303

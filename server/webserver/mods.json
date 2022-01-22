@@ -1,12 +1,10 @@
 {
-    "mods": [
-        {
-            "archive": {
-                "url": "https://www.perry-swift.de/dayz2/mods/0.0.0.0/mod.json",
-                "sha1": "6054aea8839c1b8545c54a831da62fcb524f6f09"
-            },
-            "version": "0.0.0.0"
+    "dayz2": {
+        "name": "@DayZ2",
+        "latest": "0.0.0.4",
+        "addons": {
+            "url": "https://www.perry-swift.de/dayz2/mods/dayz2.json",
+            "sha256": "ce066451d22625abe5f6ed7d80fdcbb8443d282075f69c8582af61e96c2a4d72"
         }
-    ],
-    "latest": "0.0.0.0"
+    }
 }

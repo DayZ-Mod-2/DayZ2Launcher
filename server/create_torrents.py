@@ -64,7 +64,7 @@ def create_torrent(torrent: Torrent, archive: str, config: Config):
     if os.path.isfile(torrent_name):
         os.remove(torrent_name)
 
-    args = shlex.split(f'mktorrent -v -p -l {piece_length([archive])} -a {config.tracker} -o {torrent_name} {archive}')
+    args = shlex.split(f'mktorrent -v -l {piece_length([archive])} -a {config.tracker} -o {torrent_name} {archive}')
     p = Popen(args, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     _, stderr = p.communicate()
     if p.returncode:
