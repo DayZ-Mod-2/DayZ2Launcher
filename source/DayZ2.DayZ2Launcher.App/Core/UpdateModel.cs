@@ -242,6 +242,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			public void Clear()
 			{
 				ExtractedBytes.Clear();
+				TotalBytes = 0;
 			}
 		}
 
