@@ -533,6 +533,36 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			}
 		}
 
+		public void CleanupExtraFiles()
+		{
+			var packedDir = new DirectoryInfo(UserSettings.ContentPackedDataPath);
+
+			// we don't want any files in the archive directory
+			foreach (FileInfo file in packedDir.EnumerateFiles("*.*", SearchOption.TopDirectoryOnly))
+			{
+				file.Delete();
+			}
+
+			// create a set of all folders used in a torrent
+			HashSet<string> dirs = new();
+			foreach (Mod mod in m_mods.Values)
+			{
+				foreach (var torrent in mod.Torrents)
+				{
+					dirs.Add(torrent.DownloadDirectory.FullName);
+				}
+			}
+
+			// delete everything that is not used
+			foreach (DirectoryInfo dir in packedDir.EnumerateDirectories("*", SearchOption.TopDirectoryOnly))
+			{
+				if (!dirs.Contains(dir.FullName))
+				{
+					dir.Delete(true);
+				}
+			}
+		}
+
 		private Dictionary<string, SemanticVersion> ReadCurrentVersions()
 		{
 			if (File.Exists(UserSettings.ContentCurrentTagFile))

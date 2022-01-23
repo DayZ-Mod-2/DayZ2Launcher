@@ -139,6 +139,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				await CheckForUpdatesAsync();
 				await m_modUpdater.StartAsync(m_cancellationToken);
 				await CheckForModUpdatesAsync();
+				m_modUpdater.CleanupExtraFiles();
 			}
 			Init();
 		}
