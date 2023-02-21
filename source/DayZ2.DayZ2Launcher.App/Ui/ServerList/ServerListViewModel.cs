@@ -80,10 +80,6 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 				await m_serverList.RefreshAllAsync(
 					new Progress<int>(p => ProcessedServers = p),
 					m_cancellationToken);
-				//await foreach (Server server in m_serverList.DiscoverAsync(m_cancellationToken))
-				//{
-				//	Servers.Add(new ServerViewModel(server, m_cancellationToken));
-				//}
 			}
 			finally
 			{
@@ -93,8 +89,8 @@ namespace DayZ2.DayZ2Launcher.App.Ui.ServerList
 
 		public void SetServers(IList<ServerListInfo> servers)
 		{
-			TotalServers = servers.Count;
 			m_serverList.SetServers(servers);
+			TotalServers = m_serverList.Servers.Count;
 			RefreshAll();
 		}
 

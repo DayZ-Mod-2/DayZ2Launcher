@@ -641,7 +641,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		}
 	}
 
-	public struct ServerListInfo
+	public class ServerListInfo
 	{
 		[JsonPropertyName("hostname")]
 		public string Hostname { get; set; }
@@ -649,6 +649,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		public ushort Port { get; set; }
 		[JsonPropertyName("mods")]
 		public IList<string> Mods { get; set; }
+		[JsonPropertyName("visible")]
+		public bool Visible { get; set; } = true;
 	}
 
 	public class ServerUpdater

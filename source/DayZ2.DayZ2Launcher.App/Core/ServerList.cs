@@ -142,9 +142,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			ServersClear?.Invoke(this, EventArgs.Empty);
 			foreach (ServerListInfo info in servers)
 			{
-				Server server = new Server(info);
-				Servers.Add(server);
-				ServerDiscovered?.Invoke(this, new ServerDiscoveredEventArgs(server));
+				if (info.Visible)
+				{
+					Server server = new Server(info);
+					Servers.Add(server);
+					ServerDiscovered?.Invoke(this, new ServerDiscoveredEventArgs(server));
+				}
 			}
 		}
 
