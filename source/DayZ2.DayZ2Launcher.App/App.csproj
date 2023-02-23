@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>DayZ2.DayZ2Launcher.App</RootNamespace>
     <AssemblyName>DayZ2Launcher</AssemblyName>
@@ -122,21 +121,21 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-    <PackageReference Include="Mono.Nat" Version="3.0.2" />
-    <PackageReference Include="MonoTorrent" Version="2.0.4" />
-    <PackageReference Include="ReusableTasks" Version="2.0.1" />
-    <PackageReference Include="SharpCompress" Version="0.30.1" />
-    <PackageReference Include="SharpVectors" Version="1.7.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Mono.Nat" Version="3.0.4" />
+    <PackageReference Include="MonoTorrent" Version="2.0.7" />
+    <PackageReference Include="ReusableTasks" Version="2.0.2" />
+    <PackageReference Include="SharpCompress" Version="0.32.2" />
+    <PackageReference Include="SharpVectors" Version="1.8.1" />
     <PackageReference Include="System.Runtime" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
-    <PackageReference Include="System.Text.Json" Version="6.0.1" />
+    <PackageReference Include="System.Text.Json" Version="7.0.2" />
     <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.261602">
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.410601">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Core\DayZLauncherUpdater.cs" />
