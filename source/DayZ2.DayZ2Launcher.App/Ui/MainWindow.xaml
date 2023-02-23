@@ -370,7 +370,8 @@
 								Click="LaunchGameButton_Click"
 								Style="{StaticResource MetroTextButtonStyle}"
 								HorizontalAlignment="Center"
-								VerticalAlignment="Center">
+								VerticalAlignment="Center"
+								IsEnabled="{Binding AppActions.Actions.CanLaunch}">>
 								<Button.Template>
 									<ControlTemplate>
 										<Border IsHitTestVisible="True"

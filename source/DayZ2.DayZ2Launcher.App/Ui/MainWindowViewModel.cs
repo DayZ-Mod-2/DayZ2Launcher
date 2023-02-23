@@ -11,21 +11,20 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 {
 	public class MainWindowViewModel : ViewModelBase
 	{
-		CancellationToken m_cancellationToken;
-
 		ViewModelBase m_currentTab;
 		ObservableCollection<ViewModelBase> m_tabs;
 
-		readonly GameLauncher m_gameLauncher;
+		private readonly GameLauncher m_gameLauncher;
 
 		public ServerListViewModel ServerListViewModel { get; private set; }
 		public SettingsViewModel SettingsViewModel { get; private set; }
 		public UpdatesViewModel UpdatesViewModel { get; private set; }
+		public AppActions AppActions { get; private set; }
 
-		public MainWindowViewModel(IServiceProvider services, AppCancellation cancellation, GameLauncher gameLauncher)
+		public MainWindowViewModel(IServiceProvider services, GameLauncher gameLauncher, AppActions appActions)
 		{
-			m_cancellationToken = cancellation.Token;
 			m_gameLauncher = gameLauncher;
+			AppActions = appActions;
 
 			Tabs = new ObservableCollection<ViewModelBase>(new ViewModelBase[]
 			{

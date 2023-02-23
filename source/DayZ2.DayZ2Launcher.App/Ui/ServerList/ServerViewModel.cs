@@ -50,6 +50,7 @@ namespace DayZ2.DayZ2Launcher.App.UI.ServerList
 	{
 		readonly Server m_server;
 		readonly GameLauncher m_gameLauncher;
+		readonly AppActions m_appActions;
 		readonly CancellationToken m_cancellationToken;
 
 		public bool IsResponding => m_server.IsResponding;
@@ -66,10 +67,11 @@ namespace DayZ2.DayZ2Launcher.App.UI.ServerList
 			private set => SetValue(ref m_isRefreshing, value);
 		}
 
-		public ServerViewModel(Server server, GameLauncher gameLauncher, AppCancellation cancellation)
+		public ServerViewModel(Server server, GameLauncher gameLauncher, AppCancellation cancellation, AppActions appActions)
 		{
 			m_server = server;
 			m_gameLauncher = gameLauncher;
+			m_appActions = appActions;
 			m_cancellationToken = cancellation.Token;
 
 			m_server.RefreshStarted += (object sender, EventArgs e) => IsRefreshing = true;
@@ -106,7 +108,10 @@ namespace DayZ2.DayZ2Launcher.App.UI.ServerList
 
 		public void Join()
 		{
-			m_gameLauncher.LaunchGame(m_server);
+			if (m_appActions.Actions[AppActions.CanLaunch])
+			{
+				m_gameLauncher.LaunchGame(m_server);
+			}
 		}
 	}
 }

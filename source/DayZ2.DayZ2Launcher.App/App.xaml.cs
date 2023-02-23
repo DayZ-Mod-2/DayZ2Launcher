@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
@@ -181,6 +181,7 @@ namespace DayZ2.DayZ2Launcher.App
 		void ConfigureServices(ServiceCollection services)
 		{
 			services.AddSingleton(new AppCancellation(m_cancellationTokenSource.Token));
+			services.AddSingleton<AppActions>();
 			services.AddSingleton<HttpClient>();
 			services.AddSingleton<ResourceLocator>();
 			services.AddSingleton<GameLauncher>();
