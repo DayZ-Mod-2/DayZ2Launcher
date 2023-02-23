@@ -165,6 +165,20 @@ namespace DayZ2.DayZ2Launcher.App
 			*/
 		}
 
+		public void BringToForeground()
+		{
+			Current.Dispatcher.BeginInvoke(() => ((MainWindow)Current.MainWindow)?.BringToForeground());
+		}
+
+		public void Minimize()
+		{
+			Current.Dispatcher.BeginInvoke(() =>
+			{
+				if (MainWindow != null)
+					MainWindow.WindowState = WindowState.Minimized;
+			});
+		}
+
 		void ApplicationStartup(object sender, StartupEventArgs e)
 		{
 			var mainWindow = new MainWindow

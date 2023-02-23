@@ -12,7 +12,18 @@ namespace DayZ2.DayZ2Launcher.App.Core
 {
 	public class GameLauncher
 	{
-		const string ProcessName = "arma2oa";
+
+		public class GameLaunchedEventArgs : EventArgs
+		{
+			public int ProcessId { get; set; }
+		}
+		public event EventHandler<GameLaunchedEventArgs> GameLaunched;
+		
+		public class GameClosedEventArgs : EventArgs
+		{
+			public int ExitCode { get; set; }
+		}
+		public event EventHandler<GameClosedEventArgs> GameClosed;
 
 		public bool CanLaunch { get; set; }
 
@@ -43,8 +54,16 @@ namespace DayZ2.DayZ2Launcher.App.Core
 					WorkingDirectory = CalculatedGameSettings.Current.Arma2OAPath
 				}
 			};
+			process.EnableRaisingEvents = true;
+			process.Exited += delegate(object? sender, EventArgs eventArgs)
+			{
+				GameClosed.Invoke(this, new GameClosedEventArgs(){ ExitCode = process.ExitCode });
+				OnGameExit(process.ExitCode);
+			};
 
 			bool succeeded = process.Start();
+			GameLaunched.Invoke(this, new GameLaunchedEventArgs(){ ProcessId = process.Id });
+			App.Current.Minimize();
 
 			/*
 			if (succeeded && UserSettings.Current.GameOptions.CloseDayZLauncher)
@@ -55,6 +74,12 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			*/
 
 			return succeeded;
+		}
+
+		private void OnGameExit(int exitCode)
+		{
+			App.Current.BringToForeground();
+
 		}
 
 		private static string GetLaunchArguments(Server? server)
