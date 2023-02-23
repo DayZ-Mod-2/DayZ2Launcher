@@ -8,9 +8,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 	{
 		[DataMember] private string m_additionalStartupParameters;
 		[DataMember] private string m_arma2DirectoryOverride;
-		[DataMember] private bool m_arma2OASteamUpdate;
 		[DataMember] private string m_arma2OaDirectoryOverride;
-		[DataMember] private bool m_closeDayZLauncher;
 		[DataMember] private string m_customBranchName;
 		[DataMember] private string m_customBranchPass;
 		[DataMember] private bool m_multiGpu;
@@ -25,12 +23,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 		public string GUID => GUIDCalculator.GetKey();
 
-		public bool Arma2OASteamUpdate
-		{
-			get => m_arma2OASteamUpdate;
-			set => SetValue(ref m_arma2OASteamUpdate, value, UserSettings.Current.Save);
-		}
-
 		public bool WindowedMode
 		{
 			get => m_windowedMode;
@@ -41,12 +33,6 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		{
 			get => m_multiGpu;
 			set => SetValue(ref m_multiGpu, value, UserSettings.Current.Save);
-		}
-
-		public bool CloseDayZLauncher
-		{
-			get => m_closeDayZLauncher;
-			set => SetValue(ref m_closeDayZLauncher, value, UserSettings.Current.Save);
 		}
 
 		public string Arma2DirectoryOverride

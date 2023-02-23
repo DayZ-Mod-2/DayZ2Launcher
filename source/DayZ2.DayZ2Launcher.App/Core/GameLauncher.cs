@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -46,11 +46,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			bool succeeded = process.Start();
 
+			/*
 			if (succeeded && UserSettings.Current.GameOptions.CloseDayZLauncher)
 			{
 				UserSettings.Current.Save();
 				App.Current.RequestShutdown();
 			}
+			*/
 
 			return succeeded;
 		}

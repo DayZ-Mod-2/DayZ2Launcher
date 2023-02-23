@@ -13,7 +13,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 	public class UserSettings
 	{
 		private static UserSettings _current;
-		private static readonly object _fileLock = new object();
+		private static readonly object _fileLock = new();
 		private static string _localDataPath;
 		private static string _torrentJunkPath;
 		private static string _contentPath;
@@ -31,32 +31,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		[DataMember] private Filters m_filter = new();
 		[DataMember] private List<string> m_friends = new();
 		[DataMember] private GameOptions m_gameOptions = new();
-		[DataMember] private bool m_hideAU;
-		[DataMember] private bool m_hideEU;
-		[DataMember] private bool m_hideUS;
 		[DataMember] private List<RecentServer> m_recentServers = new();
 		[DataMember] private TorrentOptions m_torrentOptions = new();
+		[DataMember] private PrivacyOptions m_privacyOptions = new();
+		[DataMember] private LauncherOptions m_launcherOptions = new();
 
 		[DataMember] private WindowSettings m_windowSettings;
 		//This is null on purpose so the MainWindow view can set defaults if needed
-
-		public bool IncludeUS
-		{
-			get => !m_hideUS;
-			set => m_hideUS = !value;
-		}
-
-		public bool IncludeEU
-		{
-			get => !m_hideEU;
-			set => m_hideEU = !value;
-		}
-
-		public bool IncludeAU
-		{
-			get => !m_hideAU;
-			set => m_hideAU = !value;
-		}
 
 		public Filters Filters
 		{
@@ -100,16 +81,28 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			set => m_torrentOptions = value;
 		}
 
-		public AppOptions AppOptions
+		public PrivacyOptions PrivacyOptions
 		{
 			get
 			{
-				if (m_appOptions == null)
-					m_appOptions = new AppOptions();
+				if (m_privacyOptions == null)
+					m_privacyOptions = new PrivacyOptions();
 
-				return m_appOptions;
+				return m_privacyOptions;
 			}
-			set => m_appOptions = value;
+			set => m_privacyOptions = value;
+		}
+
+		public LauncherOptions LauncherOptions
+		{
+			get
+			{
+				if (m_launcherOptions == null)
+					m_launcherOptions = new LauncherOptions();
+
+				return m_launcherOptions;
+			}
+			set => m_launcherOptions = value;
 		}
 
 		public List<FavoriteServer> Favorites
