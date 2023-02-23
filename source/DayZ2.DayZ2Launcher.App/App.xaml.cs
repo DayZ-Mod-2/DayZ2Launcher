@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
@@ -203,6 +203,7 @@ namespace DayZ2.DayZ2Launcher.App
 			services.AddSingleton<MotdUpdater>();
 			services.AddSingleton<ServerUpdater>();
 			services.AddSingleton<TorrentClient>();
+			services.AddSingleton<CrashLogUploader>();
 		}
 
 		void UncaughtException(Exception ex)

@@ -1,3 +1,4 @@
+﻿using DayZ2.DayZ2Launcher.App.Ui;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +13,9 @@ namespace DayZ2.DayZ2Launcher.App.Core
 {
 	public class GameLauncher
 	{
+		private readonly CrashLogUploader m_crashLogUploader;
+		public string DayZCurrentVersion { get; set; }
+		private const string ProcessName = "arma2oa";
 
 		public class GameLaunchedEventArgs : EventArgs
 		{
@@ -25,13 +29,14 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		}
 		public event EventHandler<GameClosedEventArgs> GameClosed;
 
-		public bool CanLaunch { get; set; }
+		public GameLauncher(CrashLogUploader crashLogUploader)
+		{
+			m_crashLogUploader = crashLogUploader;
+		}
 
 #nullable enable
 		public bool LaunchGame(Server? server)
 		{
-			if (!CanLaunch) return false;
-
 			bool battleye = server?.Battleye ?? true;
 
 			string exe = Path.Combine(CalculatedGameSettings.Current.Arma2OAPath, battleye ? "ArmA2OA_BE.exe" : "ArmA2OA.exe");
@@ -44,6 +49,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			string args = GetLaunchArguments(server);
 
+			m_crashLogUploader.GameStarting();
 			var process = new Process()
 			{
 				StartInfo =
@@ -80,6 +86,14 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		{
 			App.Current.BringToForeground();
 
+			if (exitCode == 0)
+			{
+				m_crashLogUploader.GameClosed(DayZCurrentVersion);
+			}
+			else
+			{
+				m_crashLogUploader.GameCrashed(DayZCurrentVersion);
+			}
 		}
 
 		private static string GetLaunchArguments(Server? server)
