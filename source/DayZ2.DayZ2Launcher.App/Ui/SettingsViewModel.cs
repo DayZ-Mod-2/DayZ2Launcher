@@ -144,7 +144,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		public string DisplayDirectoryPrompt(Window parentWindow, bool allowNewFolder, string previousPath, string description)
 		{
-			var dialog = new System.Windows.Forms.FolderBrowserDialog()
+			var dialog = new FolderBrowserDialog()
 			{
 				ShowNewFolderButton = allowNewFolder,
 				RootFolder = Environment.SpecialFolder.ProgramFilesX86,
@@ -153,7 +153,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 				UseDescriptionForTitle = true
 			};
 
-			NativeWindow nativeWindow = new System.Windows.Forms.NativeWindow();
+			NativeWindow nativeWindow = new();
 			nativeWindow.AssignHandle(new WindowInteropHelper(parentWindow).Handle);
 
 			var result = dialog.ShowDialog(nativeWindow);

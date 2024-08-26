@@ -57,7 +57,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 			async void ProgressAsync()
 			{
-				while (true)
+				while (!m_cancellationToken.IsCancellationRequested)
 				{
 					DayZTorrentStatus = m_modUpdater.CurrentStatus();
 					await Task.Delay(100, m_cancellationToken);

@@ -129,7 +129,7 @@ namespace DayZ2.DayZ2Launcher.App.Ui
 
 		private void DiscordImage_Click(object sender, RoutedEventArgs e)
 		{
-			Process.Start("https://discord.gg/7B69YbrJKJ");
+			Process.Start("explorer.exe", "https://discord.gg/7B69YbrJKJ");
 		}
 
 		private void Image_ImageFailed(object sender, ExceptionRoutedEventArgs e)

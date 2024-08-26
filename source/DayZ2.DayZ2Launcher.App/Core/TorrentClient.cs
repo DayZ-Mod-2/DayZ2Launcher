@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using MonoTorrent;
 using MonoTorrent.Client;
+using MonoTorrent.Connections;
 
 namespace DayZ2.DayZ2Launcher.App.Core
 {
@@ -49,8 +52,8 @@ namespace DayZ2.DayZ2Launcher.App.Core
 		{
 			Progress progress = new Progress
 			{
-				DownloadSpeed = m_engine.TotalDownloadSpeed,
-				UploadSpeed = m_engine.TotalUploadSpeed,
+				DownloadSpeed = m_engine.TotalDownloadRate,
+				UploadSpeed = m_engine.TotalUploadRate,
 				SeedCount = 0,
 				LeechCount = 0,
 				AvailablePeerCount = 0,
@@ -64,12 +67,13 @@ namespace DayZ2.DayZ2Launcher.App.Core
 
 			foreach (TorrentManager tm in m_engine.Torrents)
 			{
+				long size = tm.Torrent?.Size ?? 0;
 				progress.AvailablePeerCount += tm.Peers.Available;
 				progress.SeedCount += tm.Peers.Seeds;
 				progress.LeechCount += tm.Peers.Leechs;
-				progress.TotalSize += tm.Size;
-				progress.DownloadedSize += tm.Progress / 100.0 * tm.Size;
-				progress.HashedSize += tm.Torrent.Size * Convert.ToInt64(tm.Progress / 100);
+				progress.TotalSize += size;
+				progress.DownloadedSize += (tm.Progress / 100.0) * size;
+				progress.HashedSize += size * Convert.ToInt64(tm.Progress / 100);
 			}
 
 			if (progress.TotalSize > 0)
@@ -148,7 +152,7 @@ namespace DayZ2.DayZ2Launcher.App.Core
 			{
 				if (Manager.Complete && !TaskCompletionSource.Task.IsCompleted)
 				{
-					Debug.WriteLine($"Torrent completed: {Manager.Torrent.Source}");
+					// Debug.WriteLine($"Torrent completed: {Manager.Torrent.Name}");
 					TaskCompletionSource.SetResult();
 					return true;
 				}
@@ -309,12 +313,15 @@ namespace DayZ2.DayZ2Launcher.App.Core
 				AutoSaveLoadFastResume =
 					!UserSettings.Current.TorrentOptions.DisableFastResume,
 				CacheDirectory = UserSettings.TorrentJunkPath,
-				DhtPort = torrentOptions.ListeningPort,
-				ListenPort = torrentOptions.ListeningPort,
+				DhtEndPoint = new IPEndPoint(IPAddress.Any, torrentOptions.ListeningPort),
+				ListenEndPoints = new Dictionary<string, IPEndPoint>()
+				{
+					{ "ipv4", new IPEndPoint(IPAddress.Any, torrentOptions.ListeningPort) }
+				},
 				MaximumConnections = torrentOptions.MaxDLConnsNormalized,
-				MaximumDownloadSpeed = torrentOptions.MaxDLSpeed * 1024,
+				MaximumDownloadRate = torrentOptions.MaxDLSpeed * 1024,
 				MaximumHalfOpenConnections = 10,
-				MaximumUploadSpeed = torrentOptions.MaxULSpeed * 1024,
+				MaximumUploadRate = torrentOptions.MaxULSpeed * 1024,
 			}.ToSettings();
 		}
 
